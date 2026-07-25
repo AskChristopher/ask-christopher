@@ -32,4 +32,6 @@ Do **not** write one for reversible, low-stakes choices — file naming, a helpe
 
 ## Index
 
-*(No decisions recorded yet. The first will likely be the language and runtime choice.)*
+| # | Decision | Status | Date |
+|---|---|---|---|
+| [0001](0001-use-python-for-the-mvp.md) | Use Python for the MVP | Accepted | 2026-07-24 |
