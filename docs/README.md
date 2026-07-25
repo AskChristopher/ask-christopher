@@ -14,7 +14,7 @@ This matters more than usual for this project. One of its stated design constrai
 |---|---|
 | `product-vision.md` | The North Star. Authoritative for product and architecture questions. |
 | `decisions/` | Architecture Decision Records — one file per significant, hard-to-reverse choice. |
-| `roadmap.md` | *(planned)* Phased development plan and current milestone. |
+| `roadmap.md` | Phased development plan, current milestone, and the portfolio consolidation backlog. |
 | `architecture.md` | *(planned)* System diagram and component responsibilities, written once components exist. |
 
 ## What does not live here

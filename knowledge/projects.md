@@ -365,31 +365,16 @@ Its role in the portfolio is different in kind: the other projects show depth in
 
 ---
 
-## Closing the evidence gap — backlog
+## Closing the evidence gap
 
 The corpus currently describes more than the public record supports. That is honestly labeled, but the labels are a stopgap, not the goal. **The fix is to publish the artifacts, not to keep qualifying the claims.**
 
-**Available now:**
+The task list lives in `docs/roadmap.md` → *Portfolio consolidation backlog*, which is planning rather than corpus. Two facts from it belong here, because they govern how the assistant describes these projects:
 
-| # | Task | Closes |
-|---|---|---|
-| 1 | **Publish the ElevenLabs documentation** — voice process, goals, architecture, lessons learned. | Moves voice-assistant off *described only* — the only entry with no reason for its gap. Also supplies its missing *What was learned*. |
-| 2 | **Consolidate remaining sprint work** from Claude Code and local environments into the public repositories. | Closes the general gap described above. |
+- **Consolidation is planned work, not work in progress.** Nothing has moved yet.
+- **The voice assistant is the priority**, because it is the only project asserted with neither public evidence nor a stated reason for its absence. Everything else in this file is either verifiable or explained.
 
-**Blocked on the BioHub competition concluding** — not a delay, a deliberate hold:
-
-| # | Task | Closes |
-|---|---|---|
-| 3 | Organize the Kaggle profile. | — |
-| 4 | Publish the BioHub notebooks. | Moves biohub to *public elsewhere*. |
-| 5 | Document the complete project. | Supplies biohub's *What was learned*. |
-| 6 | Link the public Kaggle work from the portfolio and from Ask Christopher. | Moves biohub to *public repository*. |
-
-**Item 1 is the one that matters most**, because the voice assistant is now the only project asserted without either public evidence or a reason for its absence. Everything else in this file is either verifiable or explained.
-
-When these land, the corpus and the public evidence align, and most of the qualifying language in this file can be deleted. **That deletion is the success condition.**
-
-*This backlog belongs in `docs/roadmap.md` once that file exists — it is planned but not yet written. It sits here for now because it is inseparable from the entries it governs.*
+When that work lands, the corpus and the public evidence align and most of the qualifying language in this file can be deleted. **That deletion is the success condition.**
 
 ---
 

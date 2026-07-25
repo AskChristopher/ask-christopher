@@ -1,0 +1,17 @@
+# Kept minimal on purpose. A build backend is still absent — nothing needs to
+# build or publish the package yet — so this records the runtime dependency and
+# the pytest config, and nothing else.
+# See docs/decisions/0001-use-python-for-the-mvp.md for the tooling decision.
+
+[project]
+name = "ask-christopher"
+version = "0.1.0"
+description = "The AI-powered front door to ChristopherMathews.com"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=0.40",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

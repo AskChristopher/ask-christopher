@@ -40,11 +40,13 @@ The behavior files change less often than the corpus does. Persona and pedagogy 
 
 Because a cache prefix is invalidated from the first changed byte onward, **the most stable content belongs earliest.** With breakpoint A in place, editing the corpus still hits cache on the entire behavior layer.
 
-### The alternative, and when to revisit
+### The alternative — condition already met
 
-Anthropic's long-context guidance recommends placing long documents *before* instructions, which would put the corpus at position 2. That effect matters at scale — roughly twenty thousand tokens and up. This corpus is a few thousand words, so the benefit is currently small and the cache-layering cost is immediate and certain.
+Anthropic's long-context guidance recommends placing long documents *before* instructions, which would put the corpus at position 2. That effect matters at scale — roughly twenty thousand tokens and up.
 
-**Revisit if the corpus passes roughly 20k tokens** while still being fully injected. At that point, measure rather than assume: swap the order behind a flag, run `tests/evals/`, and compare. Record the outcome as an ADR.
+> ⚠️ **This was written estimating the corpus at "a few thousand words." Measurement showed ~20,000 words: an assembled prefix of ~32.5k tokens, of which the corpus alone is ~24k.** The revisit condition was exceeded on the day it was written. See `docs/decisions/0002-full-corpus-injection-is-a-baseline-not-the-architecture.md`.
+
+The ordering below is **retained unchanged for the Milestone 2 baseline** so the experiment measures the design as built. Re-measure it against the baseline rather than swapping it on the strength of the guidance alone: put the alternative behind a flag, run `tests/evals/`, compare, and record the outcome as an ADR.
 
 ---
 
@@ -96,7 +98,7 @@ Maintainer sections cost tokens that carry no runtime value, so this is a real t
 
 Several status headers also carry genuine runtime meaning — `services.md` flags its positioning statement as a working thesis, `projects.md` flags entries pending re-audit. A stripping rule would have to preserve those, which makes it a parser rather than a filter.
 
-**Revisit alongside the 20k-token threshold above.** If stripping becomes worthwhile, strip in a build step that produces a committed artifact, so the bytes stay reviewable and stable.
+**This revisit condition has also been met** — see ADR-0002. Maintainer sections and status headers are now a measurable share of a ~24k-token corpus. Whole-file injection is retained for the Milestone 2 baseline; if stripping proves worthwhile afterwards, strip in a build step that produces a committed artifact, so the bytes stay reviewable and stable.
 
 Each file is wrapped so its origin is visible:
 
@@ -194,4 +196,5 @@ Keep this minimal. Anything that belongs to every conversation belongs in the pr
 - Treat this as the specification and `prompt.py` as its implementation.
 - **When the assembled prompt changes, re-run `tests/evals/`.** Reordering sections changes behavior more than it looks like it should, and the diff will not tell you what changed about the output.
 - Adding a corpus file is a two-line change — the directory and this list. If that ever feels annoying enough to automate, re-read the reason it is manual.
-- The two revisit conditions in this file share a trigger: corpus size around 20k tokens. When one comes up, evaluate both, and prefer measurement over the reasoning recorded here.
+- **Both revisit conditions in this file are already met.** Their shared 20k-token trigger was set by estimate and missed by roughly an order of magnitude. ADR-0002 records the measurement and reclassifies full-corpus injection as a **baseline**, not the intended production architecture — selective retrieval is now an active requirement rather than a distant Phase 4 concern.
+- Evaluate both conditions against the Milestone 2 baseline measurements, not against the reasoning recorded here. The reasoning was written without numbers; the numbers now exist.

@@ -42,4 +42,4 @@ Treat these files with the care of a résumé, not a scratchpad.
 
 The whole corpus is loaded into the system prompt and served from Anthropic's prompt cache, so re-reading it each turn costs roughly a tenth of normal input rate. At a few thousand words this is cheaper and far simpler than a vector database.
 
-Revisit that when the corpus grows large enough to crowd the context window or slow the first request — see the roadmap's Phase 4. Until then, prompt-stuffing is the correct architecture, not a shortcut.
+Revisit that when the corpus grows large enough to crowd the context window or slow the first request — see `docs/roadmap.md`, Phase 4. Until then, prompt-stuffing is the correct architecture, not a shortcut.
