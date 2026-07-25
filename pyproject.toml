@@ -10,6 +10,7 @@ description = "The AI-powered front door to ChristopherMathews.com"
 requires-python = ">=3.12"
 dependencies = [
     "anthropic>=0.40",
+    "pyyaml>=6.0",
 ]
 
 [tool.pytest.ini_options]
