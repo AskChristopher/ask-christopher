@@ -27,7 +27,10 @@ __all__ = [
     "PRICING_USD_PER_MTOK",
     "RequestMetrics",
     "build_request",
+    "build_conversation_request",
     "ask",
+    "ask_conversation",
+    "response_text",
 ]
 
 
@@ -131,8 +134,8 @@ class RequestMetrics:
         }
 
 
-def build_request(
-    question: str,
+def build_conversation_request(
+    messages: list[dict[str, Any]],
     *,
     prompt: AssembledPrompt | None = None,
     model: str = DEFAULT_MODEL,
@@ -141,18 +144,25 @@ def build_request(
 ) -> dict[str, Any]:
     """Build the keyword arguments for ``client.messages.create``.
 
-    Pure — no I/O, no clock, no network. Separated from :func:`ask` so the
-    request shape can be asserted in tests without mocking a transport.
+    Pure — no I/O, no clock, no network. Separated from :func:`ask_conversation`
+    so the request shape can be asserted in tests without mocking a transport.
 
     The prefix is split into two ``system`` blocks at breakpoint A, each marked
     ``cache_control``. Concatenating the two block texts reproduces
     ``prompt.text`` exactly; the split expresses cache boundaries and nothing
     else. Two of the four permitted breakpoints are used.
 
+    **Conversation history goes in ``messages``, never in the prefix.** The two
+    system blocks must stay byte-identical for the whole session or every turn
+    pays a fresh cache write. Pass the same ``prompt`` object across turns.
+
     ``temperature``, ``top_p``, and ``top_k`` are deliberately absent — Opus 5
     rejects them with a 400. ``thinking`` is left unset, which runs adaptive
     thinking on this model.
     """
+    if not messages:
+        raise ValueError("messages must contain at least one turn")
+
     assembled = build_system_prompt() if prompt is None else prompt
     behavior, knowledge = assembled.segments
 
@@ -172,24 +182,49 @@ def build_request(
                 "cache_control": {"type": "ephemeral"},
             },
         ],
-        "messages": [{"role": "user", "content": question}],
+        "messages": list(messages),
     }
 
 
-def ask(client: Any, question: str, **kwargs: Any) -> tuple[Any, RequestMetrics]:
-    """Send one request and return ``(message, metrics)``.
+def build_request(question: str, **kwargs: Any) -> dict[str, Any]:
+    """Single-turn convenience wrapper around :func:`build_conversation_request`."""
+    return build_conversation_request([{"role": "user", "content": question}], **kwargs)
+
+
+def ask_conversation(
+    client: Any, messages: list[dict[str, Any]], **kwargs: Any
+) -> tuple[Any, RequestMetrics]:
+    """Send a conversation and return ``(message, metrics)``.
 
     ``client`` is an ``anthropic.Anthropic`` instance. It is injected rather than
     constructed here so tests can pass a stub and so credential resolution stays
     the caller's concern.
     """
-    request = build_request(question, **kwargs)
+    request = build_conversation_request(messages, **kwargs)
 
     started = time.perf_counter()
     message = client.messages.create(**request)
     elapsed = time.perf_counter() - started
 
     return message, _extract_metrics(message, elapsed, fallback_model=request["model"])
+
+
+def ask(client: Any, question: str, **kwargs: Any) -> tuple[Any, RequestMetrics]:
+    """Single-turn convenience wrapper around :func:`ask_conversation`."""
+    return ask_conversation(client, [{"role": "user", "content": question}], **kwargs)
+
+
+def response_text(message: Any) -> str:
+    """Concatenate the text blocks of a response.
+
+    Non-text blocks are skipped. Thinking is on by default on this model and its
+    blocks carry empty text under the default ``display``, so filtering by type
+    rather than trusting order is what keeps the reply clean.
+    """
+    blocks = getattr(message, "content", None) or []
+    return "".join(
+        getattr(block, "text", "") for block in blocks if getattr(block, "type", None) == "text"
+    )
 
 
 def _extract_metrics(message: Any, elapsed: float, *, fallback_model: str) -> RequestMetrics:
