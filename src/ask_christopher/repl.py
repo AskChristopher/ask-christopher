@@ -1,4 +1,4 @@
-"""Terminal REPL — the smallest interactive session.
+"""Terminal REPL - the smallest interactive session.
 
 Two layers, deliberately separated so the conversation behaviour can be tested
 without credentials or a terminal:
@@ -11,7 +11,7 @@ without credentials or a terminal:
 One design constraint governs the whole file: **the two cached system blocks
 must stay byte-identical for the entire session.** The prefix is assembled once
 in :meth:`Session.__init__` and the same object is passed to every turn.
-Conversation history lives in the message list and never touches the prefix —
+Conversation history lives in the message list and never touches the prefix -
 a single varying byte there would make every turn pay a fresh cache write.
 
 Out of scope on purpose: retrieval, persistence, tools, streaming, and any rich
@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import sys
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterator
+from typing import Any, Callable
 
 from ask_christopher.client import (
     DEFAULT_EFFORT,
@@ -85,7 +85,7 @@ class Session:
     def build_request(self, user_text: str) -> dict[str, Any]:
         """The request that :meth:`send` would issue for ``user_text``.
 
-        Exposed so the request shape — including prefix stability across turns —
+        Exposed so the request shape - including prefix stability across turns -
         can be asserted without sending anything.
         """
         from ask_christopher.client import build_conversation_request
@@ -104,7 +104,7 @@ class Session:
         **History is only mutated on success.** The user turn is appended to a
         candidate list, and ``self.messages`` is replaced only after a reply
         comes back. A failed request therefore leaves the conversation exactly
-        as it was — retrying does not stack duplicate user turns, and the next
+        as it was - retrying does not stack duplicate user turns, and the next
         successful turn is not sent against a history containing a question the
         assistant never answered.
         """
@@ -209,7 +209,7 @@ def run(
 
         try:
             turn = session.send(stripped)
-        except Exception as exc:  # noqa: BLE001 — surfaced in plain language, session survives
+        except Exception as exc:  # noqa: BLE001 - surfaced in plain language, session survives
             write(f"\n{describe_error(exc)}")
             continue
 

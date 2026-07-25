@@ -429,6 +429,31 @@ def test_loop_survives_a_failed_turn_and_continues() -> None:
     assert session.turn_count == 1
 
 
+@pytest.mark.parametrize(
+    "relative",
+    [
+        "src/ask_christopher/repl.py",
+        "scripts/cache_experiment.py",
+        "scripts/first_conversation.py",
+    ],
+)
+def test_console_producing_sources_are_pure_ascii(relative: str) -> None:
+    """Windows consoles mangle non-ASCII into replacement characters.
+
+    Enforced over the whole file rather than over printed strings only, because
+    deciding which literal reaches a terminal is a judgement call that has
+    already been got wrong twice — an em dash in an argparse ``description=``
+    reaches the console via ``--help``.
+    """
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parents[1] / relative
+    text = path.read_text(encoding="utf-8")
+    offenders = sorted({c for c in text if not c.isascii()})
+
+    assert not offenders, f"{relative} contains non-ASCII: {offenders}"
+
+
 def test_no_traceback_leaks_into_output_on_failure() -> None:
     written: list[str] = []
     run(

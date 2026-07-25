@@ -1,4 +1,4 @@
-"""Milestone 2 baseline — live cache verification.
+"""Milestone 2 baseline - live cache verification.
 
 **Opt-in. Requires credentials and spends money.** Not part of the test suite:
 ``pytest`` must stay runnable with no API key and no cost, so the live check
@@ -17,7 +17,7 @@ Two mechanics make sequential execution necessary rather than merely tidy:
 * The default cache TTL is five minutes. The second call must land inside it.
 
 What this measures is a **baseline**, not an endorsement of full-corpus
-injection — see ``docs/decisions/0002-full-corpus-injection-is-a-baseline-not-the-architecture.md``.
+injection - see ``docs/decisions/0002-full-corpus-injection-is-a-baseline-not-the-architecture.md``.
 """
 
 from __future__ import annotations
@@ -85,14 +85,14 @@ def main() -> int:
         _, first = ask(client, QUESTION, prompt=prompt)
         _, second = ask(client, QUESTION, prompt=prompt)
     except TypeError as exc:
-        # Raised at request-build time when no credential resolves at all — the
+        # Raised at request-build time when no credential resolves at all - the
         # constructor succeeds regardless, so this surfaces here rather than above.
         if "authentication method" not in str(exc):
             raise
         print(_NO_CREDENTIALS, file=sys.stderr)
         return 1
     except anthropic.AuthenticationError:
-        # A credential was found and rejected — a different problem from having none.
+        # A credential was found and rejected - a different problem from having none.
         print("\nCredentials were found but rejected (401). Check the key is current.", file=sys.stderr)
         return 1
     except anthropic.APIStatusError as exc:
