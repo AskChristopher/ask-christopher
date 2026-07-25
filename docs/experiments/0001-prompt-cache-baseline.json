@@ -1,0 +1,79 @@
+{
+  "experiment": "0001-prompt-cache-baseline",
+  "run": {
+    "date_utc": "2026-07-25T22:40Z",
+    "commit": "48d01e7",
+    "commit_subject": "Implement cached API baseline and document retrieval decision",
+    "executed_from": "detached git worktree at 48d01e7",
+    "script": "scripts/cache_experiment.py",
+    "script_modified_for_run": false,
+    "model": "claude-opus-5",
+    "max_tokens": 2048,
+    "effort": "low",
+    "thinking": "unset (adaptive is the default on this model)",
+    "sampling_params": "none (temperature/top_p/top_k rejected by this model)",
+    "cache_breakpoints": 2,
+    "cache_ttl": "default (5 minutes)",
+    "anthropic_sdk": "0.120.0",
+    "python": "3.12.10",
+    "platform": "Windows 11",
+    "question": "What does a Senior Instructional Designer do?",
+    "calls": "two, sequential, identical prefix and identical question"
+  },
+  "prefix": {
+    "characters": 129699,
+    "utf8_bytes": 130217,
+    "segment_a_chars": 34862,
+    "segment_b_chars": 94837,
+    "tokens_estimated_before_run": 32554,
+    "tokens_measured": 40511,
+    "bytes_per_token": 3.214,
+    "chars_per_token": 3.202
+  },
+  "raw_script_output": {
+    "first": {
+      "model": "claude-opus-5",
+      "input_tokens": 19,
+      "output_tokens": 343,
+      "cache_creation_input_tokens": 40511,
+      "cache_read_input_tokens": 0,
+      "total_prompt_tokens": 40530,
+      "cache_hit": false,
+      "latency_seconds": 6.709,
+      "stop_reason": "end_turn",
+      "request_id": "req_011CdPaWg8PDUYD2ofanqkKi",
+      "input_cost_usd": 0.25328875,
+      "output_cost_usd": 0.008575,
+      "total_cost_usd": 0.26186375
+    },
+    "second": {
+      "model": "claude-opus-5",
+      "input_tokens": 19,
+      "output_tokens": 374,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 40511,
+      "total_prompt_tokens": 40530,
+      "cache_hit": true,
+      "latency_seconds": 6.82,
+      "stop_reason": "end_turn",
+      "request_id": "req_011CdPaX9uUceXMEGbjTinc3",
+      "input_cost_usd": 0.020350500000000004,
+      "output_cost_usd": 0.00935,
+      "total_cost_usd": 0.029700500000000005
+    }
+  },
+  "pricing_applied_usd_per_mtok": {
+    "input": 5.0,
+    "output": 25.0,
+    "cache_write_multiplier": 1.25,
+    "cache_read_multiplier": 0.1,
+    "source": "Anthropic list pricing for claude-opus-5, as of 2026-07-25"
+  },
+  "outcome": {
+    "cache_engaged": true,
+    "prediction_cache_write_then_read": "confirmed",
+    "prediction_input_tokens_are_remainder_only": "confirmed",
+    "prediction_latency_improvement": "not observed",
+    "estimate_accuracy": "contradicted — measured 24.4% above the pre-run estimate"
+  }
+}
