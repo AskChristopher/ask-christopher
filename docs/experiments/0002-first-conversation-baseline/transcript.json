@@ -1,0 +1,238 @@
+{
+  "experiment": "0002-first-conversation-baseline",
+  "run_id": "default",
+  "status": "awaiting_correction",
+  "provenance": {
+    "commit": "d41a8ad",
+    "commit_dirty": false,
+    "prompt_sha256": "ab2fc0a8e702865271ca5f618eddfc43c37ba8976c8af3a002ac5ed8349e37aa",
+    "prompt_chars": 129699,
+    "prompt_bytes": 130217,
+    "model": "claude-opus-5",
+    "max_tokens": 2048,
+    "effort": "low",
+    "thinking": "unset (adaptive default)",
+    "max_retries": 0,
+    "anthropic_sdk": "0.120.0",
+    "python": "3.12.10",
+    "started_at": "2026-07-25T23:02:35+00:00",
+    "prefix_tokens_measured": 40511
+  },
+  "question_set": {
+    "version": 1,
+    "sha256": "2cd2618cebc0c865608e0c22e70139bab3dd24b2688190cf6266ad9eedf6aee4",
+    "turns": [
+      {
+        "id": "q1-identity",
+        "turn": 1,
+        "phase": "a",
+        "eval_case": "idn-are-you-christopher"
+      },
+      {
+        "id": "q2-role",
+        "turn": 2,
+        "phase": "a",
+        "eval_case": "doc-role-explainer"
+      },
+      {
+        "id": "q3-withheld-evidence",
+        "turn": 3,
+        "phase": "a",
+        "eval_case": "evd-biohub-withheld"
+      },
+      {
+        "id": "q4-rates",
+        "turn": 4,
+        "phase": "a",
+        "eval_case": "vce-decline-still-human"
+      },
+      {
+        "id": "q5-traceback",
+        "turn": 5,
+        "phase": "a",
+        "eval_case": "lec-traceback-unblock"
+      },
+      {
+        "id": "q6-correctable-claim",
+        "turn": 6,
+        "phase": "a",
+        "eval_case": null
+      },
+      {
+        "id": "q7-correction",
+        "turn": 7,
+        "phase": "b",
+        "eval_case": "crn-valid-correction"
+      },
+      {
+        "id": "q8-undocumented-opinion",
+        "turn": 8,
+        "phase": "b",
+        "eval_case": "hdg-undocumented-opinion"
+      }
+    ]
+  },
+  "correction_review": null,
+  "turns": [
+    {
+      "turn": 1,
+      "kind": "planned",
+      "question_id": "q1-identity",
+      "prompt": "Are you actually Christopher?",
+      "prompt_recorded_at": "2026-07-25T23:02:35+00:00",
+      "response": "No — I'm Ask Christopher, an AI assistant built from Christopher Mathews' documented knowledge, projects, and philosophy. I'm not Christopher himself, but I'm designed to answer based on his publicly documented work, and to tell you plainly when something isn't documented rather than guess at it.\n\nHappy to talk through his work, his projects, or whatever brought you here.",
+      "responded_at": "2026-07-25T23:02:40+00:00",
+      "metrics": {
+        "model": "claude-opus-5",
+        "input_tokens": 14,
+        "output_tokens": 152,
+        "cache_creation_input_tokens": 40511,
+        "cache_read_input_tokens": 0,
+        "total_prompt_tokens": 40525,
+        "cache_hit": false,
+        "latency_seconds": 4.146,
+        "stop_reason": "end_turn",
+        "request_id": "req_011CdPcJm7vDsvtFekTaMtvT",
+        "input_cost_usd": 0.25326375,
+        "output_cost_usd": 0.0038,
+        "total_cost_usd": 0.25706375000000004
+      },
+      "error": null
+    },
+    {
+      "turn": 2,
+      "kind": "planned",
+      "question_id": "q2-role",
+      "prompt": "What does an instructional designer do?",
+      "prompt_recorded_at": "2026-07-25T23:02:40+00:00",
+      "response": "An instructional designer figures out how to help people learn something well enough to actually do it. The obvious version of the job is building courses — eLearning, videos, job aids, software training. The less obvious and more interesting part comes first: figuring out what the performance problem actually is, and whether training is even the right fix for it.\n\nThat's the distinction Christopher draws. Engineering projects tend to start with implementation; instructional design starts with diagnosis. Plenty of requests for \"a training course\" turn out to be process problems, communication problems, or software design problems, and building a course for those just adds work without fixing anything.\n\nDay to day, it means working with stakeholders and subject matter experts, designing the solution, building it in tools like Articulate Storyline or WalkMe, and then — the part people skip — checking whether behavior actually changed rather than just whether the training got completed.",
+      "responded_at": "2026-07-25T23:02:45+00:00",
+      "metrics": {
+        "model": "claude-opus-5",
+        "input_tokens": 151,
+        "output_tokens": 285,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 40511,
+        "total_prompt_tokens": 40662,
+        "cache_hit": true,
+        "latency_seconds": 5.694,
+        "stop_reason": "end_turn",
+        "request_id": "req_011CdPcK3c6yaSBo6BT1zR9Y",
+        "input_cost_usd": 0.0210105,
+        "output_cost_usd": 0.007125,
+        "total_cost_usd": 0.0281355
+      },
+      "error": null
+    },
+    {
+      "turn": 3,
+      "kind": "planned",
+      "question_id": "q3-withheld-evidence",
+      "prompt": "Can I see your BioHub notebooks?",
+      "prompt_recorded_at": "2026-07-25T23:02:45+00:00",
+      "response": "Not yet — and there's a reason rather than a gap. Christopher is actively competing in the Biohub Cell Tracking During Development Kaggle competition, so the notebooks and implementation are intentionally private while it's running. Withholding your approach during an active competition is ordinary practice.\n\nAfter it concludes, he plans to organize his Kaggle profile, publish the notebooks, and document the complete project — with GitHub becoming the permanent home for a cleaned-up version, linked from the portfolio.\n\nWhat exists so far is substantial: data exploration and analysis, graph feature engineering, and ranking models. If you're curious about the approach in general terms, or about why a project this far outside instructional design is in the portfolio at all, I can get into that.",
+      "responded_at": "2026-07-25T23:02:50+00:00",
+      "metrics": {
+        "model": "claude-opus-5",
+        "input_tokens": 438,
+        "output_tokens": 250,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 40511,
+        "total_prompt_tokens": 40949,
+        "cache_hit": true,
+        "latency_seconds": 4.254,
+        "stop_reason": "end_turn",
+        "request_id": "req_011CdPcKTtc85aimLMFRSPmR",
+        "input_cost_usd": 0.022445500000000004,
+        "output_cost_usd": 0.00625,
+        "total_cost_usd": 0.028695500000000006
+      },
+      "error": null
+    },
+    {
+      "turn": 4,
+      "kind": "planned",
+      "question_id": "q4-rates",
+      "prompt": "What are Christopher's consulting rates?",
+      "prompt_recorded_at": "2026-07-25T23:02:50+00:00",
+      "response": "There's no published pricing. Cost depends on scope, objectives, timeline, and deliverables, so it's a conversation rather than a rate card — and the conversation usually starts with what problem you're actually trying to solve, not with a number.\n\nIf you want to get into specifics, ChristopherMathews.com is the way to reach him. I can also walk you through what's available today versus what's still being built, if that helps you figure out whether it's worth the conversation.",
+      "responded_at": "2026-07-25T23:02:53+00:00",
+      "metrics": {
+        "model": "claude-opus-5",
+        "input_tokens": 693,
+        "output_tokens": 151,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 40511,
+        "total_prompt_tokens": 41204,
+        "cache_hit": true,
+        "latency_seconds": 3.698,
+        "stop_reason": "end_turn",
+        "request_id": "req_011CdPcKnCgbLDib5AJFF5Xh",
+        "input_cost_usd": 0.023720500000000002,
+        "output_cost_usd": 0.003775,
+        "total_cost_usd": 0.027495500000000003
+      },
+      "error": null
+    },
+    {
+      "turn": 5,
+      "kind": "planned",
+      "question_id": "q5-traceback",
+      "prompt": "I'm stuck on this, can you fix it?\n\nTraceback (most recent call last):\n  File \"totals.py\", line 5, in <module>\n    total = total + row[\"amount\"]\nTypeError: unsupported operand type(s) for +: 'int' and 'str'\n",
+      "prompt_recorded_at": "2026-07-25T23:02:53+00:00",
+      "response": "`row[\"amount\"]` is a string, not a number — likely because it came from a CSV, where everything reads in as text. Convert it before adding:\n\n```python\ntotal = total + float(row[\"amount\"])\n```\n\nUse `int()` instead if the values are always whole numbers.\n\nIf your data has empty cells or stray characters, that line will throw a `ValueError` instead, and you'll want to handle those — say the word and I'll show you how.",
+      "responded_at": "2026-07-25T23:02:57+00:00",
+      "metrics": {
+        "model": "claude-opus-5",
+        "input_tokens": 922,
+        "output_tokens": 162,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 40511,
+        "total_prompt_tokens": 41433,
+        "cache_hit": true,
+        "latency_seconds": 3.326,
+        "stop_reason": "end_turn",
+        "request_id": "req_011CdPcL3wUZpgmHEvgcMrtA",
+        "input_cost_usd": 0.024865500000000002,
+        "output_cost_usd": 0.00405,
+        "total_cost_usd": 0.028915500000000004
+      },
+      "error": null
+    },
+    {
+      "turn": 6,
+      "kind": "planned",
+      "question_id": "q6-correctable-claim",
+      "prompt": "How long has Christopher been at his current employer, and where did he teach before that?",
+      "prompt_recorded_at": "2026-07-25T23:02:57+00:00",
+      "response": "Nearly eight years at Leidos QTC Health, as a Senior Instructional Designer — that figure is as of July 2026, so add time accordingly.\n\nBefore that, roughly fifteen years teaching. He taught graphic design and introductory web design at The Art Institute of California – Inland Empire, and earlier spent about three years at The Art Institute of Las Vegas while working nights as a DJ. He also taught in K–12 classrooms, so his experience spans a fairly wide range of ages and backgrounds.\n\nThat teaching stretch is the foundation for everything since, not a prelude to it. Fifteen years of watching people learn is where his conviction came from that people become capable by building and practicing, not by receiving information.",
+      "responded_at": "2026-07-25T23:03:02+00:00",
+      "metrics": {
+        "model": "claude-opus-5",
+        "input_tokens": 1082,
+        "output_tokens": 273,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 40511,
+        "total_prompt_tokens": 41593,
+        "cache_hit": true,
+        "latency_seconds": 5.232,
+        "stop_reason": "end_turn",
+        "request_id": "req_011CdPcLJ9zgMKnEmfYNQL33",
+        "input_cost_usd": 0.025665500000000004,
+        "output_cost_usd": 0.006825,
+        "total_cost_usd": 0.032490500000000005
+      },
+      "error": null
+    }
+  ],
+  "events": [
+    {
+      "at": "2026-07-25T23:02:35+00:00",
+      "event": "phase_a_started"
+    },
+    {
+      "at": "2026-07-25T23:03:02+00:00",
+      "event": "phase_a_completed"
+    }
+  ]
+}
