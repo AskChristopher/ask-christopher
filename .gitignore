@@ -1,0 +1,22 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Editors
+.vscode/
+.idea/
+
+# Python (when it lands)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node (when it lands)
+node_modules/
