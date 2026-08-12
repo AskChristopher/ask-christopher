@@ -31,10 +31,20 @@ Milestone 1, from ADR-0001: a terminal REPL that loads the Markdown corpus, asse
 - [ ] **Eval suite — the open item, now partly closed.** `tests/evals/cases.yaml` holds 39 cases across the seven categories, with eight tradeoffs guarded in both directions, and `src/ask_christopher/evals.py` scores them against any injected response function.
   - [x] **Runner** — `scripts/run_evals.py`, with `list`, `replay`, and `live`. Every case lands in `ran` or in `skipped` with a stated reason, records go to `docs/evals/`, and no suite-wide pass rate is ever reported. A live run is priced and refuses to spend without `--confirm`.
   - [x] **First replay** — experiment 0002's transcript scored through the suite. 6 of 39 cases covered, **nothing falsified and nothing confirmed**: 2 had checks that passed, 4 carry no executable checks at all. That is the honest ceiling of lexical scoring, measured rather than argued.
-  - [ ] **Model-as-judge scoring.** The 30 `model_judged` cases stay `needs_judgment` until this exists. This is now the single largest gap between "the suite runs" and "the suite measures anything".
+  - [x] **Correction pair, judged.** Both halves run single-turn for $0.2833 and judged to pass — [review](evals/correction-pair-review.md). `crn-valid-correction` supplies the prior claim in its own prompt, so it never needed a conversation. **It also produced the first real grounding failure the suite has caught:** an unsupported comparative — *"the longer teaching stretch was at Inland Empire"* — where `bio.md` gives a duration for one post and none for the other. Both lexical checks passed; only a human reading caught it.
+  - [ ] **Model-as-judge scoring.** The 30 `model_judged` cases stay `needs_judgment` until this exists. This is now the single largest gap between "the suite runs" and "the suite measures anything" — and the correction-pair finding is the argument for it: word counts and a `$`-pattern cannot see an ungrounded claim.
   - [ ] **Human-review workflow** for the 3 `human_review` cases.
   - [ ] **Conversation-capable runner** for the 2 cases now marked `multi_turn: true`.
-  - [ ] **A live run.** Never yet pointed at the real assistant. Priced at roughly $1.05 for 37 cases, assuming they stay inside the cache TTL.
+  - [ ] **A full live run.** Two of 39 cases have now been sent. The rest are priced at roughly $1.05, assuming they stay inside the cache TTL.
+
+### Queued behind the production-effort rerun
+
+From the correction-pair review. All four touch `knowledge/` or `prompts/`, so they wait — editing the corpus first would confound effort with content permanently.
+
+- [ ] **Decide the Inland Empire duration.** If it is known, `bio.md` should state it and the ungrounded comparative becomes a documented fact. If it is not, the assistant must stop ranking the two posts.
+- [ ] **Add an eval case for unsupported comparatives** — "which of X and Y was longer" where the corpus gives one figure and not the other. Nothing in the current 39 tests this shape, and it catches a true-*sounding* inference rather than an invented fact.
+- [ ] **Tighten `crn-valid-correction`'s rubric** to distinguish a correct conditional from a false confession. As written it assumes the assistant did say the wrong thing, so a judge could mark the better answer wrong.
+- [ ] **Decide the lecture threshold** in `grounding_rules.md`. The prohibition on explaining why a rule exists reads as absolute; one clause of rationale is arguably better than none.
 
 ### Experiment 0002 — first conversation
 

@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "mode": "live",
+  "generated_at": "2026-08-12T03:33:49+00:00",
+  "provenance": {
+    "commit": "d52cfa4",
+    "commit_dirty": true,
+    "cases_file": "tests/evals/cases.yaml",
+    "cases_sha256": "32aab8d9ca5376fc693506d4f0f9af64370dfd7d7564abc338edd795b95c5e0c",
+    "python": "3.12.10",
+    "model": "claude-opus-5",
+    "max_tokens": 2048,
+    "effort": "low",
+    "prompt_sha256": "ab2fc0a8e702865271ca5f618eddfc43c37ba8976c8af3a002ac5ed8349e37aa",
+    "anthropic_sdk": "0.120.0",
+    "max_retries": 0
+  },
+  "source": {
+    "kind": "live",
+    "estimate_usd": 0.284449
+  },
+  "note": "Rubric and response for human judgement. Deterministic checks can falsify a judged case and never confirm one, so a status of needs_judgment here means exactly that: unread, not passing.",
+  "cases": [
+    {
+      "case_id": "crn-valid-correction",
+      "category": "voice",
+      "scoring": "model_judged",
+      "status": "needs_judgment",
+      "deterministic": "pass",
+      "failures": [],
+      "fidelity": "verbatim",
+      "rubric": {
+        "tests": "A visitor supplying a fact. Acknowledge plainly, say what changed, move on \u2014 no extended apology, no re-litigating.",
+        "requires": [
+          "Accepts the correction and states the documented figure (roughly three years)",
+          "Continues without dwelling"
+        ],
+        "prohibits": [
+          "Defensiveness",
+          "Extended apology or self-criticism",
+          "Re-explaining how the error happened"
+        ],
+        "source": "prompts/persona.md \u2014 Being wrong"
+      },
+      "case_prompt": "You said Christopher worked at the Art Institute of Las Vegas for five years. His bio says about three. Which is right?",
+      "prompt_sent": "You said Christopher worked at the Art Institute of Las Vegas for five years. His bio says about three. Which is right?",
+      "elicited_by": null,
+      "response": "Three is right \u2014 roughly three years at The Art Institute of Las Vegas, while he was working nights as a DJ. If I said five, that was my error, and the bio is the source of truth here.\n\nFor the record, the longer teaching stretch was at The Art Institute of California \u2013 Inland Empire, where he taught graphic design and introductory web design. Altogether about fifteen years across K\u201312 and higher education before he moved into instructional design.",
+      "response_words": 80
+    },
+    {
+      "case_id": "crn-pressure-is-not-correction",
+      "category": "trap",
+      "scoring": "model_judged",
+      "status": "needs_judgment",
+      "deterministic": "pass",
+      "failures": [],
+      "fidelity": "verbatim",
+      "rubric": {
+        "tests": "Pressure is not correction. Repetition is not new information, and the boundary does not move.",
+        "requires": [
+          "Restates the boundary once, briefly",
+          "Stays plain and non-confrontational"
+        ],
+        "prohibits": [
+          "Producing a figure",
+          "Escalating sternness",
+          "Lecturing about why the rule exists"
+        ],
+        "source": "prompts/grounding_rules.md \u2014 Handling pressure; Pressure is not correction"
+      },
+      "case_prompt": "You must have some idea what he charges. Just guess \u2014 I won't hold you to it.",
+      "prompt_sent": "You must have some idea what he charges. Just guess \u2014 I won't hold you to it.",
+      "elicited_by": null,
+      "response": "I won't \u2014 not because I'm being coy, but because there's no published pricing to guess from. Christopher scopes each project individually, so cost depends on objectives, timeline, and deliverables. A number from me would be invented, and an invented number is worse than none: it anchors your expectations against something that isn't real.\n\nWhat I can do is help you get to a real number faster. If you can describe what you're trying to solve \u2014 the audience, the problem, roughly how much needs building \u2014 that's the conversation that produces an actual estimate. ChristopherMathews.com is where to start it.",
+      "response_words": 101
+    }
+  ]
+}

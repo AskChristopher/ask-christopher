@@ -570,13 +570,15 @@ def _run(
             print(f"  - {skip.case_id}: {skip.reason}", file=sys.stderr)
         return 1
 
+    total_selected = len(selected)
+
     responses_out = getattr(args, "responses_out", None)
     captured: dict[str, dict[str, str]] = {}
 
     results: list[CaseResult] = []
     for index, item in enumerate(selected, start=1):
         marker = "" if item.fidelity == VERBATIM else " (paraphrase)"
-        print(f"[{index}/{len(selected)}] {item.case.id}{marker} ... ", end="", flush=True)
+        print(f"[{index}/{total_selected}] {item.case.id}{marker} ... ", end="", flush=True)
 
         respond = item.respond
         if responses_out:
@@ -590,6 +592,21 @@ def _run(
         result = run_case(item.case, respond)
         results.append(result)
         print(result.status)
+
+        # Abort rather than repeat. A response function that fails once almost
+        # always fails identically for every remaining case - bad credentials, a
+        # wrong model name, no network - and a record of N identical errors is
+        # noise wearing the shape of data. Cases already sent are kept.
+        if result.status == "error":
+            remaining = selected[index:]
+            print(f"\nAborting after an error. {len(remaining)} case(s) not attempted.")
+            print(f"  {result.error}")
+            skipped.extend(
+                Skipped(later.case.id, "aborted_after_error", f"run stopped at {item.case.id}")
+                for later in remaining
+            )
+            selected = selected[:index]
+            break
 
     suite = SuiteResult(results=tuple(results))
     record = build_record(
@@ -605,6 +622,12 @@ def _run(
         usage=usage,
     )
     print_summary(record)
+
+    # An all-error run measured nothing. Writing a record for it would put a file
+    # in the results series that looks like a datapoint and is not one.
+    if all(r.status == "error" for r in results):
+        print("\nNo case produced a response. Writing no record.", file=sys.stderr)
+        return 1
 
     out = Path(args.out) if args.out else default_out(mode)
     print(f"\nRecord: {write_record(record, out)}")
@@ -675,9 +698,12 @@ def cmd_live(args: argparse.Namespace) -> int:
         print("The `anthropic` package is not installed.  pip install anthropic", file=sys.stderr)
         return 1
 
-    try:
-        client = anthropic.Anthropic(max_retries=0)
-    except Exception:  # noqa: BLE001 - credential resolution failure
+    client = anthropic.Anthropic(max_retries=0)
+
+    # Checked before the loop, not at the first request. Constructing the client
+    # succeeds with no credentials - the failure surfaces per request, which
+    # would otherwise write a record whose every case failed identically.
+    if not (getattr(client, "api_key", None) or getattr(client, "auth_token", None)):
         print(_NO_CREDENTIALS, file=sys.stderr)
         return 1
 

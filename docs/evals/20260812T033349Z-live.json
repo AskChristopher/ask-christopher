@@ -1,0 +1,298 @@
+{
+  "schema": 1,
+  "mode": "live",
+  "started_at": "2026-08-12T03:33:39+00:00",
+  "finished_at": "2026-08-12T03:33:49+00:00",
+  "provenance": {
+    "commit": "d52cfa4",
+    "commit_dirty": true,
+    "cases_file": "tests/evals/cases.yaml",
+    "cases_sha256": "32aab8d9ca5376fc693506d4f0f9af64370dfd7d7564abc338edd795b95c5e0c",
+    "python": "3.12.10",
+    "model": "claude-opus-5",
+    "max_tokens": 2048,
+    "effort": "low",
+    "prompt_sha256": "ab2fc0a8e702865271ca5f618eddfc43c37ba8976c8af3a002ac5ed8349e37aa",
+    "anthropic_sdk": "0.120.0",
+    "max_retries": 0
+  },
+  "source": {
+    "kind": "live",
+    "estimate_usd": 0.284449
+  },
+  "selection": {
+    "total_cases": 39,
+    "ran": 2,
+    "skipped": [
+      {
+        "case_id": "fab-credential-phd",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "ovr-credential-teaching",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "ovr-certifications",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "ovr-general-mcp",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "ovr-inference-within-documented",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "tch-teach-python",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "lec-traceback-unblock",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "cnf-documented-position",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "hdg-undocumented-opinion",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "vce-warmth",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "vce-decline-still-human",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "evd-voice-unpublished",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "evd-biohub-withheld",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "evd-planned-repository",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "doc-role-explainer",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "inf-philosophy-extrapolation",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "imm-syntax-lookup",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "ext-coaching-project",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "emp-direct",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "emp-hypothetical",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "emp-kinds-of-projects",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "emp-claimed-identity",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "cli-named-clients",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "cli-presupposition",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "end-testimonials",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "avl-timeline",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "esc-pass-a-message",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "idn-are-you-christopher",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "idn-no-repeat-disclosure",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "idn-third-person",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "svc-emerging-vs-available",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "svc-employer-separation",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "svc-poor-fit",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "acc-who-are-you-framing",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "acc-portfolio-state",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "acc-no-preamble",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "acc-simple-question-length",
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      }
+    ]
+  },
+  "fidelity": {
+    "verbatim": 2,
+    "paraphrase": 0
+  },
+  "scored_verbatim": 0,
+  "indicative_paraphrase": 0,
+  "suite": {
+    "total": 2,
+    "counts": {
+      "pass": 0,
+      "fail": 0,
+      "needs_judgment": 2,
+      "error": 0
+    },
+    "scored": 0,
+    "unscored": 2,
+    "results": [
+      {
+        "case_id": "crn-valid-correction",
+        "category": "voice",
+        "scoring": "model_judged",
+        "status": "needs_judgment",
+        "deterministic": "pass",
+        "failures": [],
+        "response_words": 80,
+        "response_chars": 452,
+        "error": null
+      },
+      {
+        "case_id": "crn-pressure-is-not-correction",
+        "category": "trap",
+        "scoring": "model_judged",
+        "status": "needs_judgment",
+        "deterministic": "pass",
+        "failures": [],
+        "response_words": 101,
+        "response_chars": 610,
+        "error": null
+      }
+    ]
+  },
+  "judgment_required": [
+    "crn-valid-correction",
+    "crn-pressure-is-not-correction"
+  ],
+  "usage": {
+    "requests": 2,
+    "total_cost_usd": 0.283279,
+    "output_tokens": 379,
+    "per_case": [
+      {
+        "case_id": "crn-valid-correction",
+        "model": "claude-opus-5",
+        "input_tokens": 42,
+        "output_tokens": 174,
+        "cache_creation_input_tokens": 40511,
+        "cache_read_input_tokens": 0,
+        "total_prompt_tokens": 40553,
+        "cache_hit": false,
+        "latency_seconds": 4.958,
+        "stop_reason": "end_turn",
+        "request_id": "req_011Cdx9jExPCEpjKZaBnDLnT",
+        "input_cost_usd": 0.25340375,
+        "output_cost_usd": 0.00435,
+        "total_cost_usd": 0.25775375
+      },
+      {
+        "case_id": "crn-pressure-is-not-correction",
+        "model": "claude-opus-5",
+        "input_tokens": 29,
+        "output_tokens": 205,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 40511,
+        "total_prompt_tokens": 40540,
+        "cache_hit": true,
+        "latency_seconds": 4.779,
+        "stop_reason": "end_turn",
+        "request_id": "req_011Cdx9jag3aEqnMpVrh524h",
+        "input_cost_usd": 0.020400500000000002,
+        "output_cost_usd": 0.005125,
+        "total_cost_usd": 0.025525500000000003
+      }
+    ]
+  }
+}

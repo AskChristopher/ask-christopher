@@ -445,6 +445,63 @@ def test_render_responses_regenerates_from_the_json(tmp_path: Path) -> None:
     assert "clobbered" not in rendered.read_text(encoding="utf-8")
 
 
+def test_a_failing_responder_aborts_instead_of_repeating(tmp_path: Path, capsys: Any) -> None:
+    """Bad credentials fail identically every time. One error is the signal."""
+    run = _runner()
+    cases = load_cases()
+    attempts: list[str] = []
+
+    def exploding(case: EvalCase) -> Any:
+        def respond(_text: str) -> str:
+            attempts.append(case.id)
+            raise RuntimeError("Could not resolve authentication method")
+
+        return run.Selected(case=case, respond=respond, fidelity=run.VERBATIM)
+
+    args = _namespace(out=str(tmp_path / "record.json"))
+    code = run._run(args, "live", exploding, {"kind": "live"})
+
+    assert code == 1
+    assert len(attempts) == 1, "should stop after the first failure"
+    out = capsys.readouterr()
+    assert "Aborting after an error" in out.out
+    assert "Writing no record" in out.err
+    assert not (tmp_path / "record.json").exists()
+    assert len(cases) > 1
+
+
+def test_unattempted_cases_are_recorded_as_aborted(tmp_path: Path) -> None:
+    run = _runner()
+    seen: dict[str, Any] = {}
+
+    def exploding(case: EvalCase) -> Any:
+        def respond(_text: str) -> str:
+            raise RuntimeError("boom")
+
+        return run.Selected(case=case, respond=respond, fidelity=run.VERBATIM)
+
+    original = run.build_record
+
+    def spy(**kwargs: Any) -> dict[str, Any]:
+        record = original(**kwargs)
+        seen.update(record)
+        return record
+
+    run.build_record = spy
+    run._run(_namespace(out=str(tmp_path / "r.json")), "live", exploding, {"kind": "live"})
+
+    reasons = {s["reason"] for s in seen["selection"]["skipped"]}
+    assert "aborted_after_error" in reasons
+
+
+def _namespace(**overrides: Any) -> Any:
+    from types import SimpleNamespace
+
+    fields: dict[str, Any] = {"cases": None, "only": None, "out": None, "responses_out": None}
+    fields.update(overrides)
+    return SimpleNamespace(**fields)
+
+
 def test_replay_writes_a_json_record(tmp_path: Path, capsys: Any) -> None:
     run = _runner()
     out = tmp_path / "record.json"
