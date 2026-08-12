@@ -375,6 +375,133 @@ def print_summary(record: dict[str, Any]) -> None:
     )
 
 
+def build_responses(
+    *,
+    mode: str,
+    record: dict[str, Any],
+    selected: list[Selected],
+    captured: dict[str, dict[str, str]],
+    suite: SuiteResult,
+) -> dict[str, Any]:
+    """The judgement packet: rubric and answer side by side, for a human to read.
+
+    Deliberately a separate artifact. The result record retains no response text,
+    because it exists to be compared across runs rather than read - and a file
+    that is both a metrics series and a transcript archive ends up serving
+    neither. Retention here is opt-in per run, via ``--responses-out``.
+    """
+    by_id = {s.case.id: s for s in selected}
+    status = {r.case_id: r for r in suite.results}
+
+    entries: list[dict[str, Any]] = []
+    for case_id, text in captured.items():
+        item = by_id[case_id]
+        result = status[case_id]
+        entries.append(
+            {
+                "case_id": case_id,
+                "category": item.case.category,
+                "scoring": item.case.scoring,
+                "status": result.status,
+                "deterministic": result.deterministic,
+                "failures": [f.as_dict() for f in result.failures],
+                "fidelity": item.fidelity,
+                "rubric": {
+                    "tests": item.case.tests,
+                    "requires": list(item.case.requires),
+                    "prohibits": list(item.case.prohibits),
+                    "source": item.case.source,
+                },
+                "case_prompt": item.case.prompt,
+                "prompt_sent": text["prompt_sent"],
+                "elicited_by": item.elicited_by,
+                "response": text["response"],
+                "response_words": result.response_words,
+            }
+        )
+
+    return {
+        "schema": RECORD_SCHEMA,
+        "mode": mode,
+        "generated_at": utc_now(),
+        "provenance": record["provenance"],
+        "source": record["source"],
+        "note": (
+            "Rubric and response for human judgement. Deterministic checks can "
+            "falsify a judged case and never confirm one, so a status of "
+            "needs_judgment here means exactly that: unread, not passing."
+        ),
+        "cases": entries,
+    }
+
+
+def render_responses(data: dict[str, Any]) -> str:
+    """Readable rendering. Generated from the JSON, never hand-edited."""
+    prov = data["provenance"]
+    lines = [
+        "# Eval responses for judgement",
+        "",
+        "> **Generated from the JSON. Do not edit.**",
+        "> Regenerate with `python scripts/run_evals.py render-responses --responses <file>`.",
+        "",
+        f"**Mode:** `{data['mode']}`  ",
+        f"**Generated:** {data['generated_at']}  ",
+        f"**Commit:** `{prov.get('commit')}`"
+        f"{' (dirty)' if prov.get('commit_dirty') else ''}  ",
+        # Live runs carry the configuration in provenance; a replay inherits it
+        # from the transcript it is replaying.
+        f"**Model:** `{prov.get('model') or data['source'].get('model', 'n/a')}` "
+        f"(effort `{prov.get('effort') or data['source'].get('effort', 'n/a')}`)  ",
+        f"**Cases:** {len(data['cases'])}",
+        "",
+        f"> {data['note']}",
+        "",
+        "---",
+        "",
+    ]
+
+    for entry in data["cases"]:
+        lines += [
+            f"## `{entry['case_id']}` - {entry['status']}",
+            "",
+            f"*{entry['rubric']['tests']}*",
+            "",
+            f"**Source:** {entry['rubric']['source']}  ",
+            f"**Scoring:** `{entry['scoring']}` | "
+            f"**checks:** `{entry['deterministic']}` | "
+            f"**words:** {entry['response_words']}",
+            "",
+            "**Requires**",
+            "",
+        ]
+        lines += [f"- {item}" for item in entry["rubric"]["requires"]] or ["- (none stated)"]
+        lines += ["", "**Prohibits**", ""]
+        lines += [f"- {item}" for item in entry["rubric"]["prohibits"]] or ["- (none stated)"]
+
+        if entry["failures"]:
+            lines += ["", "**Failed checks**", ""]
+            lines += [f"- `{f['kind']}`: {f['detail']}" for f in entry["failures"]]
+
+        lines += ["", "**Prompt**", "", "```text", entry["prompt_sent"], "```", ""]
+        if entry["fidelity"] != VERBATIM:
+            lines += [
+                f"> Elicited by different wording than the case specifies. "
+                f"Case prompt: `{entry['case_prompt']}`",
+                "",
+            ]
+        lines += ["**Response**", "", "```text", entry["response"], "```", "", "---", ""]
+
+    return "\n".join(lines) + "\n"
+
+
+def write_responses(data: dict[str, Any], out: Path) -> tuple[Path, Path]:
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    rendered = out.with_suffix(".md")
+    rendered.write_text(render_responses(data), encoding="utf-8")
+    return out, rendered
+
+
 def write_record(record: dict[str, Any], out: Path) -> Path:
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
@@ -443,11 +570,24 @@ def _run(
             print(f"  - {skip.case_id}: {skip.reason}", file=sys.stderr)
         return 1
 
+    responses_out = getattr(args, "responses_out", None)
+    captured: dict[str, dict[str, str]] = {}
+
     results: list[CaseResult] = []
     for index, item in enumerate(selected, start=1):
         marker = "" if item.fidelity == VERBATIM else " (paraphrase)"
         print(f"[{index}/{len(selected)}] {item.case.id}{marker} ... ", end="", flush=True)
-        result = run_case(item.case, item.respond)
+
+        respond = item.respond
+        if responses_out:
+            # Wrapped here rather than inside run_case, so evals.py keeps its
+            # guarantee that a result record carries no response text.
+            def respond(text: str, _id: str = item.case.id, _inner: Any = item.respond) -> str:
+                reply = _inner(text)
+                captured[_id] = {"prompt_sent": text, "response": reply}
+                return reply
+
+        result = run_case(item.case, respond)
         results.append(result)
         print(result.status)
 
@@ -468,7 +608,24 @@ def _run(
 
     out = Path(args.out) if args.out else default_out(mode)
     print(f"\nRecord: {write_record(record, out)}")
+
+    if responses_out:
+        data = build_responses(
+            mode=mode, record=record, selected=selected, captured=captured, suite=suite
+        )
+        written, rendered = write_responses(data, Path(responses_out))
+        print(f"Responses: {written}\nRendered:  {rendered}")
+
     return 1 if suite.failures else 0
+
+
+def cmd_render_responses(args: argparse.Namespace) -> int:
+    path = Path(args.responses)
+    data = json.loads(path.read_text(encoding="utf-8"))
+    rendered = path.with_suffix(".md")
+    rendered.write_text(render_responses(data), encoding="utf-8")
+    print(f"Rendered: {rendered}")
+    return 0
 
 
 def cmd_replay(args: argparse.Namespace) -> int:
@@ -552,16 +709,24 @@ def main(argv: list[str] | None = None) -> int:
     listing = sub.add_parser("list", help="describe the suite; sends nothing")
     listing.set_defaults(func=cmd_list)
 
+    responses_help = "also write rubric-and-response pairs here, for human judgement"
+
     replay = sub.add_parser("replay", help="score responses already recorded by an experiment")
     replay.add_argument("--transcript", required=True, help="path to a transcript.json")
     replay.add_argument("--only", help="comma-separated case ids")
     replay.add_argument("--out", help="where to write the JSON record")
+    replay.add_argument("--responses-out", help=responses_help)
     replay.set_defaults(func=cmd_replay)
+
+    rendering = sub.add_parser("render-responses", help="regenerate the Markdown from the JSON")
+    rendering.add_argument("--responses", required=True, help="path to a responses JSON file")
+    rendering.set_defaults(func=cmd_render_responses)
 
     live = sub.add_parser("live", help="send the suite to the API; costs money")
     live.add_argument("--confirm", action="store_true", help="authorise the spend")
     live.add_argument("--only", help="comma-separated case ids")
     live.add_argument("--out", help="where to write the JSON record")
+    live.add_argument("--responses-out", help=responses_help)
     live.add_argument("--model", default="claude-opus-5")
     live.add_argument("--max-tokens", type=int, default=2048)
     live.add_argument("--effort", default="low")

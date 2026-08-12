@@ -331,6 +331,120 @@ def test_an_unknown_only_id_is_rejected_before_anything_runs(capsys: Any) -> Non
     assert "Unknown case id" in capsys.readouterr().err
 
 
+def test_responses_are_retained_only_in_their_own_artifact(tmp_path: Path) -> None:
+    """The result record is a metrics series; the responses file is the transcript.
+
+    A file that tries to be both serves neither, so retention is opt-in and lands
+    somewhere else entirely.
+    """
+    run = _runner()
+    record_path = tmp_path / "record.json"
+    responses_path = tmp_path / "responses.json"
+
+    run.main(
+        [
+            "replay",
+            "--transcript",
+            str(TRANSCRIPT),
+            "--only",
+            "hdg-undocumented-opinion",
+            "--out",
+            str(record_path),
+            "--responses-out",
+            str(responses_path),
+        ]
+    )
+
+    record = record_path.read_text(encoding="utf-8")
+    responses = json.loads(responses_path.read_text(encoding="utf-8"))
+
+    assert "worse than no answer" not in record
+    assert "worse than no answer" in responses["cases"][0]["response"]
+
+
+def test_no_responses_file_is_written_unless_asked(tmp_path: Path) -> None:
+    run = _runner()
+    out = tmp_path / "record.json"
+
+    run.main(["replay", "--transcript", str(TRANSCRIPT), "--out", str(out)])
+
+    assert list(tmp_path.iterdir()) == [out]
+
+
+def test_responses_artifact_carries_the_rubric_beside_the_answer(tmp_path: Path) -> None:
+    run = _runner()
+    responses_path = tmp_path / "responses.json"
+
+    run.main(
+        [
+            "replay",
+            "--transcript",
+            str(TRANSCRIPT),
+            "--only",
+            "vce-decline-still-human",
+            "--out",
+            str(tmp_path / "r.json"),
+            "--responses-out",
+            str(responses_path),
+        ]
+    )
+
+    entry = json.loads(responses_path.read_text(encoding="utf-8"))["cases"][0]
+
+    assert entry["rubric"]["requires"]
+    assert entry["rubric"]["prohibits"]
+    assert entry["rubric"]["source"]
+    assert entry["status"] == "needs_judgment"
+
+
+def test_rendered_responses_flag_a_paraphrased_prompt(tmp_path: Path) -> None:
+    run = _runner()
+    responses_path = tmp_path / "responses.json"
+
+    run.main(
+        [
+            "replay",
+            "--transcript",
+            str(TRANSCRIPT),
+            "--only",
+            "doc-role-explainer",
+            "--out",
+            str(tmp_path / "r.json"),
+            "--responses-out",
+            str(responses_path),
+        ]
+    )
+
+    rendered = (tmp_path / "responses.md").read_text(encoding="utf-8")
+
+    assert "Do not edit" in rendered
+    assert "Elicited by different wording" in rendered
+    assert "unread, not passing" in rendered
+
+
+def test_render_responses_regenerates_from_the_json(tmp_path: Path) -> None:
+    run = _runner()
+    responses_path = tmp_path / "responses.json"
+    run.main(
+        [
+            "replay",
+            "--transcript",
+            str(TRANSCRIPT),
+            "--only",
+            "hdg-undocumented-opinion",
+            "--out",
+            str(tmp_path / "r.json"),
+            "--responses-out",
+            str(responses_path),
+        ]
+    )
+    rendered = tmp_path / "responses.md"
+    rendered.write_text("clobbered", encoding="utf-8")
+
+    assert run.main(["render-responses", "--responses", str(responses_path)]) == 0
+    assert "clobbered" not in rendered.read_text(encoding="utf-8")
+
+
 def test_replay_writes_a_json_record(tmp_path: Path, capsys: Any) -> None:
     run = _runner()
     out = tmp_path / "record.json"
