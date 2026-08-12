@@ -383,12 +383,90 @@ def test_markdown_reports_cache_reads_and_writes_distinctly(prompt: Any) -> None
     assert "cache read 40,511" in rendered
 
 
+def test_markdown_reports_both_commits_when_the_phases_straddle_two(prompt: Any) -> None:
+    """A two-phase run at two revisions must not read as one sitting."""
+    transcript, _ = _six_turn_transcript(prompt)
+    transcript.provenance["commit"] = "aaaaaaa"
+    transcript.provenance["phase_b_commit"] = "bbbbbbb"
+    transcript.provenance["allow_commit_drift"] = True
+    rendered = render_markdown(transcript)
+
+    assert "**Commit (Phase A):** `aaaaaaa`" in rendered
+    assert "**Commit (Phase B):** `bbbbbbb`" in rendered
+    assert "--allow-commit-drift" in rendered
+
+
+def test_markdown_collapses_the_commit_line_when_both_phases_match(prompt: Any) -> None:
+    transcript, _ = _six_turn_transcript(prompt)
+    transcript.provenance["commit"] = "aaaaaaa"
+    transcript.provenance["phase_b_commit"] = "aaaaaaa"
+    rendered = render_markdown(transcript)
+
+    assert "**Commit:** `aaaaaaa` — both phases" in rendered
+    assert "Phase A):**" not in rendered
+
+
+def test_markdown_omits_the_phase_b_commit_before_phase_b_runs(prompt: Any) -> None:
+    transcript, _ = _six_turn_transcript(prompt)
+    transcript.provenance["commit"] = "aaaaaaa"
+    rendered = render_markdown(transcript)
+
+    assert "**Commit:** `aaaaaaa`  " in rendered
+    assert "both phases" not in rendered
+
+
+def test_markdown_surfaces_a_provenance_amendment(prompt: Any) -> None:
+    """A value added afterwards must not pass for one captured during the run."""
+    transcript, _ = _six_turn_transcript(prompt)
+    transcript.provenance["provenance_amendment"] = "phase_b_commit added later, from git."
+    rendered = render_markdown(transcript)
+
+    assert "Provenance amended after the run" in rendered
+    assert "phase_b_commit added later, from git." in rendered
+
+
+def test_markdown_says_nothing_about_amendment_when_there_is_none(prompt: Any) -> None:
+    transcript, _ = _six_turn_transcript(prompt)
+
+    assert "amended" not in render_markdown(transcript)
+
+
+def test_phase_b_provenance_records_its_own_commit_and_drift(prompt: Any) -> None:
+    module = _script_module()
+
+    recorded = module.phase_b_provenance("bbbbbbb", False, True)
+
+    assert recorded == {
+        "phase_b_commit": "bbbbbbb",
+        "phase_b_commit_dirty": False,
+        "allow_commit_drift": True,
+    }
+
+
+def test_phase_b_provenance_leaves_phase_a_fields_alone(prompt: Any) -> None:
+    """update() must add Phase B's conditions, never restate Phase A's."""
+    module = _script_module()
+    transcript = _valid_transcript(prompt)
+    before = dict(transcript.provenance)
+
+    transcript.provenance.update(module.phase_b_provenance("bbbbbbb", False, True))
+
+    assert transcript.provenance["commit"] == before["commit"]
+    assert transcript.provenance["prompt_sha256"] == before["prompt_sha256"]
+    assert set(transcript.provenance) - set(before) == {
+        "phase_b_commit",
+        "phase_b_commit_dirty",
+        "allow_commit_drift",
+    }
+
+
 # --------------------------------------------------------------------------
 # Phase B guards, exercised through the script
 # --------------------------------------------------------------------------
 
 
-def _script_verify(transcript: Transcript, prompt: Any, **overrides: Any) -> list[str]:
+def _script_module() -> Any:
+    """The harness script, loaded by path - it is not an importable package."""
     import importlib.util
 
     root = Path(__file__).resolve().parents[1]
@@ -398,6 +476,11 @@ def _script_verify(transcript: Transcript, prompt: Any, **overrides: Any) -> lis
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     spec.loader.exec_module(module)
+    return module
+
+
+def _script_verify(transcript: Transcript, prompt: Any, **overrides: Any) -> list[str]:
+    module = _script_module()
 
     fields: dict[str, Any] = {
         "model": DEFAULT_MODEL,

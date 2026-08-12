@@ -5,10 +5,13 @@
 
 **Run id:** `default`  
 **Status:** `complete`  
-**Commit:** `d41a8ad`  
+**Commit (Phase A):** `d41a8ad`  
+**Commit (Phase B):** `8e3a243` — recorded with `--allow-commit-drift`  
 **Model:** `claude-opus-5` (max_tokens 2048, effort `low`)  
 **Prompt SHA-256:** `ab2fc0a8e702865271ca5f618eddfc43c37ba8976c8af3a002ac5ed8349e37aa`  
 **Prefix tokens (measured):** 40,511
+
+> ⚠️ **Provenance amended after the run.** Added 2026-08-12, after the run, by the change that introduced these fields to the harness. `phase_b_commit` and `allow_commit_drift` are reconstructed from durable evidence: Phase B could not have passed its own commit check unless HEAD had moved and `--allow-commit-drift` was passed, and git history fixes that revision at `8e3a243`. `phase_b_commit_dirty` is null because the harness did not capture it and no durable artifact attests it. No turn, prompt, response, or metric was touched.
 
 ---
 

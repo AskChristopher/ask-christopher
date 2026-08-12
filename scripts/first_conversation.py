@@ -196,6 +196,21 @@ def _measured_prefix_tokens(transcript: Transcript) -> int | None:
 # --------------------------------------------------------------------------
 
 
+def phase_b_provenance(commit: str, dirty: bool, allow_drift: bool) -> dict[str, Any]:
+    """Phase B's own run conditions.
+
+    Separate from Phase A's ``commit`` because a two-phase run can straddle two
+    revisions: the correction is a human decision, and the tree moves while it
+    is being made. Recording only the first phase leaves no field saying so, and
+    the fact then survives only in whatever prose someone happened to write.
+    """
+    return {
+        "phase_b_commit": commit,
+        "phase_b_commit_dirty": dirty,
+        "allow_commit_drift": bool(allow_drift),
+    }
+
+
 def phase_b(args: argparse.Namespace) -> int:
     path = transcript_path(args.run_id)
     try:
@@ -225,6 +240,7 @@ def phase_b(args: argparse.Namespace) -> int:
             return 1
         review = {"warranted": True, "reason": args.reason, "decided_at": utc_now()}
     transcript.correction_review = review
+    transcript.provenance.update(phase_b_provenance(commit, dirty, args.allow_commit_drift))
 
     # Reconstructed from the immutable record - no live object spans the gap.
     session = Session(

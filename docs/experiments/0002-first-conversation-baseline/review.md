@@ -120,7 +120,7 @@ Read these before citing any number above.
 - **n = 1 per turn.** No resampling, so nothing here separates the assistant's behaviour from one sample of it.
 - **No scored evaluation.** Prose judgement by the corpus author. The 30 `model_judged` cases remain unscored because no judge exists yet.
 - **Correction handling untested** in both directions.
-- **A provenance gap.** The artifact reports `commit: d41a8ad` with no field recording that Phase B ran at `8e3a243` with drift allowed; it survives only inside the correction-review reason, which is the wrong home for it. Fix filed on the roadmap: add `phase_b_commit` and `allow_commit_drift` to the provenance block.
+- ~~**A provenance gap.**~~ **Closed.** The artifact reported `commit: d41a8ad` alone, with the fact that Phase B ran at `8e3a243` with drift allowed surviving only inside the correction-review reason. The harness now records `phase_b_commit`, `phase_b_commit_dirty`, and `allow_commit_drift`, and the rendering reports both phases' commits when they differ. This run's provenance was amended rather than rewritten: the two reconstructible fields are filled from durable evidence, `phase_b_commit_dirty` is left null because nothing durable attests it, and a `provenance_amendment` note renders above the transcript so an added value is never mistaken for a captured one.
 
 ## Notes
 

@@ -17,7 +17,11 @@
     "python": "3.12.10",
     "started_at": "2026-07-25T23:02:35+00:00",
     "prefix_tokens_measured": 40511,
-    "completed_at": "2026-08-12T02:15:19+00:00"
+    "completed_at": "2026-08-12T02:15:19+00:00",
+    "phase_b_commit": "8e3a243",
+    "phase_b_commit_dirty": null,
+    "allow_commit_drift": true,
+    "provenance_amendment": "Added 2026-08-12, after the run, by the change that introduced these fields to the harness. `phase_b_commit` and `allow_commit_drift` are reconstructed from durable evidence: Phase B could not have passed its own commit check unless HEAD had moved and `--allow-commit-drift` was passed, and git history fixes that revision at `8e3a243`. `phase_b_commit_dirty` is null because the harness did not capture it and no durable artifact attests it. No turn, prompt, response, or metric was touched."
   },
   "question_set": {
     "version": 1,

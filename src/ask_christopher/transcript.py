@@ -368,6 +368,27 @@ def reconstruct_messages(turns: Iterable[TurnRecord]) -> list[dict[str, str]]:
 # --------------------------------------------------------------------------
 
 
+def _commit_lines(prov: dict[str, Any]) -> list[str]:
+    """One commit field cannot describe a two-phase run.
+
+    Phase B can legitimately run at a later revision — the substantive guard is
+    the re-derived prompt hash, not the commit. Reporting only Phase A's commit
+    makes the artifact look like it was recorded in one sitting at one revision,
+    which is the gap this exists to close.
+    """
+    phase_a = prov.get("commit", "?")
+    phase_b = prov.get("phase_b_commit")
+    if phase_b is None:
+        return [f"**Commit:** `{phase_a}`  "]
+    if phase_b == phase_a:
+        return [f"**Commit:** `{phase_a}` — both phases  "]
+    drift = " — recorded with `--allow-commit-drift`" if prov.get("allow_commit_drift") else ""
+    return [
+        f"**Commit (Phase A):** `{phase_a}`  ",
+        f"**Commit (Phase B):** `{phase_b}`{drift}  ",
+    ]
+
+
 def render_markdown(transcript: Transcript) -> str:
     """Readable rendering. Generated from the JSON, never hand-edited."""
     prov = transcript.provenance
@@ -379,15 +400,21 @@ def render_markdown(transcript: Transcript) -> str:
         "",
         f"**Run id:** `{transcript.run_id}`  ",
         f"**Status:** `{transcript.status}`  ",
-        f"**Commit:** `{prov.get('commit', '?')}`  ",
+        *_commit_lines(prov),
         f"**Model:** `{prov.get('model', '?')}` "
         f"(max_tokens {prov.get('max_tokens', '?')}, effort `{prov.get('effort', '?')}`)  ",
         f"**Prompt SHA-256:** `{prov.get('prompt_sha256', '?')}`  ",
         f"**Prefix tokens (measured):** {_fmt(prov.get('prefix_tokens_measured'))}",
         "",
-        "---",
-        "",
     ]
+
+    # Surfaced rather than buried: a reader must not mistake a value added
+    # afterwards for one the harness captured while the run was happening.
+    amendment = prov.get("provenance_amendment")
+    if amendment:
+        lines += [f"> ⚠️ **Provenance amended after the run.** {amendment}", ""]
+
+    lines += ["---", ""]
 
     review = transcript.correction_review
     if review is not None:
