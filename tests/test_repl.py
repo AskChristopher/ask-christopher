@@ -435,6 +435,7 @@ def test_loop_survives_a_failed_turn_and_continues() -> None:
         "src/ask_christopher/repl.py",
         "scripts/cache_experiment.py",
         "scripts/first_conversation.py",
+        "scripts/run_evals.py",
     ],
 )
 def test_console_producing_sources_are_pure_ascii(relative: str) -> None:

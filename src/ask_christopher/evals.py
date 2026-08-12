@@ -79,6 +79,17 @@ _CHECK_KEYS = frozenset(
 
 _REQUIRED_FIELDS = ("id", "category", "prompt", "tests", "source", "scoring")
 
+#: Every field a case may carry. Unknown keys are rejected rather than ignored:
+#: a mistyped field name is a check nobody is running while the suite still
+#: reports green, which is the same failure mode a dropped case would be.
+_CASE_KEYS = frozenset(_REQUIRED_FIELDS) | {
+    "requires",
+    "prohibits",
+    "pair",
+    "checks",
+    "multi_turn",
+}
+
 
 @dataclass(frozen=True)
 class Checks:
@@ -121,6 +132,10 @@ class EvalCase:
     prohibits: tuple[str, ...] = ()
     pair: str | None = None
     checks: Checks = field(default_factory=Checks)
+    #: Needs a conversation, not a prompt. Either the case describes a sequence
+    #: in prose, or what it measures only becomes visible across turns. A
+    #: single-turn runner must skip these and say so rather than send the prose.
+    multi_turn: bool = False
 
     @property
     def is_deterministic(self) -> bool:
@@ -257,6 +272,13 @@ def _build_case(entry: Any, index: int) -> EvalCase:
     if isinstance(case_id, str) and case_id.strip():
         where = f"case '{case_id}'"
 
+    unknown = set(entry) - _CASE_KEYS
+    if unknown:
+        raise EvalCaseError(
+            f"{where}: unknown field(s) {sorted(unknown)} "
+            f"(expected any of {sorted(_CASE_KEYS)})"
+        )
+
     for name in _REQUIRED_FIELDS:
         value = entry.get(name)
         if not isinstance(value, str) or not value.strip():
@@ -279,6 +301,10 @@ def _build_case(entry: Any, index: int) -> EvalCase:
     if pair is not None and (not isinstance(pair, str) or not pair.strip()):
         raise EvalCaseError(f"{where}: 'pair' must be a non-empty string when present")
 
+    multi_turn = entry.get("multi_turn", False)
+    if not isinstance(multi_turn, bool):
+        raise EvalCaseError(f"{where}: 'multi_turn' must be true or false when present")
+
     checks = _build_checks(entry.get("checks"), where)
 
     # A deterministic case with no checks can never fail, which would quietly
@@ -300,6 +326,7 @@ def _build_case(entry: Any, index: int) -> EvalCase:
         prohibits=_string_tuple(entry.get("prohibits"), where, "prohibits"),
         pair=pair,
         checks=checks,
+        multi_turn=multi_turn,
     )
 
 

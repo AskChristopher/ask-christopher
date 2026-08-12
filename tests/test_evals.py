@@ -410,12 +410,59 @@ def test_result_record_carries_no_response_text() -> None:
 
 
 # --------------------------------------------------------------------------
+# multi_turn, and the unknown-field guard that makes it trustworthy
+# --------------------------------------------------------------------------
+
+
+def test_multi_turn_defaults_to_false(tmp_path: Path) -> None:
+    assert load_cases(_write(tmp_path, MINIMAL_CASE))[0].multi_turn is False
+
+
+def test_multi_turn_is_read_from_the_case_file(tmp_path: Path) -> None:
+    path = _write(tmp_path, MINIMAL_CASE + "    multi_turn: true\n")
+
+    assert load_cases(path)[0].multi_turn is True
+
+
+def test_multi_turn_must_be_boolean(tmp_path: Path) -> None:
+    path = _write(tmp_path, MINIMAL_CASE + '    multi_turn: "yes"\n')
+
+    with pytest.raises(EvalCaseError, match="must be true or false"):
+        load_cases(path)
+
+
+def test_unknown_case_field_is_rejected(tmp_path: Path) -> None:
+    """A mistyped field is a check nobody runs while the suite still reports green.
+
+    The same failure mode as a silently dropped case, so it fails the same way.
+    """
+    path = _write(tmp_path, MINIMAL_CASE + "    multiturn: true\n")
+
+    with pytest.raises(EvalCaseError, match="unknown field"):
+        load_cases(path)
+
+
+def test_the_unknown_field_guard_names_what_was_expected(tmp_path: Path) -> None:
+    path = _write(tmp_path, MINIMAL_CASE + "    prohibitions: []\n")
+
+    with pytest.raises(EvalCaseError, match="prohibits"):
+        load_cases(path)
+
+
+# --------------------------------------------------------------------------
 # The real suite
 # --------------------------------------------------------------------------
 
 
 def test_real_suite_loads_and_validates() -> None:
     assert len(load_cases()) > 0
+
+
+def test_real_suite_marks_exactly_the_cases_a_single_prompt_cannot_measure() -> None:
+    """Both are prose about a sequence. Sending the prose would measure nothing."""
+    multi = {c.id for c in load_cases() if c.multi_turn}
+
+    assert multi == {"idn-no-repeat-disclosure", "ext-coaching-project"}
 
 
 def test_real_suite_ids_are_unique_and_stable_looking() -> None:

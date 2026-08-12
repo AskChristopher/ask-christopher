@@ -25,7 +25,11 @@ ADR-0001 scopes the Python choice to **Milestone 1 only**. It explicitly does no
 ## Commands
 
 ```bash
-python -m pytest -q                              # whole suite, offline, no credentials, ~1s
+python -m pytest -q                              # whole suite, offline, no credentials, ~2s
+python scripts/run_evals.py list                 # describe the eval suite, send nothing
+python scripts/run_evals.py replay --transcript docs/experiments/.../transcript.json
+python scripts/run_evals.py live                 # price a live eval run, send nothing
+python scripts/run_evals.py live --confirm       # send it (live API)
 python -m ask_christopher.repl [--diagnostics]   # interactive session (live API)
 python scripts/cache_experiment.py               # experiment 0001 (live API)
 python scripts/first_conversation.py phase-a     # experiment 0002, turns 1-6

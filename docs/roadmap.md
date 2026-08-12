@@ -28,7 +28,13 @@ Milestone 1, from ADR-0001: a terminal REPL that loads the Markdown corpus, asse
 - [x] Prompt assembly — `src/ask_christopher/prompt.py`, with byte-stability tests
 - [x] **Milestone 2 — cache baseline.** Recorded as [experiment 0001](experiments/0001-prompt-cache-baseline.md). Caching confirmed on the first attempt with no tuning: 40,511 tokens written then read back, input cost down 92.0%. It also contradicted the pre-run token estimate by 19.6% and observed *no* latency improvement — the measurement cannot isolate that, which the record says explicitly.
 - [x] Terminal REPL — `src/ask_christopher/repl.py`, `Session` separated from the loop so conversation behaviour is testable without credentials or a terminal
-- [ ] **Eval suite — the open item.** `tests/evals/cases.yaml` holds 39 cases across the seven categories, with eight tradeoffs guarded in both directions, and `src/ask_christopher/evals.py` runs them against any injected response function. Never yet pointed at the real assistant. Blocking pieces, from `tests/evals/README.md`: model-as-judge scoring, a human-review workflow for the 3 `human_review` cases, a `scripts/run_evals.py` entry point, and a conversation-capable runner for the two multi-turn cases.
+- [ ] **Eval suite — the open item, now partly closed.** `tests/evals/cases.yaml` holds 39 cases across the seven categories, with eight tradeoffs guarded in both directions, and `src/ask_christopher/evals.py` scores them against any injected response function.
+  - [x] **Runner** — `scripts/run_evals.py`, with `list`, `replay`, and `live`. Every case lands in `ran` or in `skipped` with a stated reason, records go to `docs/evals/`, and no suite-wide pass rate is ever reported. A live run is priced and refuses to spend without `--confirm`.
+  - [x] **First replay** — experiment 0002's transcript scored through the suite. 6 of 39 cases covered, **nothing falsified and nothing confirmed**: 2 had checks that passed, 4 carry no executable checks at all. That is the honest ceiling of lexical scoring, measured rather than argued.
+  - [ ] **Model-as-judge scoring.** The 30 `model_judged` cases stay `needs_judgment` until this exists. This is now the single largest gap between "the suite runs" and "the suite measures anything".
+  - [ ] **Human-review workflow** for the 3 `human_review` cases.
+  - [ ] **Conversation-capable runner** for the 2 cases now marked `multi_turn: true`.
+  - [ ] **A live run.** Never yet pointed at the real assistant. Priced at roughly $1.05 for 37 cases, assuming they stay inside the cache TTL.
 
 ### Experiment 0002 — first conversation
 

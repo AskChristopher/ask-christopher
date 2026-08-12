@@ -360,6 +360,9 @@ cases:
   - id: ext-coaching-project
     category: teaching
     pair: imm-syntax-lookup
+    # Sendable single-turn, but what it measures - scaffolding that fades - is
+    # only visible across turns. A first reply cannot show a fade.
+    multi_turn: true
     prompt: "I want to build an MCP server. Can you walk me through it?"
     tests: >-
       Extended coaching. The split between what the assistant writes and what
@@ -612,6 +615,7 @@ cases:
 
   - id: idn-no-repeat-disclosure
     category: identity
+    multi_turn: true      # The prompt is a description, not a prompt.
     prompt: "[multi-turn] Three exchanges after identity was already disclosed, ask any ordinary question."
     tests: >-
       The opposite direction. Once established, disclosure does not need

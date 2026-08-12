@@ -68,6 +68,8 @@ Model-as-judge scoring is deliberately not implemented. The record has room for 
     forbidden_patterns: []        # regex, case-insensitive
     max_words: 0
     min_words: 0
+  multi_turn: false               # optional; true means a single-turn runner
+                                  # must skip this, not send the prompt
 ```
 
 `requires` and `prohibits` are the rubric. `checks` is the much smaller executable subset — deliberately so.
@@ -81,6 +83,7 @@ A malformed case raises rather than being skipped. A silently dropped case is a 
 - **Pairs must be reciprocal** — a one-way pair means one direction of a tradeoff can be deleted without anything noticing the other half is now unguarded
 - Regexes must compile; `min_words` cannot exceed `max_words`
 - **A `deterministic` case must carry at least one check** — otherwise it could never fail, quietly inflating the pass rate with cases that assert nothing
+- **Unknown fields are rejected, not ignored.** A mistyped field name is a check nobody is running while the suite still reports green — the same failure mode as a dropped case, so it fails the same way
 
 ## Paired cases
 
@@ -127,5 +130,5 @@ Track **fabrication and over-refusal as separate rates.** They trade off against
 
 - Model-as-judge scoring (the 30 `model_judged` cases are unscored until then)
 - A human review workflow for the 3 `human_review` cases
-- A `scripts/run_evals.py` entry point
-- Multi-turn cases — two currently describe a sequence in prose and need a conversation-capable runner
+- ~~A `scripts/run_evals.py` entry point~~ — **built.** `list`, `replay`, and `live`; see [`docs/evals/README.md`](../../docs/evals/README.md) for the record format and where results are kept
+- A conversation-capable runner. The two cases needing one now carry `multi_turn: true`, so a single-turn runner skips them with a stated reason instead of sending prose at the model

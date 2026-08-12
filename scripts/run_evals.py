@@ -1,0 +1,575 @@
+"""Eval suite runner - the entry point tests/evals/README.md listed as missing.
+
+    python scripts/run_evals.py list
+    python scripts/run_evals.py replay --transcript docs/experiments/0002-.../transcript.json
+    python scripts/run_evals.py live --confirm
+
+Three response sources, one scoring path. ``list`` sends nothing and reports what
+the suite contains. ``replay`` scores responses an experiment already recorded.
+``live`` sends the suite to the API and **costs real money**, so it prices the run
+and refuses to spend without ``--confirm``.
+
+Two rules govern the output, both inherited from ``evals.py``:
+
+**Deterministic checks can falsify a judged case. They can never confirm one.**
+So this runner never prints a suite-wide pass rate. Only 6 of 39 cases are
+scorable by lexical checks at all; a percentage over the other 33 would be a
+number that measures nothing, which is worse than no number.
+
+**Every case lands in exactly one bucket** - ran, or skipped with a stated
+reason. A case that quietly disappears is a behaviour nobody is measuring while
+the summary still reads as complete.
+
+Replay carries one caveat the record makes explicit. The experiment's wording and
+a case's wording are usually not identical - only 2 of the 7 linked cases match
+verbatim - so a paraphrase-sourced result is evidence about the assistant, not a
+verdict on the case as written. The two are counted separately and never summed.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import subprocess
+import sys
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Callable
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+
+from ask_christopher.evals import (  # noqa: E402
+    CaseResult,
+    EvalCase,
+    SuiteResult,
+    default_cases_path,
+    load_cases,
+    run_case,
+)
+
+RECORD_SCHEMA = 1
+
+#: Measured, not estimated: experiments 0001 and 0002 both reported exactly this
+#: prefix. Used only to price a live run before it is authorised.
+PREFIX_TOKENS = 40_511
+
+#: List pricing for claude-opus-5, per token.
+_IN, _OUT = 5.0 / 1e6, 25.0 / 1e6
+_WRITE_MULTIPLIER, _READ_MULTIPLIER = 1.25, 0.1
+
+#: Midpoint of the 151-285 output range observed across experiment 0002.
+_TYPICAL_OUTPUT = 220
+
+_NO_CREDENTIALS = """
+No credentials found. A live run makes real, billed API calls.
+
+    export ANTHROPIC_API_KEY=...     or     ant auth login
+"""
+
+
+# --------------------------------------------------------------------------
+# Provenance
+# --------------------------------------------------------------------------
+
+
+def utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def git_commit() -> tuple[str, bool]:
+    # Duplicated from first_conversation.py rather than shared through the
+    # package: git plumbing is experiment tooling, and the shipped package has
+    # no business knowing what a commit is.
+    def run(*args: str) -> str:
+        return subprocess.run(
+            ["git", *args], capture_output=True, text=True, check=True
+        ).stdout.strip()
+
+    try:
+        return run("rev-parse", "--short", "HEAD"), bool(run("status", "--porcelain"))
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return "unknown", True
+
+
+def cases_fingerprint(path: Path) -> str:
+    import hashlib
+
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+# --------------------------------------------------------------------------
+# Selection - the bookkeeping that stops a case disappearing
+# --------------------------------------------------------------------------
+
+VERBATIM = "verbatim"
+PARAPHRASE = "paraphrase"
+
+
+@dataclass(frozen=True)
+class Selected:
+    case: EvalCase
+    respond: Callable[[str], str]
+    fidelity: str
+    #: Present for replay: the wording that actually elicited the response.
+    elicited_by: str | None = None
+
+
+@dataclass(frozen=True)
+class Skipped:
+    case_id: str
+    reason: str
+    detail: str = ""
+
+    def as_dict(self) -> dict[str, str]:
+        return {"case_id": self.case_id, "reason": self.reason, "detail": self.detail}
+
+
+def select(
+    cases: tuple[EvalCase, ...],
+    responder: Callable[[EvalCase], Selected | Skipped],
+    only: frozenset[str] | None,
+) -> tuple[list[Selected], list[Skipped]]:
+    """Partition every case into exactly one of run or skipped."""
+    selected: list[Selected] = []
+    skipped: list[Skipped] = []
+
+    for case in cases:
+        if only is not None and case.id not in only:
+            skipped.append(Skipped(case.id, "not_selected", "excluded by --only"))
+            continue
+        if case.multi_turn:
+            skipped.append(
+                Skipped(
+                    case.id,
+                    "multi_turn",
+                    "needs a conversation-capable runner; a single prompt cannot measure it",
+                )
+            )
+            continue
+        outcome = responder(case)
+        if isinstance(outcome, Skipped):
+            skipped.append(outcome)
+        else:
+            selected.append(outcome)
+
+    return selected, skipped
+
+
+# --------------------------------------------------------------------------
+# Response sources
+# --------------------------------------------------------------------------
+
+
+def replay_responder(transcript_path: Path) -> Callable[[EvalCase], Selected | Skipped]:
+    """Serve responses an experiment already recorded, keyed by eval_case id.
+
+    The link from a turn to a case lives in the experiment's ``questions.yaml``,
+    not in the prompt text, because the two wordings usually differ. Fidelity is
+    recorded per case so a paraphrase-sourced result is never read as a verdict
+    on the case as written.
+    """
+    from ask_christopher.transcript import Transcript, load_question_set
+
+    transcript = Transcript.load(transcript_path)
+    questions = load_question_set(transcript_path.parent / "questions.yaml")
+
+    recorded: dict[int, str] = {
+        record.turn: record.response
+        for record in transcript.turns
+        if record.response is not None
+    }
+    asked: dict[int, str] = {
+        record.turn: record.prompt for record in transcript.turns if record.prompt is not None
+    }
+
+    by_case: dict[str, tuple[str, str]] = {}
+    for planned in questions.turns:
+        if planned.eval_case is None or planned.turn not in recorded:
+            continue
+        by_case[planned.eval_case] = (recorded[planned.turn], asked[planned.turn])
+
+    def responder(case: EvalCase) -> Selected | Skipped:
+        found = by_case.get(case.id)
+        if found is None:
+            return Skipped(
+                case.id,
+                "no_recorded_response",
+                f"{transcript_path.name} has no turn linked to this case",
+            )
+        response, asked_text = found
+        fidelity = VERBATIM if asked_text.strip() == case.prompt.strip() else PARAPHRASE
+        return Selected(
+            case=case,
+            respond=lambda _prompt, text=response: text,
+            fidelity=fidelity,
+            elicited_by=asked_text,
+        )
+
+    return responder
+
+
+def live_responder(
+    client: Any, prompt: Any, model: str, max_tokens: int, effort: str, usage: list[dict[str, Any]]
+) -> Callable[[EvalCase], Selected | Skipped]:
+    """Send each case as its own conversation.
+
+    A fresh ``Session`` per case, all sharing one assembled prompt object. Fresh
+    because cases are independent and history would leak one case's framing into
+    the next; shared prompt because that keeps the cached prefix byte-identical,
+    so only the first case pays a cache write.
+    """
+    from ask_christopher.repl import Session
+
+    def responder(case: EvalCase) -> Selected | Skipped:
+        def respond(text: str) -> str:
+            session = Session(
+                client=client, prompt=prompt, model=model, max_tokens=max_tokens, effort=effort
+            )
+            turn = session.send(text)
+            usage.append({"case_id": case.id, **turn.metrics.as_dict()})
+            return turn.reply
+
+        return Selected(case=case, respond=respond, fidelity=VERBATIM)
+
+    return responder
+
+
+# --------------------------------------------------------------------------
+# Reporting
+# --------------------------------------------------------------------------
+
+
+def estimate_live_cost(case_count: int) -> dict[str, float]:
+    """Price a live run. One cache write, the rest reads if they stay inside TTL."""
+    write = PREFIX_TOKENS * _IN * _WRITE_MULTIPLIER
+    read = PREFIX_TOKENS * _IN * _READ_MULTIPLIER
+    output = case_count * _TYPICAL_OUTPUT * _OUT
+    return {
+        "prefix_write": round(write, 6),
+        "prefix_reads": round(read * max(0, case_count - 1), 6),
+        "output": round(output, 6),
+        "total": round(write + read * max(0, case_count - 1) + output, 6),
+    }
+
+
+def build_record(
+    *,
+    mode: str,
+    source: dict[str, Any],
+    cases_path: Path,
+    total_cases: int,
+    selected: list[Selected],
+    skipped: list[Skipped],
+    suite: SuiteResult,
+    started_at: str,
+    extra_provenance: dict[str, Any] | None = None,
+    usage: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    commit, dirty = git_commit()
+    fidelity = {
+        VERBATIM: sum(1 for s in selected if s.fidelity == VERBATIM),
+        PARAPHRASE: sum(1 for s in selected if s.fidelity == PARAPHRASE),
+    }
+    by_id = {s.case.id: s for s in selected}
+
+    scored_verbatim = 0
+    indicative_paraphrase = 0
+    for result in suite.results:
+        if result.status not in {"pass", "fail"}:
+            continue
+        if by_id[result.case_id].fidelity == VERBATIM:
+            scored_verbatim += 1
+        else:
+            indicative_paraphrase += 1
+
+    record: dict[str, Any] = {
+        "schema": RECORD_SCHEMA,
+        "mode": mode,
+        "started_at": started_at,
+        "finished_at": utc_now(),
+        "provenance": {
+            "commit": commit,
+            "commit_dirty": dirty,
+            "cases_file": _repo_relative(cases_path),
+            "cases_sha256": cases_fingerprint(cases_path),
+            "python": sys.version.split()[0],
+            **(extra_provenance or {}),
+        },
+        "source": source,
+        "selection": {
+            "total_cases": total_cases,
+            "ran": len(selected),
+            "skipped": [s.as_dict() for s in skipped],
+        },
+        "fidelity": fidelity,
+        # Kept apart from the suite counts on purpose. A paraphrase-sourced
+        # result is evidence about the assistant, not a verdict on the case.
+        "scored_verbatim": scored_verbatim,
+        "indicative_paraphrase": indicative_paraphrase,
+        "suite": suite.as_dict(),
+        "judgment_required": [
+            r.case_id for r in suite.results if r.status == "needs_judgment"
+        ],
+    }
+    if usage:
+        record["usage"] = {
+            "requests": len(usage),
+            "total_cost_usd": round(sum(u.get("total_cost_usd") or 0 for u in usage), 6),
+            "output_tokens": sum(u.get("output_tokens") or 0 for u in usage),
+            "per_case": usage,
+        }
+    return record
+
+
+def _repo_relative(path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(ROOT)).replace("\\", "/")
+    except ValueError:
+        return str(path)
+
+
+def print_summary(record: dict[str, Any]) -> None:
+    counts = record["suite"]["counts"]
+    selection = record["selection"]
+    fidelity = record["fidelity"]
+
+    print("")
+    print(f"Cases in file      : {selection['total_cases']}")
+    print(f"Ran                : {selection['ran']}"
+          f"  (verbatim {fidelity[VERBATIM]}, paraphrase {fidelity[PARAPHRASE]})")
+    print(f"Skipped            : {len(selection['skipped'])}")
+    for skip in selection["skipped"]:
+        print(f"  - {skip['case_id']:34} {skip['reason']}")
+
+    print("")
+    print(f"Falsified (fail)   : {counts['fail']}")
+    print(f"Errors             : {counts['error']}")
+    print(f"Scored pass        : {counts['pass']}  (deterministic cases only)")
+    print(f"Needs judgment     : {counts['needs_judgment']}")
+    print("")
+    print(f"  scored verbatim         : {record['scored_verbatim']}")
+    print(f"  indicative (paraphrase) : {record['indicative_paraphrase']}")
+
+    if counts["fail"] or counts["error"]:
+        print("\nFailures:")
+        for result in record["suite"]["results"]:
+            if result["status"] not in {"fail", "error"}:
+                continue
+            print(f"  {result['case_id']} [{result['status']}]")
+            if result["error"]:
+                print(f"      {result['error']}")
+            for failure in result["failures"]:
+                print(f"      {failure['kind']}: {failure['detail']}")
+
+    usage = record.get("usage")
+    if usage:
+        print(f"\nSpent: ${usage['total_cost_usd']:.4f} over {usage['requests']} requests")
+
+    # The one sentence that must survive being skimmed.
+    print(
+        "\nNo pass rate is reported. Lexical checks can falsify a judged case and "
+        "never confirm one,\nso the "
+        f"{counts['needs_judgment']} judged cases above are unscored, not passing."
+    )
+
+
+def write_record(record: dict[str, Any], out: Path) -> Path:
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+    return out
+
+
+def default_out(mode: str) -> Path:
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return ROOT / "docs" / "evals" / f"{stamp}-{mode}.json"
+
+
+# --------------------------------------------------------------------------
+# Commands
+# --------------------------------------------------------------------------
+
+
+def cmd_list(args: argparse.Namespace) -> int:
+    cases = load_cases(args.cases)
+    by_scoring: dict[str, int] = {}
+    by_category: dict[str, int] = {}
+    for case in cases:
+        by_scoring[case.scoring] = by_scoring.get(case.scoring, 0) + 1
+        by_category[case.category] = by_category.get(case.category, 0) + 1
+
+    print(f"{len(cases)} cases in {args.cases or default_cases_path().name}\n")
+    print("By scoring mode:")
+    for name in sorted(by_scoring):
+        print(f"  {name:16} {by_scoring[name]:3}")
+    print("\nBy category:")
+    for name in sorted(by_category):
+        print(f"  {name:16} {by_category[name]:3}")
+
+    multi = [c.id for c in cases if c.multi_turn]
+    unchecked = [c.id for c in cases if c.checks.is_empty()]
+    print(f"\nMulti-turn (a single-turn runner must skip): {len(multi)}")
+    for case_id in multi:
+        print(f"  {case_id}")
+    print(f"\nNo executable checks - judgement only: {len(unchecked)}")
+    print(f"Lexically scorable: {len(cases) - len(unchecked)}")
+    return 0
+
+
+def _run(
+    args: argparse.Namespace,
+    mode: str,
+    responder: Callable[[EvalCase], Selected | Skipped],
+    source: dict[str, Any],
+    extra_provenance: dict[str, Any] | None = None,
+    usage: list[dict[str, Any]] | None = None,
+) -> int:
+    started_at = utc_now()
+    cases_path = Path(args.cases) if args.cases else default_cases_path()
+    cases = load_cases(cases_path)
+    only = frozenset(i.strip() for i in args.only.split(",")) if args.only else None
+
+    if only is not None:
+        unknown = only - {c.id for c in cases}
+        if unknown:
+            print(f"Unknown case id(s): {sorted(unknown)}", file=sys.stderr)
+            return 1
+
+    selected, skipped = select(cases, responder, only)
+    if not selected:
+        print("Nothing to run - every case was skipped.", file=sys.stderr)
+        for skip in skipped:
+            print(f"  - {skip.case_id}: {skip.reason}", file=sys.stderr)
+        return 1
+
+    results: list[CaseResult] = []
+    for index, item in enumerate(selected, start=1):
+        marker = "" if item.fidelity == VERBATIM else " (paraphrase)"
+        print(f"[{index}/{len(selected)}] {item.case.id}{marker} ... ", end="", flush=True)
+        result = run_case(item.case, item.respond)
+        results.append(result)
+        print(result.status)
+
+    suite = SuiteResult(results=tuple(results))
+    record = build_record(
+        mode=mode,
+        source=source,
+        cases_path=cases_path,
+        total_cases=len(cases),
+        selected=selected,
+        skipped=skipped,
+        suite=suite,
+        started_at=started_at,
+        extra_provenance=extra_provenance,
+        usage=usage,
+    )
+    print_summary(record)
+
+    out = Path(args.out) if args.out else default_out(mode)
+    print(f"\nRecord: {write_record(record, out)}")
+    return 1 if suite.failures else 0
+
+
+def cmd_replay(args: argparse.Namespace) -> int:
+    transcript_path = Path(args.transcript)
+    from ask_christopher.transcript import Transcript
+
+    transcript = Transcript.load(transcript_path)
+    source = {
+        "kind": "transcript",
+        "path": _repo_relative(transcript_path),
+        "run_id": transcript.run_id,
+        "status": transcript.status,
+        "phase_a_commit": transcript.provenance.get("commit"),
+        "phase_b_commit": transcript.provenance.get("phase_b_commit"),
+        "model": transcript.provenance.get("model"),
+        "effort": transcript.provenance.get("effort"),
+    }
+    return _run(args, "replay", replay_responder(transcript_path), source)
+
+
+def cmd_live(args: argparse.Namespace) -> int:
+    from ask_christopher.prompt import build_system_prompt
+    from ask_christopher.transcript import prompt_fingerprint
+
+    cases_path = Path(args.cases) if args.cases else default_cases_path()
+    cases = load_cases(cases_path)
+    only = frozenset(i.strip() for i in args.only.split(",")) if args.only else None
+    would_run = [
+        c for c in cases if not c.multi_turn and (only is None or c.id in only)
+    ]
+    estimate = estimate_live_cost(len(would_run))
+
+    if not args.confirm:
+        print(f"A live run would send {len(would_run)} of {len(cases)} cases.\n")
+        print(f"  prefix write (first case) ${estimate['prefix_write']:.4f}")
+        print(f"  prefix reads (remainder)  ${estimate['prefix_reads']:.4f}")
+        print(f"  output (est. {_TYPICAL_OUTPUT}/case)    ${estimate['output']:.4f}")
+        print(f"  ESTIMATED TOTAL           ${estimate['total']:.4f}")
+        print("\nEstimate assumes every case after the first lands inside the 5-minute")
+        print("cache TTL. A slow or interrupted run pays more than this.")
+        print("\nNothing was sent. Re-run with --confirm to authorise the spend.")
+        return 0
+
+    try:
+        import anthropic
+    except ModuleNotFoundError:
+        print("The `anthropic` package is not installed.  pip install anthropic", file=sys.stderr)
+        return 1
+
+    try:
+        client = anthropic.Anthropic(max_retries=0)
+    except Exception:  # noqa: BLE001 - credential resolution failure
+        print(_NO_CREDENTIALS, file=sys.stderr)
+        return 1
+
+    prompt = build_system_prompt()
+    usage: list[dict[str, Any]] = []
+    source = {"kind": "live", "estimate_usd": estimate["total"]}
+    extra = {
+        "model": args.model,
+        "max_tokens": args.max_tokens,
+        "effort": args.effort,
+        "prompt_sha256": prompt_fingerprint(prompt),
+        "anthropic_sdk": anthropic.__version__,
+        "max_retries": 0,
+    }
+    responder = live_responder(
+        client, prompt, args.model, args.max_tokens, args.effort, usage
+    )
+    return _run(args, "live", responder, source, extra_provenance=extra, usage=usage)
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        prog="run-evals",
+        description="Run the behavioural eval suite. Reports what was scored and what was not.",
+    )
+    parser.add_argument("--cases", help="path to a case file (default: tests/evals/cases.yaml)")
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    listing = sub.add_parser("list", help="describe the suite; sends nothing")
+    listing.set_defaults(func=cmd_list)
+
+    replay = sub.add_parser("replay", help="score responses already recorded by an experiment")
+    replay.add_argument("--transcript", required=True, help="path to a transcript.json")
+    replay.add_argument("--only", help="comma-separated case ids")
+    replay.add_argument("--out", help="where to write the JSON record")
+    replay.set_defaults(func=cmd_replay)
+
+    live = sub.add_parser("live", help="send the suite to the API; costs money")
+    live.add_argument("--confirm", action="store_true", help="authorise the spend")
+    live.add_argument("--only", help="comma-separated case ids")
+    live.add_argument("--out", help="where to write the JSON record")
+    live.add_argument("--model", default="claude-opus-5")
+    live.add_argument("--max-tokens", type=int, default=2048)
+    live.add_argument("--effort", default="low")
+    live.set_defaults(func=cmd_live)
+
+    args = parser.parse_args(argv)
+    return int(args.func(args))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
