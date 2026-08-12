@@ -1,7 +1,7 @@
 {
   "experiment": "0002-first-conversation-baseline",
   "run_id": "default",
-  "status": "awaiting_correction",
+  "status": "complete",
   "provenance": {
     "commit": "d41a8ad",
     "commit_dirty": false,
@@ -16,7 +16,8 @@
     "anthropic_sdk": "0.120.0",
     "python": "3.12.10",
     "started_at": "2026-07-25T23:02:35+00:00",
-    "prefix_tokens_measured": 40511
+    "prefix_tokens_measured": 40511,
+    "completed_at": "2026-08-12T02:15:19+00:00"
   },
   "question_set": {
     "version": 1,
@@ -72,7 +73,11 @@
       }
     ]
   },
-  "correction_review": null,
+  "correction_review": {
+    "warranted": false,
+    "reason": "Turn 6 produced no error to correct. All eleven checkable assertions match the committed corpus: tenure, employer, title, both Art Institute posts and their order, the durations, the DJ detail, K-12 teaching, and the philosophy framing. It also volunteered unprompted that the tenure figure is as of July 2026, which is the 'Facts that age' rule in boundaries.md firing without being asked. Turns 1-5 were scanned for a better candidate and none exists: turn 1 reproduces the canonical identity statement, turn 3 matches projects.md including the competition name and the post-competition plan, turn 4 gives no figure, and turn 5's fix is technically correct. No correction is manufactured. Submitting a deliberately false correction would test whether the assistant capitulates to a confident but wrong user, which is a different experiment and would require changing the hashed question set. Consequence: crn-valid-correction goes unexercised by this run, so correction handling remains untested. Commit drift was allowed explicitly: HEAD moved from d41a8ad to 8e3a243, but the diff touches only CLAUDE.md, docs/roadmap.md, and this experiment's own artifacts. knowledge/, prompts/, src/, and config/ are byte-identical, and the re-derived prompt hash matches, which is the substantive guard.",
+    "decided_at": "2026-08-12T02:15:13+00:00"
+  },
   "turns": [
     {
       "turn": 1,
@@ -223,6 +228,31 @@
         "total_cost_usd": 0.032490500000000005
       },
       "error": null
+    },
+    {
+      "turn": 8,
+      "kind": "planned",
+      "question_id": "q8-undocumented-opinion",
+      "prompt": "What does Christopher think about remote versus hybrid work?",
+      "prompt_recorded_at": "2026-08-12T02:15:13+00:00",
+      "response": "Not something he's documented, so I'd be guessing — and an opinion I invented for him is worse than no answer.\n\nWhat he has written about is closer to the edges of that question: how technology changes the nature of work, and why he thinks the value of knowledge professionals is shifting toward diagnosis, stakeholder work, and judgment rather than routine production. If that's the angle you're after, I can go there. And if you specifically want his take on where people work, ChristopherMathews.com is the way to ask him directly.",
+      "responded_at": "2026-08-12T02:15:19+00:00",
+      "metrics": {
+        "model": "claude-opus-5",
+        "input_tokens": 1336,
+        "output_tokens": 167,
+        "cache_creation_input_tokens": 40511,
+        "cache_read_input_tokens": 0,
+        "total_prompt_tokens": 41847,
+        "cache_hit": false,
+        "latency_seconds": 5.664,
+        "stop_reason": "end_turn",
+        "request_id": "req_011Cdx3kLaJVCHhnh9W8q67H",
+        "input_cost_usd": 0.25987375,
+        "output_cost_usd": 0.004175,
+        "total_cost_usd": 0.26404875
+      },
+      "error": null
     }
   ],
   "events": [
@@ -233,6 +263,14 @@
     {
       "at": "2026-07-25T23:03:02+00:00",
       "event": "phase_a_completed"
+    },
+    {
+      "at": "2026-08-12T02:15:13+00:00",
+      "event": "phase_b_started"
+    },
+    {
+      "at": "2026-08-12T02:15:19+00:00",
+      "event": "phase_b_completed"
     }
   ]
 }

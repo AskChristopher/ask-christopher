@@ -15,7 +15,7 @@
 
 **Open:** the eval suite is a framework with 39 cases and **has never been run against real model output.** That is the remaining Phase 1 item. Scoring the 30 `model_judged` cases needs a judge that does not exist yet, and there is no entry point to run the suite live — see *Eval suite* below.
 
-**In flight:** experiment 0002 Phase B. Phase A is recorded with status `awaiting_correction`.
+**In flight:** experiment 0002 is `complete` as of 2026-08-12. Its `review.md` and the production-effort rerun are the open items.
 
 ---
 
@@ -35,8 +35,9 @@ Milestone 1, from ADR-0001: a terminal REPL that loads the Markdown corpus, asse
 The first real multi-turn conversation, run against a fixed question set through a two-phase harness.
 
 - [x] **Phase A** — turns 1-6, [recorded](experiments/0002-first-conversation-baseline/transcript.md). Cache behaviour held across a real conversation rather than a scripted probe: turn 1 wrote the prefix, turns 2-6 each read it back in full while only the accumulating history billed as uncached input. Turn 6 was designed to produce a correctable claim and did not — all eleven checkable assertions matched the corpus, and it volunteered the *Facts that age* caveat from `boundaries.md` unprompted. **No correction was manufactured.**
-- [ ] **Phase B** — turn 7 recorded as an unwarranted correction, then turn 8. Consequence to carry forward: `crn-valid-correction` goes unexercised by this run, so correction handling remains untested.
-- [ ] `review.md` for 0002 — deliberately absent until the run completes.
+- [x] **Phase B** — run at `8e3a243` with `--allow-commit-drift` and `--no-correction`. Turn 7 is recorded as an unwarranted correction with its reasoning, and skipped rather than manufactured; turn 8 held the line on an undocumented opinion, declining to invent a view while offering the adjacent documented material. Two consequences to carry forward: **`crn-valid-correction` goes unexercised**, so correction handling remains untested, and **the two-phase split cost a second full cache write** — turn 8 paid $0.2599 in input where a continuous session would have paid ~$0.021, since the 5-minute TTL cannot span a human decision. Run total $0.6669, 77% of it two cache writes.
+- [ ] `review.md` for 0002 — now unblocked; the run is complete.
+- [ ] **Record Phase B's own commit in provenance.** The artifact reports `commit: d41a8ad` and has no field saying Phase B ran elsewhere with drift allowed. It is currently captured only in the correction-review reason, which is the wrong home for it. Add `phase_b_commit` and `allow_commit_drift` to the provenance block.
 - [ ] **Rerun the same fixed question set at production effort, before any corpus or prompt edit.** Both experiments ran at `low` effort to avoid measuring two changes at once. Editing content first permanently confounds effort with content — this ordering constraint is recorded inside the hashed `questions.yaml` for that reason.
 
 ADR-0001 deferred retrieval to Phase 4. **ADR-0002 amends that** — the corpus already exceeds the threshold, so full injection is now classified as a baseline and retrieval as an active requirement.

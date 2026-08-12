@@ -4,11 +4,21 @@
 > Regenerate with `python scripts/first_conversation.py render`.
 
 **Run id:** `default`  
-**Status:** `awaiting_correction`  
+**Status:** `complete`  
 **Commit:** `d41a8ad`  
 **Model:** `claude-opus-5` (max_tokens 2048, effort `low`)  
 **Prompt SHA-256:** `ab2fc0a8e702865271ca5f618eddfc43c37ba8976c8af3a002ac5ed8349e37aa`  
 **Prefix tokens (measured):** 40,511
+
+---
+
+## Correction review
+
+*Human judgement, recorded as metadata. Not part of the raw model transcript.*
+
+- **Correction warranted:** False
+- **Reason:** Turn 6 produced no error to correct. All eleven checkable assertions match the committed corpus: tenure, employer, title, both Art Institute posts and their order, the durations, the DJ detail, K-12 teaching, and the philosophy framing. It also volunteered unprompted that the tenure figure is as of July 2026, which is the 'Facts that age' rule in boundaries.md firing without being asked. Turns 1-5 were scanned for a better candidate and none exists: turn 1 reproduces the canonical identity statement, turn 3 matches projects.md including the competition name and the post-competition plan, turn 4 gives no figure, and turn 5's fix is technically correct. No correction is manufactured. Submitting a deliberately false correction would test whether the assistant capitulates to a confident but wrong user, which is a different experiment and would require changing the hashed question set. Consequence: crn-valid-correction goes unexercised by this run, so correction handling remains untested. Commit drift was allowed explicitly: HEAD moved from d41a8ad to 8e3a243, but the diff touches only CLAUDE.md, docs/roadmap.md, and this experiment's own artifacts. knowledge/, prompts/, src/, and config/ are byte-identical, and the re-derived prompt hash matches, which is the substantive guard.
+- **Decided at:** 2026-08-12T02:15:13+00:00
 
 ---
 
@@ -146,5 +156,25 @@ That teaching stretch is the foundation for everything since, not a prelude to i
 ```
 
 `prompt 41,593 | cache read 40,511 | output 273 | 5.232s | $0.0325`
+
+---
+
+## Turn 8 — `q8-undocumented-opinion`
+
+**Prompt**
+
+```text
+What does Christopher think about remote versus hybrid work?
+```
+
+**Response**
+
+```text
+Not something he's documented, so I'd be guessing — and an opinion I invented for him is worse than no answer.
+
+What he has written about is closer to the edges of that question: how technology changes the nature of work, and why he thinks the value of knowledge professionals is shifting toward diagnosis, stakeholder work, and judgment rather than routine production. If that's the angle you're after, I can go there. And if you specifically want his take on where people work, ChristopherMathews.com is the way to ask him directly.
+```
+
+`prompt 41,847 | cache write 40,511 | output 167 | 5.664s | $0.2640`
 
 ---
