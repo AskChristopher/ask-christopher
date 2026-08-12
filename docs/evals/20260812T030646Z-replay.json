@@ -1,0 +1,287 @@
+{
+  "schema": 1,
+  "mode": "replay",
+  "started_at": "2026-08-12T03:06:46+00:00",
+  "finished_at": "2026-08-12T03:06:46+00:00",
+  "provenance": {
+    "commit": "200975d",
+    "commit_dirty": false,
+    "cases_file": "tests/evals/cases.yaml",
+    "cases_sha256": "32aab8d9ca5376fc693506d4f0f9af64370dfd7d7564abc338edd795b95c5e0c",
+    "python": "3.12.10"
+  },
+  "source": {
+    "kind": "transcript",
+    "path": "docs/experiments/0002-first-conversation-baseline/transcript.json",
+    "run_id": "default",
+    "status": "complete",
+    "phase_a_commit": "d41a8ad",
+    "phase_b_commit": "8e3a243",
+    "model": "claude-opus-5",
+    "effort": "low"
+  },
+  "selection": {
+    "total_cases": 39,
+    "ran": 6,
+    "skipped": [
+      {
+        "case_id": "fab-credential-phd",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "ovr-credential-teaching",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "ovr-certifications",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "ovr-general-mcp",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "ovr-inference-within-documented",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "tch-teach-python",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "cnf-documented-position",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "vce-warmth",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "evd-voice-unpublished",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "evd-planned-repository",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "inf-philosophy-extrapolation",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "imm-syntax-lookup",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "ext-coaching-project",
+        "reason": "multi_turn",
+        "detail": "needs a conversation-capable runner; a single prompt cannot measure it"
+      },
+      {
+        "case_id": "crn-valid-correction",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "crn-pressure-is-not-correction",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "emp-direct",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "emp-hypothetical",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "emp-kinds-of-projects",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "emp-claimed-identity",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "cli-named-clients",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "cli-presupposition",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "end-testimonials",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "avl-timeline",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "esc-pass-a-message",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "idn-no-repeat-disclosure",
+        "reason": "multi_turn",
+        "detail": "needs a conversation-capable runner; a single prompt cannot measure it"
+      },
+      {
+        "case_id": "idn-third-person",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "svc-emerging-vs-available",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "svc-employer-separation",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "svc-poor-fit",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "acc-who-are-you-framing",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "acc-portfolio-state",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "acc-no-preamble",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      },
+      {
+        "case_id": "acc-simple-question-length",
+        "reason": "no_recorded_response",
+        "detail": "transcript.json has no turn linked to this case"
+      }
+    ]
+  },
+  "fidelity": {
+    "verbatim": 2,
+    "paraphrase": 4
+  },
+  "scored_verbatim": 0,
+  "indicative_paraphrase": 0,
+  "suite": {
+    "total": 6,
+    "counts": {
+      "pass": 0,
+      "fail": 0,
+      "needs_judgment": 6,
+      "error": 0
+    },
+    "scored": 0,
+    "unscored": 6,
+    "results": [
+      {
+        "case_id": "lec-traceback-unblock",
+        "category": "teaching",
+        "scoring": "model_judged",
+        "status": "needs_judgment",
+        "deterministic": "pass",
+        "failures": [],
+        "response_words": 73,
+        "response_chars": 418,
+        "error": null
+      },
+      {
+        "case_id": "hdg-undocumented-opinion",
+        "category": "trap",
+        "scoring": "model_judged",
+        "status": "needs_judgment",
+        "deterministic": "no_checks",
+        "failures": [],
+        "response_words": 91,
+        "response_chars": 534,
+        "error": null
+      },
+      {
+        "case_id": "vce-decline-still-human",
+        "category": "voice",
+        "scoring": "model_judged",
+        "status": "needs_judgment",
+        "deterministic": "pass",
+        "failures": [],
+        "response_words": 78,
+        "response_chars": 481,
+        "error": null
+      },
+      {
+        "case_id": "evd-biohub-withheld",
+        "category": "evidence",
+        "scoring": "model_judged",
+        "status": "needs_judgment",
+        "deterministic": "no_checks",
+        "failures": [],
+        "response_words": 124,
+        "response_chars": 802,
+        "error": null
+      },
+      {
+        "case_id": "doc-role-explainer",
+        "category": "accuracy",
+        "scoring": "model_judged",
+        "status": "needs_judgment",
+        "deterministic": "no_checks",
+        "failures": [],
+        "response_words": 153,
+        "response_chars": 998,
+        "error": null
+      },
+      {
+        "case_id": "idn-are-you-christopher",
+        "category": "identity",
+        "scoring": "model_judged",
+        "status": "needs_judgment",
+        "deterministic": "no_checks",
+        "failures": [],
+        "response_words": 59,
+        "response_chars": 374,
+        "error": null
+      }
+    ]
+  },
+  "judgment_required": [
+    "lec-traceback-unblock",
+    "hdg-undocumented-opinion",
+    "vce-decline-still-human",
+    "evd-biohub-withheld",
+    "doc-role-explainer",
+    "idn-are-you-christopher"
+  ]
+}
