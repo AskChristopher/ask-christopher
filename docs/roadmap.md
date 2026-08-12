@@ -9,11 +9,13 @@
 
 ## Where the project is
 
-**Phase 1, in progress.**
+**Phase 1, in progress — one item open.**
 
-**Specified and complete:** the knowledge corpus (`knowledge/`, six files) and the prompt layer (`prompts/`, four files). What the assistant knows, who it is, how it teaches, how it stays honest, and how those assemble into the exact bytes sent to the API.
+**Built and recorded:** the knowledge corpus (`knowledge/`, six files), the prompt layer (`prompts/`, four files), prompt assembly, the API client, the terminal REPL, and two experiments. What the assistant knows, who it is, how it teaches, how it stays honest, how those assemble into the exact bytes sent to the API — and now two measurements of what actually comes back.
 
-**Not built:** everything in `src/`, and the eval suite.
+**Open:** the eval suite is a framework with 39 cases and **has never been run against real model output.** That is the remaining Phase 1 item. Scoring the 30 `model_judged` cases needs a judge that does not exist yet, and there is no entry point to run the suite live — see *Eval suite* below.
+
+**In flight:** experiment 0002 Phase B. Phase A is recorded with status `awaiting_correction`.
 
 ---
 
@@ -24,9 +26,18 @@ Milestone 1, from ADR-0001: a terminal REPL that loads the Markdown corpus, asse
 - [x] Knowledge corpus — `knowledge/`
 - [x] Prompt layer — persona, teaching style, grounding rules, assembly spec
 - [x] Prompt assembly — `src/ask_christopher/prompt.py`, with byte-stability tests
-- [ ] **Milestone 2 — cache baseline.** Two identical requests through the two stable prefix segments; record provider-reported cache metrics, tokens, latency, and cost. No conversation history, streaming, REPL, or retrieval.
-- [ ] Terminal REPL
-- [ ] Eval suite — `tests/evals/`, measuring accuracy *and* honest refusal in both directions
+- [x] **Milestone 2 — cache baseline.** Recorded as [experiment 0001](experiments/0001-prompt-cache-baseline.md). Caching confirmed on the first attempt with no tuning: 40,511 tokens written then read back, input cost down 92.0%. It also contradicted the pre-run token estimate by 19.6% and observed *no* latency improvement — the measurement cannot isolate that, which the record says explicitly.
+- [x] Terminal REPL — `src/ask_christopher/repl.py`, `Session` separated from the loop so conversation behaviour is testable without credentials or a terminal
+- [ ] **Eval suite — the open item.** `tests/evals/cases.yaml` holds 39 cases across the seven categories, with eight tradeoffs guarded in both directions, and `src/ask_christopher/evals.py` runs them against any injected response function. Never yet pointed at the real assistant. Blocking pieces, from `tests/evals/README.md`: model-as-judge scoring, a human-review workflow for the 3 `human_review` cases, a `scripts/run_evals.py` entry point, and a conversation-capable runner for the two multi-turn cases.
+
+### Experiment 0002 — first conversation
+
+The first real multi-turn conversation, run against a fixed question set through a two-phase harness.
+
+- [x] **Phase A** — turns 1-6, [recorded](experiments/0002-first-conversation-baseline/transcript.md). Cache behaviour held across a real conversation rather than a scripted probe: turn 1 wrote the prefix, turns 2-6 each read it back in full while only the accumulating history billed as uncached input. Turn 6 was designed to produce a correctable claim and did not — all eleven checkable assertions matched the corpus, and it volunteered the *Facts that age* caveat from `boundaries.md` unprompted. **No correction was manufactured.**
+- [ ] **Phase B** — turn 7 recorded as an unwarranted correction, then turn 8. Consequence to carry forward: `crn-valid-correction` goes unexercised by this run, so correction handling remains untested.
+- [ ] `review.md` for 0002 — deliberately absent until the run completes.
+- [ ] **Rerun the same fixed question set at production effort, before any corpus or prompt edit.** Both experiments ran at `low` effort to avoid measuring two changes at once. Editing content first permanently confounds effort with content — this ordering constraint is recorded inside the hashed `questions.yaml` for that reason.
 
 ADR-0001 deferred retrieval to Phase 4. **ADR-0002 amends that** — the corpus already exceeds the threshold, so full injection is now classified as a baseline and retrieval as an active requirement.
 
@@ -44,19 +55,21 @@ Depends on the consolidation backlog below — there is little to retrieve until
 
 ## Phase 4 — Selective retrieval
 
-> ⚠️ **No longer a distant concern.** This phase was written with a ~20k-token trigger. The corpus measured **~24k tokens** (assembled prefix ~32.5k) the first time `prompt.py` ran, so the trigger is behind us. **Selective retrieval is an active architectural requirement, not a contingency** — see `docs/decisions/0002-full-corpus-injection-is-a-baseline-not-the-architecture.md`.
+> ⚠️ **No longer a distant concern.** This phase was written with a ~20k-token trigger. The estimate at the time was ~24k for the corpus and ~32.5k for the assembled prefix; **experiment 0001 measured the prefix at 40,511 tokens**, making the estimate 19.6% low and the corpus segment roughly **1.5x** the revisit threshold rather than 1.2x. **Selective retrieval is an active architectural requirement, not a contingency** — see `docs/decisions/0002-full-corpus-injection-is-a-baseline-not-the-architecture.md`.
 
 Three stages, deliberately distinguished:
 
 | Stage | State |
 |---|---|
 | **Deterministic full assembly** | **Exists** — `src/ask_christopher/prompt.py`, Milestone 1 |
-| **Full-prefix API testing** | **The Milestone 2 baseline** — a measurement, not a destination |
+| **Full-prefix API testing** | **Done** — measured twice: experiment 0001 (single probe) and 0002 (multi-turn) |
 | **Selective retrieval** | **Required, not yet implemented** |
+
+The gate is now open. Retrieval was waiting on a measured baseline to compare against, and there are two. The next move in this phase is an ADR choosing a shape on that evidence.
 
 Prompt caching makes full injection *cheap*; it does not make it *right*. Caching addresses repeated input cost. It does not address context-window occupancy, first-request and post-edit latency, or — most importantly — **relevance and attention dilution**: a visitor asking what an instructional designer does currently receives the whole of `boundaries.md` and `projects.md` alongside the paragraph that answers them.
 
-Retrieval is now gated on **having a measured baseline to compare against**, which is what Milestone 2 produces — not on a token threshold. Candidate shapes, to be chosen on evidence in a later ADR:
+Retrieval was gated on **having a measured baseline to compare against** — not on a token threshold. Milestone 2 produced it. Candidate shapes, to be chosen on evidence in that ADR:
 
 - Whole-corpus injection with a preprocessing step (smallest change; trades determinism for size)
 - Per-file selection driven by question classification (no embeddings required)
