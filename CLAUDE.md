@@ -30,6 +30,8 @@ python scripts/run_evals.py list                 # describe the eval suite, send
 python scripts/run_evals.py replay --transcript docs/experiments/.../transcript.json
 python scripts/run_evals.py live                 # price a live eval run, send nothing
 python scripts/run_evals.py live --confirm       # send it (live API)
+python scripts/run_evals.py judge --responses docs/evals/....json            # price a judge run, send nothing
+python scripts/run_evals.py judge --responses docs/evals/....json --confirm  # send it (live API)
 python -m ask_christopher.repl [--diagnostics]   # interactive session (live API)
 python scripts/cache_experiment.py               # experiment 0001 (live API)
 python scripts/first_conversation.py phase-a     # experiment 0002, turns 1-6
@@ -71,6 +73,8 @@ These come from the vision doc and should be treated as requirements, not aspira
 **Experiment transcripts are immutable.** `transcript.json` is the source of truth and `transcript.md` is generated from it — never hand-edit the Markdown. A recorded run is amended by starting a new run id, not by editing the artifact.
 
 **Evals: deterministic checks can falsify a judged case. They can never confirm one.** A `model_judged` case whose lexical checks all pass reports `needs_judgment`, never `pass`. Read `tests/evals/README.md` before trusting any number out of that suite.
+
+**A judge verdict is a third kind of evidence, not a promotion.** `judge.py` returns `judged_pass` / `judged_fail` / `judged_uncertain`, deliberately disjoint from `evals.py`'s vocabulary so nothing downstream can add a judged verdict to a deterministic pass count and report the sum. Three further rules there are load-bearing rather than stylistic: lenses are **not** aggregated by majority (any falsification fails the case), every `fail` must quote the response verbatim or the harness downgrades it to `uncertain`, and the judge prefix carries the corpus but **not** the behaviour layer — a judge holding the assistant's own instructions grades intent rather than output.
 
 ## Working conventions
 

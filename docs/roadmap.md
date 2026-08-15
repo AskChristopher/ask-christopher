@@ -13,7 +13,7 @@
 
 **Built and recorded:** the knowledge corpus (`knowledge/`, six files), the prompt layer (`prompts/`, four files), prompt assembly, the API client, the terminal REPL, and two experiments. What the assistant knows, who it is, how it teaches, how it stays honest, how those assemble into the exact bytes sent to the API — and now two measurements of what actually comes back.
 
-**Open:** the eval suite is a framework with 39 cases and **has never been run against real model output.** That is the remaining Phase 1 item. Scoring the 30 `model_judged` cases needs a judge that does not exist yet, and there is no entry point to run the suite live — see *Eval suite* below.
+**Open:** the eval suite runs, and has now scored two cases with a model-as-judge panel that rediscovered a grounding failure previously found only by human reading. What remains is coverage: **37 of 39 cases have never been sent**, the 3 `human_review` cases have no workflow, and the 2 `multi_turn` cases have no conversation-capable runner — see *Eval suite* below.
 
 **In flight:** experiment 0002 is `complete` as of 2026-08-12. Its `review.md` and the production-effort rerun are the open items.
 
@@ -32,7 +32,12 @@ Milestone 1, from ADR-0001: a terminal REPL that loads the Markdown corpus, asse
   - [x] **Runner** — `scripts/run_evals.py`, with `list`, `replay`, and `live`. Every case lands in `ran` or in `skipped` with a stated reason, records go to `docs/evals/`, and no suite-wide pass rate is ever reported. A live run is priced and refuses to spend without `--confirm`.
   - [x] **First replay** — experiment 0002's transcript scored through the suite. 6 of 39 cases covered, **nothing falsified and nothing confirmed**: 2 had checks that passed, 4 carry no executable checks at all. That is the honest ceiling of lexical scoring, measured rather than argued.
   - [x] **Correction pair, judged.** Both halves run single-turn for $0.2833 and judged to pass — [review](evals/correction-pair-review.md). `crn-valid-correction` supplies the prior claim in its own prompt, so it never needed a conversation. **It also produced the first real grounding failure the suite has caught:** an unsupported comparative — *"the longer teaching stretch was at Inland Empire"* — where `bio.md` gives a duration for one post and none for the other. Both lexical checks passed; only a human reading caught it.
-  - [ ] **Model-as-judge scoring.** The 30 `model_judged` cases stay `needs_judgment` until this exists. This is now the single largest gap between "the suite runs" and "the suite measures anything" — and the correction-pair finding is the argument for it: word counts and a `$`-pattern cannot see an ungrounded claim.
+  - [x] **Model-as-judge scoring.** `src/ask_christopher/judge.py` and `run_evals.py judge` — a three-lens panel (rubric, grounding, adversarial) over the corpus but deliberately *not* the behaviour layer, with every `fail` required to quote the response verbatim and the quote checked by code. Verdicts are `judged_pass` / `judged_fail` / `judged_uncertain`, disjoint from `evals.py`'s vocabulary so no reader can sum them into a pass rate.
+
+    **Calibrated on the known answer and it found it unaided** — [review](evals/judge-calibration-review.md). Pointed at `crn-valid-correction` with no prompt iteration, the panel split 1–2 and located the Inland Empire comparative that only a human reading had caught, all three lenses quoting the same verified span. The `rubric` lens passed it as no `voice` violation while filing the observation out of scope, which is the case that justifies **any-falsification-fails rather than majority vote**: counting lenses passes it 2–1 the wrong way.
+
+    The same runs cost $0.7371, exposed one real defect — a lens truncated mid-JSON at `max_tokens` 2,048 and reported as malformed output — and left the panel's false-positive and false-negative rates unmeasured. Both are filed in the review.
+  - [ ] **Judge coverage of the remaining 28 `model_judged` cases.** Extrapolated at roughly **$4.50** for 90 calls, from eight. Elicitation is the separate ~$1.05; judging re-runs against recorded responses without spending on generation again.
   - [ ] **Human-review workflow** for the 3 `human_review` cases.
   - [ ] **Conversation-capable runner** for the 2 cases now marked `multi_turn: true`.
   - [ ] **A full live run.** Two of 39 cases have now been sent. The rest are priced at roughly $1.05, assuming they stay inside the cache TTL.
@@ -41,10 +46,30 @@ Milestone 1, from ADR-0001: a terminal REPL that loads the Markdown corpus, asse
 
 From the correction-pair review. All four touch `knowledge/` or `prompts/`, so they wait — editing the corpus first would confound effort with content permanently.
 
-- [ ] **Decide the Inland Empire duration.** If it is known, `bio.md` should state it and the ungrounded comparative becomes a documented fact. If it is not, the assistant must stop ranking the two posts.
-- [ ] **Add an eval case for unsupported comparatives** — "which of X and Y was longer" where the corpus gives one figure and not the other. Nothing in the current 39 tests this shape, and it catches a true-*sounding* inference rather than an invented fact.
-- [ ] **Tighten `crn-valid-correction`'s rubric** to distinguish a correct conditional from a false confession. As written it assumes the assistant did say the wrong thing, so a judge could mark the better answer wrong.
-- [ ] **Decide the lecture threshold** in `grounding_rules.md`. The prohibition on explaining why a rule exists reads as absolute; one clause of rationale is arguably better than none.
+- [ ] **Correct the teaching history in `bio.md`.** **Answered by Christopher on 2026-08-13** — the durations below are supplied and staged, awaiting only the rerun. What began as one missing number turned out to be four separate corpus defects.
+
+  | Post | Corpus today | Actual |
+  |---|---|---|
+  | K–12 substitute, Inland Empire | no duration | ~10 years |
+  | K–12 substitute, Las Vegas | no duration | ~3 years |
+  | The Art Institute of Las Vegas | "roughly three years" | correct |
+  | The Art Institute of California – Inland Empire | **no duration** | **~4 years** |
+  | Cal State San Bernardino | **absent entirely** | **one quarter taught; ~a year of campus involvement, overlapping Inland Empire** |
+  | Total teaching | "approximately fifteen years" (4 places) | **~17 years** |
+
+  Four edits follow from this, and the second is the one that matters most:
+
+  1. **Add the missing durations** — ~4 years at Inland Empire, and the ~10 + ~3 split of the K–12 substitute years, which the corpus currently records only as "K–12 classrooms" with no span at all.
+  2. **State that the posts overlap, and that durations must never be added or subtracted.** Las Vegas substitute teaching ran concurrently with The Art Institute of Las Vegas (and with the DJ nights); Cal State San Bernardino ran concurrently with Inland Empire. The fifteen-year figure was never a sum of posts, so *any* arithmetic across them is invalid. Supplying the missing number without this fixes one instance and leaves the whole class open — the same inference returns wearing different figures.
+  3. **Add Cal State San Bernardino** to `bio.md` *and* to the employer allowlist in `boundaries.md` — *"Only the employers recorded in `bio.md` may be named"* currently makes it unnameable, so the assistant would decline to mention a real post. Correct under the rule, wrong about his career.
+
+     **Record it unrounded: one quarter taught, with campus involvement continuing about a year.** Christopher rounds it up to "a year" in conversation because he kept attending meetings on campus after the quarter ended, and that rounding is reasonable in speech and unsafe in a corpus. Written as "about a year," the assistant reads a year of *teaching*, lists it beside multi-year posts as an equivalent, and can compare it to them — reproducing the Inland Empire failure one level down. **A rounded figure is indistinguishable from an inferred one once it is in the corpus**, because nothing downstream records that it was rounded or why. Two clauses cost nothing and cannot be rounded further.
+  4. **Revise "approximately fifteen years" to approximately seventeen** (10 + 3 + 4), in all four places: `bio.md` lines 80, 98, 139 and the expertise-depth section at 247. Understating is the safe direction per `boundaries.md` — *"Understating is recoverable; overstating is not"* — but it is still inaccurate.
+
+  **On the original finding.** With the numbers in hand, *"the longer teaching stretch was at Inland Empire"* is **true** of the two Art Institute posts (4 > 3) and **false** of his teaching career, where K–12 substitute work at ~13 years dominates. The assistant asserted it with no corpus basis either way and happened to land on a reading that holds. **Unsupported-but-true is still a grounding failure** — it is why the rule is written about evidence rather than accuracy, and why a suite that scored only correctness would have recorded this as a pass.
+- [ ] **Add an eval case for unsupported comparatives** — "which of X and Y was longer" where the corpus gives one figure and not the other. Nothing in the current 39 tests this shape, and it catches a true-*sounding* inference rather than an invented fact. **Write it so the response can be true and still fail**, since that is what actually happened: the case must fail an ungrounded comparative regardless of whether it turns out correct, or it tests accuracy rather than grounding.
+- [ ] **Tighten `crn-valid-correction`'s rubric** to distinguish a correct conditional from a false confession. As written it assumes the assistant did say the wrong thing, so a judge could mark the better answer wrong. **The predicted failure did not occur when tested** — the `rubric` lens passed the conditional without comment — so this is now a latent underspecification rather than an observed defect, and it is n = 1.
+- [ ] **Decide the lecture threshold** in `grounding_rules.md`. The prohibition on explaining why a rule exists reads as absolute; one clause of rationale is arguably better than none. **Now the best-evidenced item in this list:** three independent readings — one human, plus the `rubric` and `adversarial` lenses in separate runs — all found the same clause and all declined to fail it. Something that survives that consistently is either permitted or the rule is wrong about it.
 
 ### Experiment 0002 — first conversation
 

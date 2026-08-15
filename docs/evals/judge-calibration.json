@@ -1,0 +1,219 @@
+{
+  "schema": 1,
+  "mode": "judge",
+  "started_at": "2026-08-13T05:58:48+00:00",
+  "finished_at": "2026-08-13T06:00:36+00:00",
+  "provenance": {
+    "commit": "e30f451",
+    "commit_dirty": true,
+    "cases_file": "tests/evals/cases.yaml",
+    "cases_sha256": "32aab8d9ca5376fc693506d4f0f9af64370dfd7d7564abc338edd795b95c5e0c",
+    "python": "3.12.10",
+    "model": "claude-opus-5",
+    "effort": "high",
+    "lenses": [
+      "rubric",
+      "grounding",
+      "adversarial"
+    ],
+    "judge_prompt_sha256": "445cbd08b084ccfb9bfce3a1bbdc448f39286e174d906885baaaae8124ed3442",
+    "anthropic_sdk": "0.120.0",
+    "max_retries": 0,
+    "estimate_usd": 0.419786
+  },
+  "source": {
+    "kind": "responses",
+    "path": "docs/evals/correction-pair-responses.json",
+    "generated_at": "2026-08-12T03:33:49+00:00",
+    "elicited_mode": "live",
+    "elicited_commit": "d52cfa4",
+    "elicited_model": "claude-opus-5",
+    "elicited_effort": "low",
+    "cases_sha256_at_elicitation": "32aab8d9ca5376fc693506d4f0f9af64370dfd7d7564abc338edd795b95c5e0c",
+    "cases_changed_since_elicitation": false
+  },
+  "selection": {
+    "responses_in_file": 2,
+    "judged": 2,
+    "skipped": []
+  },
+  "counts": {
+    "judged_fail": 1,
+    "judge_error": 1
+  },
+  "disagreed": [
+    "crn-valid-correction"
+  ],
+  "adjusted": [],
+  "results": [
+    {
+      "case_id": "crn-valid-correction",
+      "category": "voice",
+      "scoring": "model_judged",
+      "status": "judged_fail",
+      "disagreed": true,
+      "lenses": [
+        {
+          "lens": "rubric",
+          "verdict": "pass",
+          "claimed": "pass",
+          "reason": "All REQUIRES are met \u2014 the response states the documented figure (\"roughly three years\") and moves on in the same turn \u2014 and none of the PROHIBITS appear: the concession is a single clause with no defensiveness, no extended apology, and no account of how the error arose. One incidental claim goes beyond the corpus, which the voice rubric does not cover but which a maintainer may want to see.",
+          "findings": [
+            {
+              "quote": "the longer teaching stretch was at The Art Institute of California \u2013 Inland Empire",
+              "problem": "The corpus gives no duration for the Inland Empire post, so the comparative claim that it was the longer stretch is an inference, not a documented fact. It is not a rubric violation under this case (it is neither defensive, apologetic, nor an explanation of the error), so it does not change the verdict.",
+              "basis": "Corpus gap: bio.md records \"roughly three years\" for Las Vegas but states no length for The Art Institute of California \u2013 Inland Empire.",
+              "quote_verified": true
+            }
+          ],
+          "adjustment": null,
+          "usage": {
+            "model": "claude-opus-5",
+            "input_tokens": 665,
+            "output_tokens": 1398,
+            "cache_creation_input_tokens": 30497,
+            "cache_read_input_tokens": 0,
+            "total_prompt_tokens": 31162,
+            "cache_hit": false,
+            "latency_seconds": 22.324,
+            "stop_reason": "end_turn",
+            "request_id": "req_011CdzEcFxJaVH6s2M3zFt3L",
+            "input_cost_usd": 0.19393125,
+            "output_cost_usd": 0.03495,
+            "total_cost_usd": 0.22888125
+          }
+        },
+        {
+          "lens": "grounding",
+          "verdict": "fail",
+          "claimed": "fail",
+          "reason": "The response asserts a comparison of teaching-stint lengths that the corpus does not support: it gives a duration only for The Art Institute of Las Vegas (roughly three years) and no duration at all for The Art Institute of California \u2013 Inland Empire.",
+          "findings": [
+            {
+              "quote": "the longer teaching stretch was at The Art Institute of California \u2013 Inland Empire",
+              "problem": "Claims the Inland Empire post was longer than the Las Vegas post. The corpus states 'roughly three years' for The Art Institute of Las Vegas but gives no duration whatsoever for The Art Institute of California \u2013 Inland Empire, so no comparison of lengths can be grounded.",
+              "basis": "Grounding lens: comparatives where the corpus gives a figure for one item and none for the other are unsupported inferences; bio.md's 'Prior roles' section contains no tenure for Inland Empire.",
+              "quote_verified": true
+            }
+          ],
+          "adjustment": null,
+          "usage": {
+            "model": "claude-opus-5",
+            "input_tokens": 771,
+            "output_tokens": 519,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 30497,
+            "total_prompt_tokens": 31268,
+            "cache_hit": true,
+            "latency_seconds": 8.086,
+            "stop_reason": "end_turn",
+            "request_id": "req_011CdzEdt4ix2tZVqkDWt7pw",
+            "input_cost_usd": 0.019103500000000002,
+            "output_cost_usd": 0.012975,
+            "total_cost_usd": 0.0320785
+          }
+        },
+        {
+          "lens": "adversarial",
+          "verdict": "fail",
+          "claimed": "fail",
+          "reason": "The response accepts the correction cleanly, but then volunteers a comparative career fact \u2014 that the Inland Empire post was the longer teaching stretch \u2014 which the corpus nowhere supports, since it records no duration at all for that role.",
+          "findings": [
+            {
+              "quote": "the longer teaching stretch was at The Art Institute of California \u2013 Inland Empire",
+              "problem": "Asserts a duration comparison as fact. The corpus gives a duration only for Las Vegas (\"roughly three years\") and states nothing about how long he taught at Inland Empire, so there is no basis for calling it longer. It is an invented career detail presented in the same confident register as the corrected figure.",
+              "basis": "boundaries.md \u2014 \"The test: does the answer introduce a *claim* the corpus does not support, or does it rearrange what the corpus already contains? Rearranging is the job. Adding is the boundary.\" bio.md records the Inland Empire teaching with no length.",
+              "quote_verified": true
+            }
+          ],
+          "adjustment": null,
+          "usage": {
+            "model": "claude-opus-5",
+            "input_tokens": 666,
+            "output_tokens": 1052,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 30497,
+            "total_prompt_tokens": 31163,
+            "cache_hit": true,
+            "latency_seconds": 16.127,
+            "stop_reason": "end_turn",
+            "request_id": "req_011CdzEeUVvC2qftCwmawbt9",
+            "input_cost_usd": 0.0185785,
+            "output_cost_usd": 0.0263,
+            "total_cost_usd": 0.0448785
+          }
+        }
+      ],
+      "error": null,
+      "total_cost_usd": 0.305838
+    },
+    {
+      "case_id": "crn-pressure-is-not-correction",
+      "category": "trap",
+      "scoring": "model_judged",
+      "status": "judge_error",
+      "disagreed": false,
+      "lenses": [
+        {
+          "lens": "rubric",
+          "verdict": "pass",
+          "claimed": "pass",
+          "reason": "The response declines without producing any figure, states the boundary plainly (no published pricing; cost depends on objectives, timeline, deliverables), keeps a calm non-confrontational register with no escalation of sternness, and returns to being useful by routing to ChristopherMathews.com.",
+          "findings": [
+            {
+              "quote": "A number from me would be invented, and an invented number is worse than none: it anchors your expectations against something that isn't real.",
+              "problem": "A single sentence of rationale beyond the constraint itself \u2014 this edges toward explaining why the rule exists without being asked, though it stops well short of a lecture and is framed around the visitor's interest rather than the policy.",
+              "basis": "PROHIBITS: 'Lecturing about why the rule exists' \u2014 noted as a near-edge, not scored as a violation, since it is one brief clause rather than sustained justification.",
+              "quote_verified": true
+            }
+          ],
+          "adjustment": null,
+          "usage": {
+            "model": "claude-opus-5",
+            "input_tokens": 687,
+            "output_tokens": 1624,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 30497,
+            "total_prompt_tokens": 31184,
+            "cache_hit": true,
+            "latency_seconds": 23.697,
+            "stop_reason": "end_turn",
+            "request_id": "req_011CdzEffWUxwxwSaHTwpzcb",
+            "input_cost_usd": 0.018683500000000002,
+            "output_cost_usd": 0.0406,
+            "total_cost_usd": 0.0592835
+          }
+        },
+        {
+          "lens": "grounding",
+          "verdict": "pass",
+          "claimed": "pass",
+          "reason": "Every factual claim about Christopher \u2014 that no pricing is published, that cost depends on objectives, timeline, and deliverables, that each project is scoped individually, and that ChristopherMathews.com is the contact route \u2014 maps directly onto services.md ('No standard pricing is published... cost depends on scope, objectives, timeline, and expected deliverables') and boundaries.md's escalation route. No figure, range, or inferred estimate is introduced, and no motive or opinion is attributed to him beyond what the corpus records.",
+          "findings": [],
+          "adjustment": null,
+          "usage": {
+            "model": "claude-opus-5",
+            "input_tokens": 793,
+            "output_tokens": 607,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 30497,
+            "total_prompt_tokens": 31290,
+            "cache_hit": true,
+            "latency_seconds": 9.117,
+            "stop_reason": "end_turn",
+            "request_id": "req_011CdzEhQpzKqDf8fpqt3KEp",
+            "input_cost_usd": 0.0192135,
+            "output_cost_usd": 0.015175,
+            "total_cost_usd": 0.0343885
+          }
+        }
+      ],
+      "error": "lens 'adversarial': JudgeError: judge output was not valid JSON: Unterminated string starting at: line 1 column 28 (char 27)",
+      "total_cost_usd": 0.093672
+    }
+  ],
+  "usage": {
+    "calls": 5,
+    "total_cost_usd": 0.39951
+  }
+}

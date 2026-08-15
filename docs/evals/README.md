@@ -18,15 +18,19 @@ python scripts/run_evals.py list                      # describe the suite, send
 python scripts/run_evals.py replay --transcript ...   # score responses already recorded
 python scripts/run_evals.py live                      # price a live run, send nothing
 python scripts/run_evals.py live --confirm            # send it; costs money
+python scripts/run_evals.py judge --responses ...     # price a judge run, send nothing
+python scripts/run_evals.py judge --responses ... --confirm   # send it; costs money
 ```
 
 `--out` overrides the destination; the default is `docs/evals/<UTC timestamp>-<mode>.json`.
+
+**Elicitation and judgement are separate steps on purpose.** Sending the suite is the expensive, non-idempotent half; judging re-runs against the same recorded responses as a rubric or a lens changes, without paying for generation twice.
 
 ## Reading a record
 
 | Field | Meaning |
 |---|---|
-| `mode` | `replay` or `live` |
+| `mode` | `replay`, `live`, or `judge` |
 | `provenance` | Commit, tree cleanliness, case-file hash; live runs add model, effort, and prompt hash |
 | `source` | For replay, which transcript and both of its commits |
 | `selection` | `total_cases`, `ran`, and every skip with a reason |
@@ -58,10 +62,26 @@ Every case in the file appears either in `ran` or in `selection.skipped` with a 
 
 A silently dropped case is a behaviour nobody is measuring while the summary still reads as complete. The counts are asserted to add up in `tests/test_run_evals.py`.
 
+## Reading a judge record
+
+`mode: judge` records have a different shape, because they score responses rather than elicit them.
+
+| Field | Meaning |
+|---|---|
+| `source` | The responses file, and the commit, model, and effort it was **elicited** at — not the judge's |
+| `source.cases_changed_since_elicitation` | Whether the rubric applied is the rubric in force when the response was recorded |
+| `provenance.judge_prompt_sha256` | The judge prefix. Two runs sharing it are the same panel |
+| `counts` | `judged_pass` / `judged_fail` / `judged_uncertain` / `judge_error` |
+| `disagreed` | Cases where the lenses reached different verdicts — **the signal to read the case yourself** |
+| `adjusted` | Cases where the harness downgraded a verdict whose evidence did not check out |
+
+**A `fail` must quote the response verbatim, and the quote is verified in code.** A `fail` with no findings, or whose every quote is absent from the response, downgrades to `judged_uncertain` — never to a pass. A judge that misbehaved has told you nothing, and reading nothing as "fine" is how a broken judge reports a clean suite.
+
+**Verdicts are not aggregated by majority.** The lenses ask different questions, so two of them finding nothing is not evidence against the third, which was looking elsewhere. Any falsification fails the case; any uncertainty leaves it uncertain; a pass needs all three. [The calibration review](judge-calibration-review.md) records the case that justifies this — majority vote passes it 2–1 the wrong way.
+
 ## Still missing
 
-The runner exists; scoring does not, for most of the suite.
-
-- **Model-as-judge scoring** — the 30 `model_judged` cases stay `needs_judgment` until it lands
+- **Coverage.** 37 of 39 cases have never been sent; two have been judged
 - **A human-review workflow** for the 3 `human_review` cases
 - **A conversation-capable runner** for the 2 `multi_turn` cases
+- **A false-positive and false-negative rate for the panel.** It has caught the one defect it was pointed at. That is not a detection rate — see the review's *What this does not establish*

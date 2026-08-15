@@ -3,11 +3,18 @@
     python scripts/run_evals.py list
     python scripts/run_evals.py replay --transcript docs/experiments/0002-.../transcript.json
     python scripts/run_evals.py live --confirm
+    python scripts/run_evals.py judge --responses docs/evals/....json --confirm
 
 Three response sources, one scoring path. ``list`` sends nothing and reports what
 the suite contains. ``replay`` scores responses an experiment already recorded.
 ``live`` sends the suite to the API and **costs real money**, so it prices the run
 and refuses to spend without ``--confirm``.
+
+``judge`` is a fourth command and a different thing: it scores responses that were
+already elicited, using the model-as-judge panel in ``judge.py``. Elicitation and
+judgement are deliberately separate steps. Sending the suite is the expensive,
+non-idempotent half; judging is re-runnable against the same recorded responses as
+the rubric or the panel changes, without spending a second time on generation.
 
 Two rules govern the output, both inherited from ``evals.py``:
 
@@ -24,6 +31,11 @@ Replay carries one caveat the record makes explicit. The experiment's wording an
 a case's wording are usually not identical - only 2 of the 7 linked cases match
 verbatim - so a paraphrase-sourced result is evidence about the assistant, not a
 verdict on the case as written. The two are counted separately and never summed.
+
+Judging carries the corresponding caveat. A judge verdict uses its own status
+vocabulary - judged_pass, judged_fail, judged_uncertain - which is disjoint from
+the deterministic pass/fail on purpose. The two are never added together, because
+a lexical pass and a judged pass are not the same claim about the assistant.
 """
 
 from __future__ import annotations
@@ -642,6 +654,339 @@ def _run(
     return 1 if suite.failures else 0
 
 
+# --------------------------------------------------------------------------
+# Judging - scoring already-elicited responses with the model-as-judge panel
+# --------------------------------------------------------------------------
+
+
+def estimate_judge_cost(prefix_tokens: int, case_count: int, lens_count: int) -> dict[str, float]:
+    """Price a judge run. One cache write, the rest reads inside the TTL.
+
+    ``prefix_tokens`` is estimated by character ratio against the 40,511 the
+    assistant prefix measured in experiments 0001 and 0002 - the judge prefix has
+    never itself been measured, so this is an estimate and the record says so.
+    """
+    calls = case_count * lens_count
+    write = prefix_tokens * _IN * _WRITE_MULTIPLIER
+    reads = prefix_tokens * _IN * _READ_MULTIPLIER * max(0, calls - 1)
+    # The case brief - rubric, prompt, response - sits after the breakpoint and
+    # bills uncached on every call.
+    brief = calls * _JUDGE_BRIEF_TOKENS * _IN
+    output = calls * _JUDGE_OUTPUT_TOKENS * _OUT
+    return {
+        "calls": calls,
+        "prefix_tokens_estimated": prefix_tokens,
+        "prefix_write": round(write, 6),
+        "prefix_reads": round(reads, 6),
+        "briefs": round(brief, 6),
+        "output": round(output, 6),
+        "total": round(write + reads + brief + output, 6),
+    }
+
+
+#: Rubric plus prompt plus a typical response. Rounded up from the two recorded
+#: correction-pair responses, which ran 80 and 101 words.
+_JUDGE_BRIEF_TOKENS = 700
+
+#: A verdict plus its reasoning. Thinking runs at `high` effort and bills here.
+_JUDGE_OUTPUT_TOKENS = 900
+
+
+def _judge_prefix_tokens(judge_prompt: Any, assistant_chars: int) -> int:
+    """Scale the measured assistant prefix by character ratio. An estimate."""
+    if assistant_chars <= 0:
+        return PREFIX_TOKENS
+    return int(PREFIX_TOKENS * len(judge_prompt.text) / assistant_chars)
+
+
+def load_responses(path: Path) -> dict[str, Any]:
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict) or "cases" not in data:
+        raise ValueError(f"{path} is not a responses file (no 'cases' key)")
+    return data
+
+
+def select_for_judging(
+    entries: list[dict[str, Any]],
+    cases: tuple[EvalCase, ...],
+    only: frozenset[str] | None,
+) -> tuple[list[tuple[EvalCase, str]], list[Skipped]]:
+    """Pair each recorded response with its case. Every entry lands in one bucket.
+
+    Cases are taken from the current ``cases.yaml`` rather than from the rubric
+    snapshot inside the responses file, so a rubric that has been tightened since
+    the response was recorded is the rubric actually applied. The two fingerprints
+    are compared in the record so that substitution is visible rather than silent.
+    """
+    by_id = {case.id: case for case in cases}
+    selected: list[tuple[EvalCase, str]] = []
+    skipped: list[Skipped] = []
+
+    for entry in entries:
+        case_id = entry.get("case_id", "")
+        if only is not None and case_id not in only:
+            skipped.append(Skipped(case_id, "not_selected", "excluded by --only"))
+            continue
+
+        case = by_id.get(case_id)
+        if case is None:
+            skipped.append(
+                Skipped(case_id, "case_not_in_suite", "recorded response has no matching case")
+            )
+            continue
+
+        # A model judge must not stand in for the reader those cases name.
+        if case.scoring == "human_review":
+            skipped.append(
+                Skipped(
+                    case_id,
+                    "human_review",
+                    "scoring is human_review; a model verdict is not the evidence this case asks for",
+                )
+            )
+            continue
+
+        response = entry.get("response")
+        if not isinstance(response, str) or not response.strip():
+            skipped.append(Skipped(case_id, "no_response_text", "entry carries no response"))
+            continue
+
+        selected.append((case, response))
+
+    return selected, skipped
+
+
+def build_judgment_record(
+    *,
+    responses_path: Path,
+    responses: dict[str, Any],
+    cases_path: Path,
+    judged: tuple[Any, ...],
+    skipped: list[Skipped],
+    started_at: str,
+    provenance: dict[str, Any],
+) -> dict[str, Any]:
+    commit, dirty = git_commit()
+    counts: dict[str, int] = {}
+    for result in judged:
+        counts[result.status] = counts.get(result.status, 0) + 1
+
+    current_fingerprint = cases_fingerprint(cases_path)
+    recorded_fingerprint = responses.get("provenance", {}).get("cases_sha256")
+
+    return {
+        "schema": RECORD_SCHEMA,
+        "mode": "judge",
+        "started_at": started_at,
+        "finished_at": utc_now(),
+        "provenance": {
+            "commit": commit,
+            "commit_dirty": dirty,
+            "cases_file": _repo_relative(cases_path),
+            "cases_sha256": current_fingerprint,
+            "python": sys.version.split()[0],
+            **provenance,
+        },
+        "source": {
+            "kind": "responses",
+            "path": _repo_relative(responses_path),
+            "generated_at": responses.get("generated_at"),
+            "elicited_mode": responses.get("mode"),
+            "elicited_commit": responses.get("provenance", {}).get("commit"),
+            "elicited_model": responses.get("provenance", {}).get("model"),
+            "elicited_effort": responses.get("provenance", {}).get("effort"),
+            # If these differ, the rubric applied is not the rubric in force when
+            # the response was elicited. That is usually intended and never silent.
+            "cases_sha256_at_elicitation": recorded_fingerprint,
+            "cases_changed_since_elicitation": recorded_fingerprint != current_fingerprint,
+        },
+        "selection": {
+            "responses_in_file": len(responses.get("cases", [])),
+            "judged": len(judged),
+            "skipped": [s.as_dict() for s in skipped],
+        },
+        "counts": counts,
+        # Kept apart from any deterministic tally. A judged pass and a lexical
+        # pass are different claims and must never be summed into one rate.
+        "disagreed": [r.case_id for r in judged if r.disagreed],
+        "adjusted": [
+            {"case_id": r.case_id, "lens": lens.lens, "adjustment": lens.adjustment}
+            for r in judged
+            for lens in r.lenses
+            if lens.adjustment
+        ],
+        "results": [r.as_dict() for r in judged],
+        "usage": {
+            "calls": sum(len(r.lenses) for r in judged),
+            "total_cost_usd": round(sum(r.total_cost_usd for r in judged), 6),
+        },
+    }
+
+
+def print_judgment_summary(record: dict[str, Any]) -> None:
+    counts = record["counts"]
+    selection = record["selection"]
+
+    print("")
+    print(f"Responses in file  : {selection['responses_in_file']}")
+    print(f"Judged             : {selection['judged']}")
+    print(f"Skipped            : {len(selection['skipped'])}")
+    for skip in selection["skipped"]:
+        print(f"  - {skip['case_id']:34} {skip['reason']}")
+
+    print("")
+    for status in ("judged_pass", "judged_fail", "judged_uncertain", "judge_error"):
+        print(f"{status:19}: {counts.get(status, 0)}")
+
+    if record["disagreed"]:
+        print(f"\nPanel split on {len(record['disagreed'])} case(s):")
+        for case_id in record["disagreed"]:
+            print(f"  - {case_id}")
+
+    if record["adjusted"]:
+        print(f"\nHarness downgrades ({len(record['adjusted'])}):")
+        for item in record["adjusted"]:
+            print(f"  - {item['case_id']} [{item['lens']}] {item['adjustment']}")
+
+    # Printed here, not only written to the record. An all-error run writes no
+    # record at all, so leaving the cause in the file alone means the one run
+    # that most needs a diagnosis is the one that prints none.
+    errored = [r for r in record["results"] if r["error"]]
+    if errored:
+        print(f"\nErrors ({len(errored)}):")
+        for result in errored:
+            print(f"  - {result['case_id']}: {result['error']}")
+
+    for result in record["results"]:
+        if result["status"] != "judged_fail":
+            continue
+        print(f"\n{result['case_id']} - judged_fail")
+        for lens in result["lenses"]:
+            if lens["verdict"] != "fail":
+                continue
+            print(f"  [{lens['lens']}] {lens['reason']}")
+            for finding in lens["findings"]:
+                mark = "" if finding["quote_verified"] else "  (QUOTE NOT FOUND)"
+                print(f"      \"{finding['quote'][:100]}\"{mark}")
+                print(f"        {finding['problem']}")
+
+    usage = record.get("usage") or {}
+    if usage.get("total_cost_usd"):
+        print(f"\nSpent: ${usage['total_cost_usd']:.4f} over {usage['calls']} judge calls")
+
+    print(
+        "\nJudged verdicts use their own vocabulary and are never added to the "
+        "deterministic\ncounts. A judged_pass is one panel's reading, not a "
+        "measurement - see docs/evals/README.md."
+    )
+
+
+def cmd_judge(args: argparse.Namespace) -> int:
+    started_at = utc_now()
+    from ask_christopher.judge import (
+        LENSES,
+        build_judge_prompt,
+        judge_responses,
+        live_sender,
+    )
+    from ask_christopher.prompt import build_system_prompt
+
+    responses_path = Path(args.responses)
+    responses = load_responses(responses_path)
+    cases_path = Path(args.cases) if args.cases else default_cases_path()
+    cases = load_cases(cases_path)
+    only = frozenset(i.strip() for i in args.only.split(",")) if args.only else None
+
+    selected, skipped = select_for_judging(responses["cases"], cases, only)
+    if not selected:
+        print("Nothing to judge - every recorded response was skipped.", file=sys.stderr)
+        for skip in skipped:
+            print(f"  - {skip.case_id}: {skip.reason}", file=sys.stderr)
+        return 1
+
+    judge_prompt = build_judge_prompt()
+    prefix_tokens = _judge_prefix_tokens(judge_prompt, len(build_system_prompt().text))
+    estimate = estimate_judge_cost(prefix_tokens, len(selected), len(LENSES))
+
+    if not args.confirm:
+        print(f"A judge run would score {len(selected)} response(s) "
+              f"across {len(LENSES)} lenses.\n")
+        print(f"  lenses                    {', '.join(lens.name for lens in LENSES)}")
+        print(f"  calls                     {int(estimate['calls'])}")
+        print(f"  prefix (estimated)        ~{prefix_tokens:,} tokens")
+        print("")
+        print(f"  prefix write (first call) ${estimate['prefix_write']:.4f}")
+        print(f"  prefix reads (remainder)  ${estimate['prefix_reads']:.4f}")
+        print(f"  case briefs (uncached)    ${estimate['briefs']:.4f}")
+        print(f"  output (est. {_JUDGE_OUTPUT_TOKENS}/call)   ${estimate['output']:.4f}")
+        print(f"  ESTIMATED TOTAL           ${estimate['total']:.4f}")
+        print("\nThe prefix size is estimated by character ratio against the 40,511")
+        print("tokens measured in experiment 0001, not measured directly.")
+        print("\nNothing was sent. Re-run with --confirm to authorise the spend.")
+        return 0
+
+    try:
+        import anthropic
+    except ModuleNotFoundError:
+        print("The `anthropic` package is not installed.  pip install anthropic", file=sys.stderr)
+        return 1
+
+    client = anthropic.Anthropic(max_retries=0)
+    if not (getattr(client, "api_key", None) or getattr(client, "auth_token", None)):
+        print(_NO_CREDENTIALS, file=sys.stderr)
+        return 1
+
+    total = len(selected)
+    index = {"n": 0}
+
+    def report(result: Any) -> None:
+        index["n"] += 1
+        print(f"[{index['n']}/{total}] {result.case_id} ... {result.status}")
+
+    judged = judge_responses(
+        selected,
+        send=live_sender(client, model=args.model),
+        prompt=judge_prompt,
+        on_case=report,
+        model=args.model,
+        effort=args.effort,
+    )
+
+    record = build_judgment_record(
+        responses_path=responses_path,
+        responses=responses,
+        cases_path=cases_path,
+        judged=judged,
+        skipped=skipped,
+        started_at=started_at,
+        provenance={
+            "model": args.model,
+            "effort": args.effort,
+            "lenses": [lens.name for lens in LENSES],
+            "judge_prompt_sha256": _sha256(judge_prompt.to_bytes()),
+            "anthropic_sdk": anthropic.__version__,
+            "max_retries": 0,
+            "estimate_usd": estimate["total"],
+        },
+    )
+    print_judgment_summary(record)
+
+    if all(r.status == "judge_error" for r in judged):
+        print("\nNo case produced a verdict. Writing no record.", file=sys.stderr)
+        return 1
+
+    out = Path(args.out) if args.out else default_out("judge")
+    print(f"\nRecord: {write_record(record, out)}")
+
+    return 1 if any(r.status in {"judged_fail", "judge_error"} for r in judged) else 0
+
+
+def _sha256(data: bytes) -> str:
+    import hashlib
+
+    return hashlib.sha256(data).hexdigest()
+
+
 def cmd_render_responses(args: argparse.Namespace) -> int:
     path = Path(args.responses)
     data = json.loads(path.read_text(encoding="utf-8"))
@@ -757,6 +1102,20 @@ def main(argv: list[str] | None = None) -> int:
     live.add_argument("--max-tokens", type=int, default=2048)
     live.add_argument("--effort", default="low")
     live.set_defaults(func=cmd_live)
+
+    judging = sub.add_parser(
+        "judge", help="score already-recorded responses with the judge panel; costs money"
+    )
+    judging.add_argument("--responses", required=True, help="path to a responses JSON file")
+    judging.add_argument("--confirm", action="store_true", help="authorise the spend")
+    judging.add_argument("--only", help="comma-separated case ids")
+    judging.add_argument("--out", help="where to write the JSON record")
+    judging.add_argument("--model", default="claude-opus-5")
+    # Judging is the half of the suite that catches what lexical checks cannot.
+    # Eliciting at low effort keeps a baseline cheap; scoring at low effort would
+    # just add a second unreliable reader.
+    judging.add_argument("--effort", default="high")
+    judging.set_defaults(func=cmd_judge)
 
     args = parser.parse_args(argv)
     return int(args.func(args))

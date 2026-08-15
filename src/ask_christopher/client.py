@@ -31,6 +31,7 @@ __all__ = [
     "ask",
     "ask_conversation",
     "response_text",
+    "extract_metrics",
 ]
 
 
@@ -206,7 +207,7 @@ def ask_conversation(
     message = client.messages.create(**request)
     elapsed = time.perf_counter() - started
 
-    return message, _extract_metrics(message, elapsed, fallback_model=request["model"])
+    return message, extract_metrics(message, elapsed, fallback_model=request["model"])
 
 
 def ask(client: Any, question: str, **kwargs: Any) -> tuple[Any, RequestMetrics]:
@@ -227,11 +228,14 @@ def response_text(message: Any) -> str:
     )
 
 
-def _extract_metrics(message: Any, elapsed: float, *, fallback_model: str) -> RequestMetrics:
+def extract_metrics(message: Any, elapsed: float, *, fallback_model: str) -> RequestMetrics:
     """Read usage off a response.
 
     Cache fields are absent or ``None`` on responses where caching did not apply,
     so each is coerced to zero rather than propagating ``None`` into arithmetic.
+
+    Public because the judge (``judge.py``) builds its own request shape but must
+    account for cost identically — two cost tables would drift apart silently.
     """
     usage = getattr(message, "usage", None)
 
