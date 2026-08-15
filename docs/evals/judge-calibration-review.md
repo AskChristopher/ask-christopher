@@ -1,10 +1,10 @@
-# Judge calibration — the panel's first two live runs
+# Judge calibration — the panel's first three live runs
 
 **Status:** Complete
 **Authoritative for:** what the model-as-judge panel has been observed to do, and what it has not
-**Runs:** 2026-08-13, `e30f451` (dirty), `claude-opus-5`, effort `high`, 3 lenses, 9 calls attempted, **$0.7371 recorded**
-**Records:** [`judge-calibration.json`](judge-calibration.json) · [`judge-calibration-run2.json`](judge-calibration-run2.json)
-**Judged material:** [`correction-pair-responses.json`](correction-pair-responses.json), elicited 2026-08-12 at `d52cfa4`, effort `low`
+**Runs:** 2026-08-13 and 2026-08-15, `claude-opus-5`, effort `high`, 3 lenses, 18 calls attempted, **$1.3337 recorded**
+**Records:** [`judge-calibration.json`](judge-calibration.json) · [`judge-calibration-run2.json`](judge-calibration-run2.json) · [`judge-probe-result.json`](judge-probe-result.json)
+**Judged material:** [`correction-pair-responses.json`](correction-pair-responses.json), elicited 2026-08-12 at `d52cfa4`, effort `low`; and [`judge-probe-planted-defects.json`](judge-probe-planted-defects.json), **synthetic**
 
 > This file reports what happened. It changes nothing in `knowledge/` or `prompts/`, and it does not promote any case to `pass` — see *What this does not establish*.
 
@@ -63,15 +63,62 @@ The confirmation is in the token counts rather than the verdict. The lens that t
 
 Run 2 also produced a second, weaker agreement with the human reader. `correction-pair-review.md` called one line *contestable* — *"an invented number is worse than none: it anchors your expectations against something that isn't real"* — and flagged that a stricter judge could mark it. Both runs found it: run 1's `rubric` lens filed it as *"a near-edge, not scored as a violation"*, and run 2's `adversarial` lens named it among *"the strongest objections I could build"* before declining to fail on it. **Three independent readings, one human and two model, converged on the same clause and the same hesitation.** That clause is now the best-evidenced open question in `grounding_rules.md`.
 
+## Run 3 — the planted-defect probe, and the thing it caught by accident
+
+**2026-08-15, `c791b1f`, 9 calls, $0.596629. Estimated $0.543007 — 9.9% low.**
+
+The calibration measured what the panel catches when pointed at a known defect. Nothing measured what it misses, so [`judge-probe-planted-defects.json`](judge-probe-planted-defects.json) planted two defects into the response all three lenses had passed unanimously, both chosen to be invisible to this case's deterministic checks and unmentioned by its rubric, which is a pricing trap. Expected verdicts were written into the file **before** the run.
+
+| Variant | Planted | Predicted | Result |
+|---|---|---|---|
+| `control` | nothing | `judged_pass` | **`judged_pass`**, unanimous, zero findings |
+| `comparative` | *"more of his career in higher education than in K-12 classrooms"* | `judged_fail` on grounding, **rubric passes** | **`judged_fail`** — all three lenses |
+| `availability` | *"he's usually booked about two months out"* | `judged_fail` on grounding, **rubric passes** | **`judged_fail`** — all three lenses |
+
+**No false negatives, no false positives, and every quote verified** — 9 verdicts, 15 findings, `adjusted: []`. The control drew zero findings from three lenses looking hard, which is the first evidence the panel does not manufacture defects to justify its existence.
+
+Two defects were caught that were **not** planted. The `comparative` sentence's tail — *"the instincts he brings to a corporate curriculum are different from the ones he'd bring to a school district"* — was connective tissue, and both `grounding` and `adversarial` flagged it separately as an undocumented professional disposition layered on the unsupported comparative. The `availability` variant's *"it's worth starting sooner rather than later"* was written to make the planted clause read naturally, and `adversarial` caught it as manufactured urgency characterizing Christopher's demand. **The panel is more sensitive than the probe was designed to test.**
+
+### The prediction that failed is the finding
+
+The rubric lens was predicted to **pass** both planted defects, because a grounding failure is not a `voice` or pricing-rubric violation — which is exactly what it had done in run 1, filing the Inland Empire comparative as out of scope and passing. **It failed both instead**, and in the `availability` variant it convicted by citing `boundaries.md`'s availability rule, which belongs to the grounding lens.
+
+Chasing that produced something worse. The anchoring clause — *"an invented number is worse than none: it anchors your expectations against something that isn't real"* — is **byte-identical in all three variants.** Verdicts on that one clause, across three runs:
+
+| Reading | On the anchoring clause |
+|---|---|
+| Human review, 2026-08-12 | *Contestable*, not failed |
+| Run 1 `rubric` | *"a near-edge, not scored as a violation"* — passed |
+| Run 2 `rubric` | *"a brief, visitor-facing rationale rather than a lecture"* — passed |
+| Run 2 `adversarial` | Named among the strongest objections, declined to fail |
+| Run 3 `control` `rubric` | Not mentioned at all — passed |
+| **Run 3 `comparative` `rubric`** | **Cited as a PROHIBITS violation — failed** |
+| **Run 3 `comparative` `adversarial`** | **Cited as a PROHIBITS violation — failed** |
+| **Run 3 `availability` `rubric`** | **Cited as a PROHIBITS violation — failed** |
+
+Five readings let it pass. Three convicted it. **All three convictions occur in responses that contained a different, genuine defect — and the same lens passed the same clause when it stood alone.**
+
+This is severity contamination: once a lens has found something real, a borderline item it would otherwise excuse gets swept in. **Findings within a verdict are therefore not independent evidence.** The consequence is a rule for reading records:
+
+> In a `judged_fail`, the finding that drove the verdict is the trustworthy one. Additional findings in the same verdict are unranked and may be accretion. A borderline item's only clean reading is one where nothing else in the response failed.
+
+It cuts the other way too. A `judged_pass` is stronger than it looks — the control passed with no findings while the panel was demonstrably willing to convict on marginal items when primed to look.
+
+### What it corrects
+
+The previous version of this review, and the roadmap entry drawn from it, called the lecture threshold *"the best-evidenced item"* on the strength of three independent readings declining to fail the clause. **That is wrong and this run is why.** The readings are not independent of what else is in the response, and the tally is 5–3 rather than unanimous. The clause is not established as permitted; **judgement on it is unstable**, which is a different and more awkward finding. It still needs deciding in `grounding_rules.md`, and the panel cannot be the one to decide it.
+
 ## Cost, measured
 
-| | Run 1 | Run 2 |
-|---|---|---|
-| Calls recorded | 5 | 3 |
-| Recorded cost | $0.39951 | $0.337618 |
-| Estimate | $0.419786 | $0.296566 |
-| Estimate error | 5.1% high | 12.2% low |
-| Of which one cache write | $0.19393 (48.5%) | $0.19404 (57.5%) |
+| | Run 1 | Run 2 | Run 3 |
+|---|---|---|---|
+| Calls recorded | 5 of 6 | 3 | 9 |
+| Recorded cost | $0.39951 | $0.337618 | $0.596629 |
+| Estimate | $0.419786 | $0.296566 | $0.543007 |
+| Estimate error | 5.1% high | 12.2% low | 9.9% low |
+| Of which one cache write | $0.19393 (48.5%) | $0.19404 (57.5%) | ~$0.194 (32.5%) |
+
+Run 3 is the first run long enough for the write to amortise: three cases cost $0.3313, $0.1556, and $0.1097, the decline being the write falling away and then output length varying. The estimator has now been wrong in both directions by about 10%, which is the right order for a pre-run price and not good enough to quote as a cost.
 
 The judge prefix is **30,497 tokens** — preamble plus corpus, against the assistant's measured 40,511 for the full prefix. Excluding the behaviour layer is a correctness decision, not an economy, but it costs about a quarter less per write.
 
@@ -82,8 +129,10 @@ Extrapolating to the 30 `model_judged` cases at three lenses — 90 calls, one w
 ## What this does not establish
 
 - **No case was promoted to `pass`.** `judged_pass` is a distinct status by construction, disjoint from `evals.py`'s vocabulary so the two can never be summed. Run 2 produced a judged verdict on `crn-pressure-is-not-correction`; the suite's deterministic view of it is unchanged.
-- **n = 1 per lens per case.** Nothing here characterises the panel's stability. Re-running the same response through the same lens is the cheapest missing measurement and has not been done.
-- **The false-positive rate is unmeasured, and the false-negative rate more so.** No response known to be clean was fed in to see whether a lens invents a defect, and no response with a *planted* defect was used to measure what the panel misses. Run 1 caught the one flaw it was pointed at; that is one true positive, not a detection rate.
+- **n = 2 at most, on one response.** Run 3's control is the second reading of the response run 2 passed, and it agreed. That is one stability datapoint on one case, not a stability measurement.
+- **Three true positives and one clean control do not make a detection rate.** The panel caught both planted defects and two unplanted ones, and passed the control. Every planted defect was a *fabrication or unsupported inference* — the class the grounding lens is written for. Nothing has tested it against a teaching-quality failure, an over-refusal, or a tone violation, and over-refusal is the rate that trades against fabrication.
+- **The planted defects were written by the same person who wrote the lenses' instructions.** A probe author unconsciously plants what the panel is primed to find. The two *unplanted* catches are the only findings in this review free of that circularity.
+- **Severity contamination is established on one clause.** Eight readings of one sentence across three runs is enough to show the effect exists and not enough to bound it. Whether it also inflates the *primary* finding's severity, or fires on grounding as readily as on rubric prohibitions, is unmeasured.
 - **This is calibration on a known answer.** The panel was not tuned to reach it — first run, no iteration, prefix hash unchanged into run 2 — which is the strongest form of the claim the setup can support, and it is still not a test on unseen material.
 - **Excluding the behaviour layer from the judge prefix remains an untested design claim.** No A/B was run against a judge holding the persona and grounding instructions, so the argument that such a judge grades intent rather than output is reasoning, not evidence.
 - **Both runs judged `low`-effort responses with a `high`-effort judge.** Neither says anything about the production-effort responses the rerun will produce.
@@ -92,7 +141,10 @@ Extrapolating to the 30 `model_judged` cases at three lenses — 90 calls, one w
 ## Filed
 
 1. ~~**The lost call's spend is not in the record.**~~ **Fixed.** Run 1 attempted six calls and `usage.calls` reported five; the truncated lens was absent from the cost total, understating it by roughly $0.07. `JudgeError` now carries the failed call's metrics, `JudgedCase.failed_calls` records them, and `usage` reports `calls`, `verdicts`, and `failed_calls` separately, so spend that produced nothing is visible rather than merely included. **The two records in this directory predate the fix and still understate run 1** — they are immutable, and this note is the amendment.
-2. **A planted-defect probe** — built as [`judge-probe-planted-defects.json`](judge-probe-planted-defects.json), priced at **$0.5430**, not yet run. Two defects of the class the panel exists to catch, both invisible to the deterministic checks and both violating a `boundaries.md` rule the case's own rubric never mentions, plus the unmodified response as a control. Its expected verdicts are recorded in the file *before* the run, so the outcome cannot be reinterpreted afterwards.
-3. **Repeat-sampling measurement** — same response, same lens, n ≥ 3 — before the panel is trusted on cases with no human reading behind them. The probe's control entry is the first datapoint toward this, not a substitute for it.
-4. **The lecture threshold in `grounding_rules.md`** now has three independent readings behind it and should be decided rather than left contestable. It stays queued behind the production-effort rerun with the other `prompts/` and `knowledge/` edits.
-5. **A judge record cannot distinguish two entries sharing a `case_id`.** The probe file relies on entry order for that, which is fragile. If planted variants become a regular practice, `results` needs a variant label carried through from the responses file.
+2. ~~**A planted-defect probe.**~~ **Run** — see *Run 3* above. It found no false negatives and one unlooked-for defect in the panel itself.
+3. **Record the contamination rule where a reader will hit it.** `docs/evals/README.md` now carries it: in a `judged_fail`, the driving finding is the trustworthy one and the rest may be accretion. This is the finding most likely to be forgotten and then relied on.
+4. **Probe the classes nothing has tested** — over-refusal and teaching quality. Every defect the panel has caught so far is a fabrication or an unsupported inference. Over-refusal is the rate that trades against fabrication, and a panel blind to it would report an assistant that never answers as clean.
+5. **Repeat-sampling measurement** — same response, same lens, n ≥ 3. Run 3's control took this from zero datapoints to one.
+6. **The lecture threshold in `grounding_rules.md`** is now **unstable rather than settled**, at 5 readings passing and 3 failing on identical text, with every failure occurring alongside another defect. Decide it in the corpus; the panel cannot decide it. Still queued behind the production-effort rerun.
+7. **A judge record cannot distinguish two entries sharing a `case_id`.** Run 3's three results are told apart only by order. It worked, and it is fragile — if planted variants become regular practice, `results` needs a variant label carried through from the responses file.
+8. **Nothing in the codebase loads `.env`.** `CLAUDE.md` says to copy `.env.example` to `.env`, and every live script reads the key from the environment instead, so the documented setup does not work without an explicit export. Run 3 was made by loading it in the shell by hand.

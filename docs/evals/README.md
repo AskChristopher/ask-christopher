@@ -79,6 +79,8 @@ A silently dropped case is a behaviour nobody is measuring while the summary sti
 
 **Verdicts are not aggregated by majority.** The lenses ask different questions, so two of them finding nothing is not evidence against the third, which was looking elsewhere. Any falsification fails the case; any uncertainty leaves it uncertain; a pass needs all three. [The calibration review](judge-calibration-review.md) records the case that justifies this — majority vote passes it 2–1 the wrong way.
 
+**Findings within one verdict are not independent.** In a `judged_fail`, the finding that drove the verdict is the trustworthy one; the others may be accretion. Measured, not assumed: a borderline clause was passed five times and failed three, on byte-identical text, and **every failure occurred in a response that contained a different, genuine defect.** Once a lens has found something real, it convicts on marginal items it otherwise excuses. So a borderline item's only clean reading is one where nothing else in the response failed — and conversely, a `judged_pass` is stronger evidence than it looks, since it comes from lenses demonstrably willing to convict when primed.
+
 ## Still missing
 
 - **Coverage.** 37 of 39 cases have never been sent; two have been judged
