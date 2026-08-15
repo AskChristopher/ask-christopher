@@ -817,7 +817,12 @@ def build_judgment_record(
         ],
         "results": [r.as_dict() for r in judged],
         "usage": {
-            "calls": sum(len(r.lenses) for r in judged),
+            # Billed calls, not verdicts returned. A lens that died after the
+            # response arrived cost money and produced nothing; counting only
+            # verdicts made run 1's truncated lens look free.
+            "calls": sum(r.calls for r in judged),
+            "verdicts": sum(len(r.lenses) for r in judged),
+            "failed_calls": sum(len(r.failed_calls) for r in judged),
             "total_cost_usd": round(sum(r.total_cost_usd for r in judged), 6),
         },
     }
@@ -873,6 +878,11 @@ def print_judgment_summary(record: dict[str, Any]) -> None:
     usage = record.get("usage") or {}
     if usage.get("total_cost_usd"):
         print(f"\nSpent: ${usage['total_cost_usd']:.4f} over {usage['calls']} judge calls")
+        if usage.get("failed_calls"):
+            print(
+                f"  {usage['failed_calls']} of those returned no verdict and were "
+                f"still billed."
+            )
 
     print(
         "\nJudged verdicts use their own vocabulary and are never added to the "

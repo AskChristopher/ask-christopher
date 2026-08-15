@@ -404,6 +404,77 @@ def test_cost_is_summed_across_the_panel() -> None:
     )
 
     assert judged.total_cost_usd == pytest.approx(3 * (_metrics().total_cost_usd or 0.0))
+    assert judged.calls == 3
+    assert judged.failed_calls == ()
+
+
+def test_a_billed_call_that_returned_no_verdict_is_still_charged() -> None:
+    """Calibration run 1 attempted six calls, recorded five, and priced five.
+
+    The truncated lens was billed. Counting only verdicts made an expensive
+    failure read as free, which is the wrong direction for a cost total to err.
+    """
+    per_call = _metrics().total_cost_usd or 0.0
+
+    def send(request: dict[str, Any]) -> tuple[Any, RequestMetrics]:
+        if len(seen) == 2:
+            raise JudgeError("cut off", metrics=_metrics(output_tokens=2048))
+        seen.append(request)
+        return _verdict("pass"), _metrics()
+
+    seen: list[dict[str, Any]] = []
+    judged = judge_case(_case(), "r", send=send, prompt=PROMPT)
+
+    assert judged.status == "judge_error"
+    assert len(judged.lenses) == 2
+    assert len(judged.failed_calls) == 1
+
+    # Three calls were made and three are accounted for, though only two
+    # produced a verdict.
+    assert judged.calls == 3
+    lost = _metrics(output_tokens=2048).total_cost_usd or 0.0
+    assert judged.total_cost_usd == pytest.approx(2 * per_call + lost)
+    assert judged.total_cost_usd > 2 * per_call
+
+
+def test_a_failure_with_no_usage_is_not_invented() -> None:
+    """A transport that died before responding was not billed. Do not guess."""
+
+    def send(request: dict[str, Any]) -> tuple[Any, RequestMetrics]:
+        raise RuntimeError("connection reset")
+
+    judged = judge_case(_case(), "r", send=send, prompt=PROMPT)
+
+    assert judged.failed_calls == ()
+    assert judged.calls == 0
+    assert judged.total_cost_usd == 0.0
+
+
+def test_the_lost_call_is_in_the_record() -> None:
+    """Spend that produced nothing must be visible, not only in the total."""
+
+    def send(request: dict[str, Any]) -> tuple[Any, RequestMetrics]:
+        raise JudgeError("cut off", metrics=_metrics(output_tokens=2048))
+
+    record = judge_case(_case(), "r", send=send, prompt=PROMPT).as_dict()
+    json.dumps(record)
+
+    assert record["calls"] == 1
+    assert record["lenses"] == []
+    assert len(record["failed_calls"]) == 1
+    assert record["failed_calls"][0]["output_tokens"] == 2048
+
+
+def test_truncation_carries_what_it_spent() -> None:
+    """The budget error is the one most likely to fire, so it must not lose usage."""
+    message = _Message([_Block('{"verdict": "pass"')], stop_reason="max_tokens")
+    send = live_sender(_Client(message))
+
+    with pytest.raises(JudgeError) as caught:
+        send({"model": "claude-opus-5"})
+
+    assert caught.value.metrics is not None
+    assert caught.value.metrics.stop_reason == "max_tokens"
 
 
 def test_many_cases_share_one_prefix_object() -> None:

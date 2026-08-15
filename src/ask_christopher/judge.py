@@ -83,7 +83,18 @@ class JudgeError(RuntimeError):
     Raised rather than defaulting to a verdict. A judge that fails open reports
     passes it never established, which is the one outcome this module exists to
     prevent.
+
+    ``metrics`` carries the usage of the call that failed, when the failure
+    happened late enough for usage to exist. **A failed call is still billed.**
+    The first calibration run attempted six calls, recorded five, and reported a
+    cost total that omitted the truncated one - an expensive failure that read as
+    free. Whoever raises attaches what was spent so the record can account for
+    it.
     """
+
+    def __init__(self, *args: Any, metrics: RequestMetrics | None = None) -> None:
+        super().__init__(*args)
+        self.metrics = metrics
 
 
 #: Thinking is on by default on Opus 5 and bills against ``max_tokens`` together
@@ -545,6 +556,10 @@ class JudgedCase:
     status: str
     lenses: tuple[LensVerdict, ...] = ()
     error: str | None = None
+    #: Usage for calls that were billed but produced no verdict. Kept separate
+    #: from :attr:`lenses` because they are spend without evidence - they belong
+    #: in the cost total and nowhere near the verdict counts.
+    failed_calls: tuple[RequestMetrics, ...] = ()
 
     @property
     def disagreed(self) -> bool:
@@ -557,10 +572,16 @@ class JudgedCase:
         return len({v.verdict for v in self.lenses}) > 1
 
     @property
+    def calls(self) -> int:
+        """Billed calls, whether or not they produced a verdict."""
+        return len(self.lenses) + len(self.failed_calls)
+
+    @property
     def total_cost_usd(self) -> float:
-        return sum(
-            (v.metrics.total_cost_usd or 0.0) for v in self.lenses if v.metrics is not None
-        )
+        """Everything this case cost, including calls that returned nothing."""
+        spent = [v.metrics for v in self.lenses if v.metrics is not None]
+        spent.extend(self.failed_calls)
+        return sum((m.total_cost_usd or 0.0) for m in spent)
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -571,6 +592,8 @@ class JudgedCase:
             "disagreed": self.disagreed,
             "lenses": [v.as_dict() for v in self.lenses],
             "error": self.error,
+            "failed_calls": [m.as_dict() for m in self.failed_calls],
+            "calls": self.calls,
             "total_cost_usd": round(self.total_cost_usd, 6),
         }
 
@@ -636,6 +659,9 @@ def judge_case(
             payload, metrics = send(request)
             verdicts.append(parse_verdict(payload, lens, response, metrics=metrics))
         except Exception as exc:  # noqa: BLE001 - recorded, never silently dropped
+            # The failed call's usage, if the failure came after the response
+            # arrived. Recorded rather than discarded: it was billed.
+            spent = getattr(exc, "metrics", None)
             return JudgedCase(
                 case_id=case.id,
                 category=case.category,
@@ -643,6 +669,7 @@ def judge_case(
                 status="judge_error",
                 lenses=tuple(verdicts),
                 error=f"lens '{lens.name}': {type(exc).__name__}: {exc}",
+                failed_calls=(spent,) if isinstance(spent, RequestMetrics) else (),
             )
 
     return JudgedCase(
@@ -702,7 +729,8 @@ def live_sender(
             raise JudgeError(
                 f"judge hit max_tokens ({metrics.output_tokens} output tokens) and its "
                 f"verdict was cut off. Raise max_tokens or lower effort; thinking "
-                f"bills against the same budget."
+                f"bills against the same budget.",
+                metrics=metrics,
             )
 
         blocks = getattr(message, "content", None) or []
@@ -712,11 +740,14 @@ def live_sender(
         if not text.strip():
             raise JudgeError(
                 f"judge returned no text (stop_reason={metrics.stop_reason!r}); "
-                f"a verdict with no body is not a verdict"
+                f"a verdict with no body is not a verdict",
+                metrics=metrics,
             )
         try:
             return json.loads(text), metrics
         except json.JSONDecodeError as exc:
-            raise JudgeError(f"judge output was not valid JSON: {exc}") from exc
+            raise JudgeError(
+                f"judge output was not valid JSON: {exc}", metrics=metrics
+            ) from exc
 
     return send
