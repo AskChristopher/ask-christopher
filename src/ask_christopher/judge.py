@@ -64,6 +64,7 @@ __all__ = [
     "JudgePrompt",
     "Finding",
     "LensVerdict",
+    "JudgeTarget",
     "JudgedCase",
     "build_judge_prompt",
     "build_judge_request",
@@ -547,6 +548,34 @@ def parse_verdict(
 
 
 @dataclass(frozen=True)
+class JudgeTarget:
+    """One thing to judge: a case, a response, and optionally which variant it is.
+
+    ``variant`` exists because a probe can hold several responses against a
+    single case - a control plus deliberately defective edits of it. Without a
+    label those entries are told apart in a record only by their order in the
+    file, which is how the planted-defect probe's three results were
+    distinguished. It worked and it should not have had to.
+    """
+
+    case: EvalCase
+    response: str
+    variant: str | None = None
+
+    @classmethod
+    def coerce(cls, item: Any) -> "JudgeTarget":
+        """Accept a :class:`JudgeTarget` or a plain ``(case, response)`` pair.
+
+        The pair form stays valid because it is correct wherever there is one
+        response per case, which is every use except a probe.
+        """
+        if isinstance(item, cls):
+            return item
+        case, response = item
+        return cls(case=case, response=response)
+
+
+@dataclass(frozen=True)
 class JudgedCase:
     """The panel's combined verdict on one case."""
 
@@ -554,12 +583,24 @@ class JudgedCase:
     category: str
     scoring: str
     status: str
+    #: Which response of several against this case. ``None`` when there is only
+    #: one, which is the ordinary situation.
+    variant: str | None = None
     lenses: tuple[LensVerdict, ...] = ()
     error: str | None = None
     #: Usage for calls that were billed but produced no verdict. Kept separate
     #: from :attr:`lenses` because they are spend without evidence - they belong
     #: in the cost total and nowhere near the verdict counts.
     failed_calls: tuple[RequestMetrics, ...] = ()
+
+    @property
+    def label(self) -> str:
+        """How this result is named in a summary or a cross-reference.
+
+        Identical to ``case_id`` when there is no variant, so records of ordinary
+        runs read exactly as they did before variants existed.
+        """
+        return f"{self.case_id} [{self.variant}]" if self.variant else self.case_id
 
     @property
     def disagreed(self) -> bool:
@@ -586,6 +627,8 @@ class JudgedCase:
     def as_dict(self) -> dict[str, Any]:
         return {
             "case_id": self.case_id,
+            "variant": self.variant,
+            "label": self.label,
             "category": self.category,
             "scoring": self.scoring,
             "status": self.status,
@@ -629,6 +672,7 @@ def judge_case(
     *,
     send: Callable[[dict[str, Any]], tuple[Any, RequestMetrics]],
     prompt: JudgePrompt,
+    variant: str | None = None,
     lenses: Iterable[Lens] = LENSES,
     model: str = DEFAULT_MODEL,
     max_tokens: int = DEFAULT_JUDGE_MAX_TOKENS,
@@ -643,6 +687,10 @@ def judge_case(
     A lens that raises aborts the case rather than being dropped. A panel
     missing a lens is not a panel, and reporting one as though it were complete
     would overstate what was checked.
+
+    ``variant`` labels the result and is deliberately **not** put in the request.
+    A probe that told the judge which entry was the control would be measuring
+    its own suggestibility.
     """
     verdicts: list[LensVerdict] = []
     for lens in lenses:
@@ -664,6 +712,7 @@ def judge_case(
             spent = getattr(exc, "metrics", None)
             return JudgedCase(
                 case_id=case.id,
+                variant=variant,
                 category=case.category,
                 scoring=case.scoring,
                 status="judge_error",
@@ -674,6 +723,7 @@ def judge_case(
 
     return JudgedCase(
         case_id=case.id,
+        variant=variant,
         category=case.category,
         scoring=case.scoring,
         status=aggregate(verdicts),
@@ -682,22 +732,33 @@ def judge_case(
 
 
 def judge_responses(
-    pairs: Iterable[tuple[EvalCase, str]],
+    targets: Iterable[JudgeTarget | tuple[EvalCase, str]],
     *,
     send: Callable[[dict[str, Any]], tuple[Any, RequestMetrics]],
     prompt: JudgePrompt | None = None,
     on_case: Callable[[JudgedCase], None] | None = None,
     **kwargs: Any,
 ) -> tuple[JudgedCase, ...]:
-    """Judge many (case, response) pairs against one shared prefix.
+    """Judge many targets against one shared prefix.
+
+    Each target is a :class:`JudgeTarget`, or a plain ``(case, response)`` pair
+    for the ordinary one-response-per-case situation.
 
     The prefix is assembled once here and reused, so a run of N cases across
     three lenses pays a single cache write rather than 3N.
     """
     shared = build_judge_prompt() if prompt is None else prompt
     results: list[JudgedCase] = []
-    for case, response in pairs:
-        result = judge_case(case, response, send=send, prompt=shared, **kwargs)
+    for item in targets:
+        target = JudgeTarget.coerce(item)
+        result = judge_case(
+            target.case,
+            target.response,
+            send=send,
+            prompt=shared,
+            variant=target.variant,
+            **kwargs,
+        )
         results.append(result)
         if on_case is not None:
             on_case(result)

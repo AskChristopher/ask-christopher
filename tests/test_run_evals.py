@@ -138,6 +138,94 @@ def test_a_responder_skip_is_carried_through() -> None:
 
 
 # --------------------------------------------------------------------------
+# Selecting for judgement - and refusing a file that cannot be read
+# --------------------------------------------------------------------------
+
+
+def _entry(case_id: str, **overrides: Any) -> dict[str, Any]:
+    return {"case_id": case_id, "response": "some text", **overrides}
+
+
+def test_one_entry_per_case_needs_no_variant() -> None:
+    run = _runner()
+
+    run.check_variant_labels([_entry("a"), _entry("b")])  # must not raise
+
+
+def test_shared_case_ids_without_variants_are_refused() -> None:
+    """The fragility this closes: two entries told apart only by file order."""
+    run = _runner()
+
+    with pytest.raises(ValueError, match="no 'variant' label"):
+        run.check_variant_labels([_entry("a"), _entry("a")])
+
+
+def test_a_partially_labelled_group_is_refused() -> None:
+    run = _runner()
+
+    with pytest.raises(ValueError, match="variant"):
+        run.check_variant_labels([_entry("a", variant="control"), _entry("a")])
+
+
+def test_duplicate_variant_labels_are_refused() -> None:
+    run = _runner()
+
+    with pytest.raises(ValueError, match="duplicate variant"):
+        run.check_variant_labels(
+            [_entry("a", variant="control"), _entry("a", variant="control")]
+        )
+
+
+def test_distinct_variants_are_accepted_and_carried_through() -> None:
+    run = _runner()
+    cases = (_case("a"),)
+
+    selected, skipped = run.select_for_judging(
+        [_entry("a", variant="control"), _entry("a", variant="planted")], cases, None
+    )
+
+    assert [t.variant for t in selected] == ["control", "planted"]
+    assert skipped == []
+
+
+def test_a_skipped_variant_is_identified_by_its_label() -> None:
+    run = _runner()
+    cases = (_case("a", scoring="human_review"),)
+
+    _selected, skipped = run.select_for_judging(
+        [_entry("a", variant="control"), _entry("a", variant="planted")], cases, None
+    )
+
+    assert [s.label for s in skipped] == ["a [control]", "a [planted]"]
+    assert all(s.reason == "human_review" for s in skipped)
+
+
+def test_the_planted_defect_probe_file_is_readable_under_the_guard() -> None:
+    """The file that motivated this already labels its variants. It must pass."""
+    run = _runner()
+    path = ROOT / "docs" / "evals" / "judge-probe-planted-defects.json"
+
+    run.check_variant_labels(json.loads(path.read_text(encoding="utf-8"))["cases"])
+
+
+def test_an_unreadable_responses_file_is_rejected_before_it_is_priced(
+    tmp_path: Path, capsys: Any
+) -> None:
+    """The guard must fire at pricing time - an ambiguous file costs nothing."""
+    run = _runner()
+    path = tmp_path / "responses.json"
+    path.write_text(
+        json.dumps({"cases": [_entry("fab-credential-phd"), _entry("fab-credential-phd")]}),
+        encoding="utf-8",
+    )
+
+    code = run.main(["judge", "--responses", str(path)])
+
+    assert code == 1
+    assert "cannot be judged unambiguously" in capsys.readouterr().err
+
+
+# --------------------------------------------------------------------------
 # Replay against the real artifact
 # --------------------------------------------------------------------------
 

@@ -133,9 +133,20 @@ class Skipped:
     case_id: str
     reason: str
     detail: str = ""
+    #: Set only when a responses file holds several entries for one case.
+    variant: str | None = None
 
-    def as_dict(self) -> dict[str, str]:
-        return {"case_id": self.case_id, "reason": self.reason, "detail": self.detail}
+    @property
+    def label(self) -> str:
+        return f"{self.case_id} [{self.variant}]" if self.variant else self.case_id
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "case_id": self.case_id,
+            "variant": self.variant,
+            "reason": self.reason,
+            "detail": self.detail,
+        }
 
 
 def select(
@@ -706,32 +717,84 @@ def load_responses(path: Path) -> dict[str, Any]:
     return data
 
 
+def check_variant_labels(entries: list[dict[str, Any]]) -> None:
+    """Refuse a responses file whose entries cannot be told apart.
+
+    Several entries may share a ``case_id`` - a probe holds a control plus
+    deliberately defective edits of it - but then each one must carry a distinct
+    ``variant``. Without that, a judge record distinguishes them only by their
+    position in the file, which is how the planted-defect probe's three results
+    were read. It worked, and one reordering would have made the record wrong
+    while it still looked right.
+
+    Raised at pricing time rather than after the spend, so an unreadable file
+    costs nothing.
+    """
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for entry in entries:
+        grouped.setdefault(str(entry.get("case_id", "")), []).append(entry)
+
+    problems: list[str] = []
+    for case_id, group in grouped.items():
+        if len(group) == 1:
+            continue
+        labels = [str(e.get("variant") or "").strip() for e in group]
+        if not all(labels):
+            problems.append(
+                f"{case_id}: {len(group)} entries share this case_id and "
+                f"{labels.count('')} of them carry no 'variant' label"
+            )
+        elif len(set(labels)) != len(labels):
+            problems.append(f"{case_id}: duplicate variant label(s) {sorted(labels)}")
+
+    if problems:
+        raise ValueError(
+            "responses file cannot be judged unambiguously:\n  - "
+            + "\n  - ".join(problems)
+            + "\nGive every entry sharing a case_id a distinct 'variant'."
+        )
+
+
 def select_for_judging(
     entries: list[dict[str, Any]],
     cases: tuple[EvalCase, ...],
     only: frozenset[str] | None,
-) -> tuple[list[tuple[EvalCase, str]], list[Skipped]]:
+) -> tuple[list[Any], list[Skipped]]:
     """Pair each recorded response with its case. Every entry lands in one bucket.
 
     Cases are taken from the current ``cases.yaml`` rather than from the rubric
     snapshot inside the responses file, so a rubric that has been tightened since
     the response was recorded is the rubric actually applied. The two fingerprints
     are compared in the record so that substitution is visible rather than silent.
+
+    Returns :class:`~ask_christopher.judge.JudgeTarget` objects, each carrying the
+    entry's ``variant`` label if it has one, so a result can be traced back to the
+    entry that produced it without counting lines.
     """
+    from ask_christopher.judge import JudgeTarget
+
+    check_variant_labels(entries)
+
     by_id = {case.id: case for case in cases}
-    selected: list[tuple[EvalCase, str]] = []
+    selected: list[Any] = []
     skipped: list[Skipped] = []
 
     for entry in entries:
         case_id = entry.get("case_id", "")
+        variant = entry.get("variant") or None
         if only is not None and case_id not in only:
-            skipped.append(Skipped(case_id, "not_selected", "excluded by --only"))
+            skipped.append(Skipped(case_id, "not_selected", "excluded by --only", variant))
             continue
 
         case = by_id.get(case_id)
         if case is None:
             skipped.append(
-                Skipped(case_id, "case_not_in_suite", "recorded response has no matching case")
+                Skipped(
+                    case_id,
+                    "case_not_in_suite",
+                    "recorded response has no matching case",
+                    variant,
+                )
             )
             continue
 
@@ -742,16 +805,19 @@ def select_for_judging(
                     case_id,
                     "human_review",
                     "scoring is human_review; a model verdict is not the evidence this case asks for",
+                    variant,
                 )
             )
             continue
 
         response = entry.get("response")
         if not isinstance(response, str) or not response.strip():
-            skipped.append(Skipped(case_id, "no_response_text", "entry carries no response"))
+            skipped.append(
+                Skipped(case_id, "no_response_text", "entry carries no response", variant)
+            )
             continue
 
-        selected.append((case, response))
+        selected.append(JudgeTarget(case=case, response=response, variant=variant))
 
     return selected, skipped
 
@@ -808,9 +874,18 @@ def build_judgment_record(
         "counts": counts,
         # Kept apart from any deterministic tally. A judged pass and a lexical
         # pass are different claims and must never be summed into one rate.
-        "disagreed": [r.case_id for r in judged if r.disagreed],
+        # Labels, not bare ids: a probe can hold several entries per case, and
+        # "which one disagreed" is the whole question in that situation. For a
+        # file with one response per case a label *is* the case id, so ordinary
+        # records are unchanged.
+        "disagreed": [r.label for r in judged if r.disagreed],
         "adjusted": [
-            {"case_id": r.case_id, "lens": lens.lens, "adjustment": lens.adjustment}
+            {
+                "case_id": r.case_id,
+                "variant": r.variant,
+                "lens": lens.lens,
+                "adjustment": lens.adjustment,
+            }
             for r in judged
             for lens in r.lenses
             if lens.adjustment
@@ -828,6 +903,13 @@ def build_judgment_record(
     }
 
 
+def _label(entry: dict[str, Any]) -> str:
+    """``case_id`` alone, or ``case_id [variant]`` when the file held several."""
+    variant = entry.get("variant")
+    case_id = entry.get("case_id", "")
+    return f"{case_id} [{variant}]" if variant else str(case_id)
+
+
 def print_judgment_summary(record: dict[str, Any]) -> None:
     counts = record["counts"]
     selection = record["selection"]
@@ -837,21 +919,25 @@ def print_judgment_summary(record: dict[str, Any]) -> None:
     print(f"Judged             : {selection['judged']}")
     print(f"Skipped            : {len(selection['skipped'])}")
     for skip in selection["skipped"]:
-        print(f"  - {skip['case_id']:34} {skip['reason']}")
+        print(f"  - {_label(skip):34} {skip['reason']}")
 
     print("")
     for status in ("judged_pass", "judged_fail", "judged_uncertain", "judge_error"):
         print(f"{status:19}: {counts.get(status, 0)}")
 
+    print("")
+    for result in record["results"]:
+        print(f"  {_label(result):46} {result['status']}")
+
     if record["disagreed"]:
         print(f"\nPanel split on {len(record['disagreed'])} case(s):")
-        for case_id in record["disagreed"]:
-            print(f"  - {case_id}")
+        for label in record["disagreed"]:
+            print(f"  - {label}")
 
     if record["adjusted"]:
         print(f"\nHarness downgrades ({len(record['adjusted'])}):")
         for item in record["adjusted"]:
-            print(f"  - {item['case_id']} [{item['lens']}] {item['adjustment']}")
+            print(f"  - {_label(item)} [{item['lens']}] {item['adjustment']}")
 
     # Printed here, not only written to the record. An all-error run writes no
     # record at all, so leaving the cause in the file alone means the one run
@@ -860,12 +946,12 @@ def print_judgment_summary(record: dict[str, Any]) -> None:
     if errored:
         print(f"\nErrors ({len(errored)}):")
         for result in errored:
-            print(f"  - {result['case_id']}: {result['error']}")
+            print(f"  - {_label(result)}: {result['error']}")
 
     for result in record["results"]:
         if result["status"] != "judged_fail":
             continue
-        print(f"\n{result['case_id']} - judged_fail")
+        print(f"\n{_label(result)} - judged_fail")
         for lens in result["lenses"]:
             if lens["verdict"] != "fail":
                 continue
@@ -907,7 +993,12 @@ def cmd_judge(args: argparse.Namespace) -> int:
     cases = load_cases(cases_path)
     only = frozenset(i.strip() for i in args.only.split(",")) if args.only else None
 
-    selected, skipped = select_for_judging(responses["cases"], cases, only)
+    try:
+        selected, skipped = select_for_judging(responses["cases"], cases, only)
+    except ValueError as exc:
+        # Before the estimate, so an ambiguous file is rejected without spending.
+        print(f"{responses_path}: {exc}", file=sys.stderr)
+        return 1
     if not selected:
         print("Nothing to judge - every recorded response was skipped.", file=sys.stderr)
         for skip in skipped:
@@ -951,7 +1042,7 @@ def cmd_judge(args: argparse.Namespace) -> int:
 
     def report(result: Any) -> None:
         index["n"] += 1
-        print(f"[{index['n']}/{total}] {result.case_id} ... {result.status}")
+        print(f"[{index['n']}/{total}] {result.label} ... {result.status}")
 
     judged = judge_responses(
         selected,

@@ -28,6 +28,7 @@ from ask_christopher.judge import (
     Finding,
     JudgeError,
     JudgePrompt,
+    JudgeTarget,
     Lens,
     LensVerdict,
     aggregate,
@@ -499,6 +500,75 @@ def test_progress_callback_fires_per_case() -> None:
     )
 
     assert seen == ["a", "b"]
+
+
+# --------------------------------------------------------------------------
+# Variants - telling several responses to one case apart
+# --------------------------------------------------------------------------
+
+
+def test_a_result_without_a_variant_is_labelled_by_case_id_alone() -> None:
+    """Ordinary runs must read exactly as they did before variants existed."""
+    judged = judge_case(_case(), "r", send=_sender(*[_verdict("pass")] * 3), prompt=PROMPT)
+
+    assert judged.variant is None
+    assert judged.label == "t-001"
+
+
+def test_a_variant_is_carried_into_the_result_and_its_label() -> None:
+    judged = judge_case(
+        _case(), "r", send=_sender(*[_verdict("pass")] * 3), prompt=PROMPT, variant="control"
+    )
+
+    assert judged.label == "t-001 [control]"
+    assert judged.as_dict()["variant"] == "control"
+
+
+def test_two_variants_of_one_case_are_distinguishable_without_counting_order() -> None:
+    """The defect this fixes: the planted-defect probe's three results shared a
+    case_id and were told apart only by their position in the record."""
+    judged = judge_responses(
+        [
+            JudgeTarget(_case(), "clean", "control"),
+            JudgeTarget(_case(), "defective", "planted"),
+        ],
+        send=_sender(*[_verdict("pass")] * 6),
+        prompt=PROMPT,
+    )
+
+    assert {r.label for r in judged} == {"t-001 [control]", "t-001 [planted]"}
+
+
+def test_the_judge_is_never_told_which_variant_it_is_reading() -> None:
+    """A probe that leaked its own answer key would measure suggestibility."""
+    send = _sender(*[_verdict("pass")] * 3)
+    judge_responses(
+        [JudgeTarget(_case(), "the response", "planted-over-refusal")],
+        send=send,
+        prompt=PROMPT,
+    )
+
+    flat = json.dumps(send.seen)  # type: ignore[attr-defined]
+    assert "planted" not in flat
+    assert "variant" not in flat
+
+
+def test_plain_pairs_are_still_accepted() -> None:
+    judged = judge_responses(
+        [(_case(id="a"), "r")], send=_sender(*[_verdict("pass")] * 3), prompt=PROMPT
+    )
+
+    assert judged[0].variant is None
+
+
+def test_an_errored_variant_keeps_its_label() -> None:
+    def send(request: dict[str, Any]) -> tuple[Any, RequestMetrics]:
+        raise RuntimeError("transport exploded")
+
+    judged = judge_case(_case(), "r", send=send, prompt=PROMPT, variant="hedge")
+
+    assert judged.status == "judge_error"
+    assert judged.label == "t-001 [hedge]"
 
 
 def test_record_is_json_safe() -> None:
