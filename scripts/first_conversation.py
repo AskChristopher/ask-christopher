@@ -76,6 +76,12 @@ def git_commit() -> tuple[str, bool]:
 def build_client() -> Any:
     import anthropic
 
+    from ask_christopher.env import load_env_reporting
+
+    # Before the client, which resolves credentials at construction. An already
+    # exported key is left alone - see env.py.
+    load_env_reporting()
+
     # Retries off: a failure must be recorded, never silently repeated.
     return anthropic.Anthropic(max_retries=0)
 

@@ -239,6 +239,12 @@ def main(argv: list[str] | None = None) -> int:
         print("The `anthropic` package is not installed.  pip install anthropic", file=sys.stderr)
         return 1
 
+    # Before the client, which resolves credentials at construction. An already
+    # exported key is left alone - see env.py.
+    from ask_christopher.env import load_env_reporting
+
+    load_env_reporting()
+
     # Assembled once, here, so the cached prefix is identical for every turn.
     session = Session(client=anthropic.Anthropic())
     return run(session, diagnostics=args.diagnostics)

@@ -52,6 +52,7 @@ from typing import Any, Callable
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+from ask_christopher.env import load_env_reporting  # noqa: E402
 from ask_christopher.evals import (  # noqa: E402
     CaseResult,
     EvalCase,
@@ -1032,6 +1033,11 @@ def cmd_judge(args: argparse.Namespace) -> int:
         print("The `anthropic` package is not installed.  pip install anthropic", file=sys.stderr)
         return 1
 
+    # Before the client, which resolves credentials at construction, and after
+    # the --confirm gate, so a priced-only run reads nothing. An already
+    # exported key is left alone - see env.py.
+    load_env_reporting()
+
     client = anthropic.Anthropic(max_retries=0)
     if not (getattr(client, "api_key", None) or getattr(client, "auth_token", None)):
         print(_NO_CREDENTIALS, file=sys.stderr)
@@ -1143,6 +1149,11 @@ def cmd_live(args: argparse.Namespace) -> int:
     except ModuleNotFoundError:
         print("The `anthropic` package is not installed.  pip install anthropic", file=sys.stderr)
         return 1
+
+    # Before the client, which resolves credentials at construction, and after
+    # the --confirm gate, so a priced-only run reads nothing. An already
+    # exported key is left alone - see env.py.
+    load_env_reporting()
 
     client = anthropic.Anthropic(max_retries=0)
 

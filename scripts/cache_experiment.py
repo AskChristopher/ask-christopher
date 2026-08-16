@@ -29,6 +29,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from ask_christopher.client import RequestMetrics, ask  # noqa: E402
+from ask_christopher.env import load_env_reporting  # noqa: E402
 from ask_christopher.prompt import build_system_prompt  # noqa: E402
 
 QUESTION = "What does a Senior Instructional Designer do?"
@@ -78,6 +79,10 @@ def main() -> int:
     print(f"  segment A  : {len(behavior):,} chars  (behaviour layer)")
     print(f"  segment B  : {len(knowledge):,} chars  (knowledge corpus)")
     print(f"\nQuestion: {QUESTION}")
+
+    # Before the client, which resolves credentials at construction. An already
+    # exported key is left alone - see env.py.
+    load_env_reporting()
 
     client = anthropic.Anthropic()
 
