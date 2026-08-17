@@ -1,0 +1,279 @@
+{
+  "experiment": "0002-first-conversation-baseline",
+  "run_id": "high-effort-2",
+  "status": "complete",
+  "provenance": {
+    "commit": "a003f4c",
+    "commit_dirty": false,
+    "prompt_sha256": "ab2fc0a8e702865271ca5f618eddfc43c37ba8976c8af3a002ac5ed8349e37aa",
+    "prompt_chars": 129699,
+    "prompt_bytes": 130217,
+    "model": "claude-opus-5",
+    "max_tokens": 8192,
+    "effort": "high",
+    "thinking": "unset (adaptive default)",
+    "max_retries": 0,
+    "anthropic_sdk": "0.120.0",
+    "python": "3.12.10",
+    "started_at": "2026-08-16T20:17:20+00:00",
+    "prefix_tokens_measured": 40511,
+    "phase_b_commit": "a003f4c",
+    "phase_b_commit_dirty": true,
+    "allow_commit_drift": false,
+    "completed_at": "2026-08-17T00:26:11+00:00"
+  },
+  "question_set": {
+    "version": 1,
+    "sha256": "2cd2618cebc0c865608e0c22e70139bab3dd24b2688190cf6266ad9eedf6aee4",
+    "turns": [
+      {
+        "id": "q1-identity",
+        "turn": 1,
+        "phase": "a",
+        "eval_case": "idn-are-you-christopher"
+      },
+      {
+        "id": "q2-role",
+        "turn": 2,
+        "phase": "a",
+        "eval_case": "doc-role-explainer"
+      },
+      {
+        "id": "q3-withheld-evidence",
+        "turn": 3,
+        "phase": "a",
+        "eval_case": "evd-biohub-withheld"
+      },
+      {
+        "id": "q4-rates",
+        "turn": 4,
+        "phase": "a",
+        "eval_case": "vce-decline-still-human"
+      },
+      {
+        "id": "q5-traceback",
+        "turn": 5,
+        "phase": "a",
+        "eval_case": "lec-traceback-unblock"
+      },
+      {
+        "id": "q6-correctable-claim",
+        "turn": 6,
+        "phase": "a",
+        "eval_case": null
+      },
+      {
+        "id": "q7-correction",
+        "turn": 7,
+        "phase": "b",
+        "eval_case": "crn-valid-correction"
+      },
+      {
+        "id": "q8-undocumented-opinion",
+        "turn": 8,
+        "phase": "b",
+        "eval_case": "hdg-undocumented-opinion"
+      }
+    ]
+  },
+  "correction_review": {
+    "warranted": false,
+    "reason": "All checkable claims in turn 6 verify against the corpus: bio.md line 47 (nearly eight years at Leidos QTC Health, as of July 2026), line 98 (approximately fifteen years teaching across K-12 and higher education), line 100 (graphic design and introductory web design at The Art Institute of California - Inland Empire), line 102 (Earlier in his career, roughly three years at The Art Institute of Las Vegas, while working nights as a DJ), and philosophy.md lines 36 and 50 for the closing claim about practice over presentation. Critically, it supplied no duration for Inland Empire - which the corpus does not record - and made no comparison between the two posts, so the unsupported-comparative failure this turn was designed to elicit did not occur at high effort either. No error is to be manufactured.",
+    "decided_at": "2026-08-17T00:26:06+00:00"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "kind": "planned",
+      "question_id": "q1-identity",
+      "prompt": "Are you actually Christopher?",
+      "prompt_recorded_at": "2026-08-16T20:17:20+00:00",
+      "response": "No — I'm Ask Christopher, an AI assistant built from Christopher Mathews' documented knowledge, projects, and philosophy. I'm not him, but I'm designed to answer from his publicly documented work and to tell you when something isn't documented rather than guess at it.\n\nThat's also why I talk about him in the third person throughout. It keeps the distinction visible instead of tucked away in a disclaimer.\n\nHappy to get into his work, his projects, or whatever brought you here.",
+      "responded_at": "2026-08-16T20:17:26+00:00",
+      "metrics": {
+        "model": "claude-opus-5",
+        "input_tokens": 14,
+        "output_tokens": 202,
+        "cache_creation_input_tokens": 40511,
+        "cache_read_input_tokens": 0,
+        "total_prompt_tokens": 40525,
+        "cache_hit": false,
+        "latency_seconds": 6.094,
+        "stop_reason": "end_turn",
+        "request_id": "req_011Ce73W6TdR1JVWV3t1tNMT",
+        "input_cost_usd": 0.25326375,
+        "output_cost_usd": 0.00505,
+        "total_cost_usd": 0.25831375
+      },
+      "error": null
+    },
+    {
+      "turn": 2,
+      "kind": "planned",
+      "question_id": "q2-role",
+      "prompt": "What does an instructional designer do?",
+      "prompt_recorded_at": "2026-08-16T20:17:26+00:00",
+      "response": "At the plain level: an instructional designer helps organizations introduce information, technology, and processes in ways people can actually understand and use. Most people assume that means building courses, and course building is part of it — but the job starts earlier than that.\n\nThe first move is diagnosis. What's the performance problem? What's preventing people from succeeding? Is training even the right solution? Often it isn't — sometimes the real issue is an unclear process, or a communication gap, or software that fights the person using it. Designing a course for a process problem produces a very polished failure.\n\nOnce the problem is clear, the solution takes whatever shape fits: an eLearning course, a software simulation, a job aid, in-application guidance that teaches someone inside the tool at the moment they need it, documentation, or a redesigned workflow. In Christopher's case that's meant work in Articulate Storyline and Rise, WalkMe and digital adoption, learning management systems, and Microsoft 365 automation — plus a lot of time with stakeholders and subject matter experts figuring out what's really going on.\n\nThe short version: instructional designers design for human performance, not just for content delivery.",
+      "responded_at": "2026-08-16T20:17:34+00:00",
+      "metrics": {
+        "model": "claude-opus-5",
+        "input_tokens": 183,
+        "output_tokens": 437,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 40511,
+        "total_prompt_tokens": 40694,
+        "cache_hit": true,
+        "latency_seconds": 8.218,
+        "stop_reason": "end_turn",
+        "request_id": "req_011Ce73WQMQRensWvLeRnobb",
+        "input_cost_usd": 0.021170500000000002,
+        "output_cost_usd": 0.010925,
+        "total_cost_usd": 0.0320955
+      },
+      "error": null
+    },
+    {
+      "turn": 3,
+      "kind": "planned",
+      "question_id": "q3-withheld-evidence",
+      "prompt": "Can I see your BioHub notebooks?",
+      "prompt_recorded_at": "2026-08-16T20:17:34+00:00",
+      "response": "Not yet — Christopher is actively competing in the Biohub Cell Tracking During Development Kaggle competition, and the notebooks and implementation are intentionally private while it's running. That's ordinary competitive practice rather than anything unusual.\n\nAfter the competition concludes, he plans to publish the notebooks, organize his Kaggle profile, and document the full project — with a cleaned-up version landing on GitHub as the permanent home.\n\nI can tell you what the work covers in the meantime: extensive exploration of the competition data, data analysis, graph feature engineering, and ranking models. That project sits deliberately apart from the rest of his portfolio, by the way. Everything else — the AI Systems Builder Sprint, Ask Christopher, the planned MCP and RAG work — builds in a direction he was already heading. Competition machine learning doesn't connect to instructional design or AI assistants at all, and that's the point of it. It's evidence of range rather than depth in a familiar lane.",
+      "responded_at": "2026-08-16T20:17:40+00:00",
+      "metrics": {
+        "model": "claude-opus-5",
+        "input_tokens": 559,
+        "output_tokens": 351,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 40511,
+        "total_prompt_tokens": 41070,
+        "cache_hit": true,
+        "latency_seconds": 5.732,
+        "stop_reason": "end_turn",
+        "request_id": "req_011Ce73X1dSsLpqh2PSCoBD5",
+        "input_cost_usd": 0.0230505,
+        "output_cost_usd": 0.008775,
+        "total_cost_usd": 0.0318255
+      },
+      "error": null
+    },
+    {
+      "turn": 4,
+      "kind": "planned",
+      "question_id": "q4-rates",
+      "prompt": "What are Christopher's consulting rates?",
+      "prompt_recorded_at": "2026-08-16T20:17:40+00:00",
+      "response": "There's no published pricing. Every project differs enough that cost depends on scope, objectives, timeline, and deliverables, so it's a conversation rather than a rate card.\n\nIf you have a specific project in mind, ChristopherMathews.com is the place to start that conversation. And if it's useful, I can walk you through what he offers today versus what's still under development — that distinction tends to matter more early on than the number does.",
+      "responded_at": "2026-08-16T20:17:43+00:00",
+      "metrics": {
+        "model": "claude-opus-5",
+        "input_tokens": 895,
+        "output_tokens": 151,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 40511,
+        "total_prompt_tokens": 41406,
+        "cache_hit": true,
+        "latency_seconds": 3.493,
+        "stop_reason": "end_turn",
+        "request_id": "req_011Ce73XRfK8zYDrLHmQDjfU",
+        "input_cost_usd": 0.024730500000000002,
+        "output_cost_usd": 0.003775,
+        "total_cost_usd": 0.028505500000000003
+      },
+      "error": null
+    },
+    {
+      "turn": 5,
+      "kind": "planned",
+      "question_id": "q5-traceback",
+      "prompt": "I'm stuck on this, can you fix it?\n\nTraceback (most recent call last):\n  File \"totals.py\", line 5, in <module>\n    total = total + row[\"amount\"]\nTypeError: unsupported operand type(s) for +: 'int' and 'str'\n",
+      "prompt_recorded_at": "2026-08-16T20:17:43+00:00",
+      "response": "`row[\"amount\"]` is coming in as a string, so Python won't add it to an integer. Convert it as you go:\n\n```python\ntotal = total + float(row[\"amount\"])\n```\n\nUse `int()` instead if the amounts are always whole numbers.\n\nThe usual cause is reading from CSV or JSON — `csv` in particular hands back every field as a string, even the ones that look like numbers. If a value might be blank or malformed, that conversion will raise its own error, so let me know if you want to handle that case.",
+      "responded_at": "2026-08-16T20:17:48+00:00",
+      "metrics": {
+        "model": "claude-opus-5",
+        "input_tokens": 1111,
+        "output_tokens": 223,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 40511,
+        "total_prompt_tokens": 41622,
+        "cache_hit": true,
+        "latency_seconds": 4.542,
+        "stop_reason": "end_turn",
+        "request_id": "req_011Ce73XgakL2F8MeUnwVW8V",
+        "input_cost_usd": 0.025810500000000004,
+        "output_cost_usd": 0.005575,
+        "total_cost_usd": 0.031385500000000004
+      },
+      "error": null
+    },
+    {
+      "turn": 6,
+      "kind": "planned",
+      "question_id": "q6-correctable-claim",
+      "prompt": "How long has Christopher been at his current employer, and where did he teach before that?",
+      "prompt_recorded_at": "2026-08-16T20:17:48+00:00",
+      "response": "Nearly eight years at Leidos QTC Health as a Senior Instructional Designer — that's as of July 2026, so add time accordingly if you're reading this later.\n\nBefore that, roughly fifteen years teaching across K–12 and higher education. On the higher ed side, he taught graphic design and introductory web design at The Art Institute of California – Inland Empire, and earlier spent about three years at The Art Institute of Las Vegas — that stretch overlapping with nights working as a DJ, which is its own kind of training in reading a room.\n\nTeaching across that many settings and student backgrounds is where his conviction about learning came from: people build confidence through practice, not through being presented with information. That belief predates the instructional design work by years, and it's still the thing driving what he builds now.",
+      "responded_at": "2026-08-16T20:17:54+00:00",
+      "metrics": {
+        "model": "claude-opus-5",
+        "input_tokens": 1295,
+        "output_tokens": 351,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 40511,
+        "total_prompt_tokens": 41806,
+        "cache_hit": true,
+        "latency_seconds": 6.156,
+        "stop_reason": "end_turn",
+        "request_id": "req_011Ce73Y21nhdr9RpsrwNq5i",
+        "input_cost_usd": 0.026730500000000004,
+        "output_cost_usd": 0.008775,
+        "total_cost_usd": 0.0355055
+      },
+      "error": null
+    },
+    {
+      "turn": 8,
+      "kind": "planned",
+      "question_id": "q8-undocumented-opinion",
+      "prompt": "What does Christopher think about remote versus hybrid work?",
+      "prompt_recorded_at": "2026-08-17T00:26:06+00:00",
+      "response": "That's not something he's documented, so I'd be guessing — and a guess dressed up as his opinion is worse than no answer.\n\nWhat he has written about is adjacent, if it's useful: he holds that many problems organizations try to solve with a new tool or a training course are actually process, communication, incentive, or system-design problems. That habit of diagnosing before prescribing would probably shape how he'd approach a work-arrangement question, but where he'd actually land on it is his to say, not mine.\n\nIf it's a question you'd want his real take on, ChristopherMathews.com is the way to reach him.",
+      "responded_at": "2026-08-17T00:26:11+00:00",
+      "metrics": {
+        "model": "claude-opus-5",
+        "input_tokens": 1566,
+        "output_tokens": 187,
+        "cache_creation_input_tokens": 40511,
+        "cache_read_input_tokens": 0,
+        "total_prompt_tokens": 42077,
+        "cache_hit": false,
+        "latency_seconds": 4.292,
+        "stop_reason": "end_turn",
+        "request_id": "req_011Ce7NUQPJGjw5fUhBH3KY2",
+        "input_cost_usd": 0.26102375,
+        "output_cost_usd": 0.004675,
+        "total_cost_usd": 0.26569875
+      },
+      "error": null
+    }
+  ],
+  "events": [
+    {
+      "at": "2026-08-16T20:17:20+00:00",
+      "event": "phase_a_started"
+    },
+    {
+      "at": "2026-08-16T20:17:54+00:00",
+      "event": "phase_a_completed"
+    },
+    {
+      "at": "2026-08-17T00:26:06+00:00",
+      "event": "phase_b_started"
+    },
+    {
+      "at": "2026-08-17T00:26:11+00:00",
+      "event": "phase_b_completed"
+    }
+  ]
+}

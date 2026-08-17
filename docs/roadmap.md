@@ -15,7 +15,7 @@
 
 **Open:** the eval suite runs, and has now scored two cases with a model-as-judge panel that rediscovered a grounding failure previously found only by human reading. What remains is coverage: **37 of 39 cases have never been sent**, the 3 `human_review` cases have no workflow, and the 2 `multi_turn` cases have no conversation-capable runner — see *Eval suite* below.
 
-**In flight:** experiment 0002 is `complete` as of 2026-08-12. Its `review.md` and the production-effort rerun are the open items.
+**In flight:** experiment 0002 is `complete`, and so is its `high`-effort rerun (2026-08-16). **The corpus corrections below are no longer blocked.**
 
 ---
 
@@ -42,9 +42,9 @@ Milestone 1, from ADR-0001: a terminal REPL that loads the Markdown corpus, asse
   - [ ] **Conversation-capable runner** for the 2 cases now marked `multi_turn: true`.
   - [ ] **A full live run.** Two of 39 cases have now been sent. The rest are priced at roughly $1.05, assuming they stay inside the cache TTL.
 
-### Queued behind the production-effort rerun
+### Unblocked by the rerun
 
-From the correction-pair review. All four touch `knowledge/` or `prompts/`, so they wait — editing the corpus first would confound effort with content permanently.
+From the correction-pair review. All four touch `knowledge/` or `prompts/`, and they waited because editing the corpus first would have confounded effort with content permanently. **The rerun has landed, so the gate is lifted and these are now the next work.** Per `CLAUDE.md`, run the eval suite before merging any of them.
 
 - [ ] **Correct the teaching history in `bio.md`.** **Answered by Christopher on 2026-08-13** — the durations below are supplied and staged, awaiting only the rerun. What began as one missing number turned out to be four separate corpus defects.
 
@@ -79,7 +79,17 @@ The first real multi-turn conversation, run against a fixed question set through
 - [x] **Phase B** — run at `8e3a243` with `--allow-commit-drift` and `--no-correction`. Turn 7 is recorded as an unwarranted correction with its reasoning, and skipped rather than manufactured; turn 8 held the line on an undocumented opinion, declining to invent a view while offering the adjacent documented material. Two consequences to carry forward: **`crn-valid-correction` goes unexercised**, so correction handling remains untested, and **the two-phase split cost a second full cache write** — 17 days separated the phases against a 5-minute TTL, so turn 8 paid $0.259874 in input where a warm read would have cost $0.026936, a **9.65× premium**. Run total $0.666845, of which $0.506387 (75.9%) is two cache writes.
 - [x] [`review.md`](experiments/0002-first-conversation-baseline/review.md) for 0002 — the cache-window result is the finding: the write premium and experiment 0001's 92% saving are the *same quantity*, `40,511 × $5/MTok × (1.25 − 0.1)`, read under different traffic assumptions.
 - [x] **Record Phase B's own commit in provenance.** `phase_b_commit`, `phase_b_commit_dirty`, and `allow_commit_drift` are now captured, and the rendering reports both phases when they differ. This run's provenance was amended from durable evidence with a visible `provenance_amendment` note; `phase_b_commit_dirty` is null because nothing durable attests it.
-- [ ] **Rerun the same fixed question set at production effort, before any corpus or prompt edit.** Both experiments ran at `low` effort to avoid measuring two changes at once. Editing content first permanently confounds effort with content — this ordering constraint is recorded inside the hashed `questions.yaml` for that reason.
+- [x] **Rerun at `high` effort, before any corpus or prompt edit.** Run `high-effort-2`, 2026-08-16, commit `a003f4c`, `max_tokens` 8192 — [transcript](experiments/0002-first-conversation-baseline/transcript.high-effort-2.md). The prompt fingerprint was byte-identical to the original run and the question-set hash matched, so **effort was the only changed variable** and the ordering constraint in `questions.yaml` is satisfied.
+
+  **Effort changed almost nothing that was predicted to change.** `questions.yaml` named turns 5 (teaching calibration) and 8 (undocumented opinion) as the most effort-sensitive. Both are behaviourally indistinguishable across the two runs: turn 5 unblocks before explaining at either effort, and turn 8 declines to invent a view, offers the adjacent documented material, and points to the site at either effort.
+
+  **The cost difference is ~1.2 cents.** Run totals are $0.683330 (`high`) against $0.666845 (`low`) — 1.02x — because both paid two cache writes, $0.5064 of each. Output rose from 1,440 to 1,902 tokens (1.32x), and 462 output tokens at $25/MTok **is** the entire marginal cost of `high` effort for this workload. Effort is not a meaningful cost lever here; the cache write is the only figure that matters.
+
+  Two further results. **No truncation** — every turn ended `end_turn` and the largest was 437 tokens against an 8,192 ceiling, so the original 2,048 would have sufficed and the judge's truncation at that cap does not generalise to conversational turns. And **turn 6 again produced no correctable claim**: all its assertions verify against `bio.md` 47/98/100/102 and `philosophy.md` 36/50. Asked the question designed to elicit a duration inference, it gave Las Vegas's three years, supplied no duration for Inland Empire — which the corpus does not record — and drew no comparison. **The unsupported-comparative failure did not reproduce at `high` effort.**
+
+  What this does not establish: **n = 1 per condition.** Two runs sharing one question set are two observations, not a measurement of effort, and nothing here bounds run-to-run variance. A behavioural difference on turns 5 or 8 would have been suggestive rather than conclusive; their *sameness* is the same strength of evidence.
+- [ ] **Decide the production effort setting in code.** The rerun's purpose was to inform this and it now can. `DEFAULT_EFFORT = "low"` in `client.py`, the REPL takes that default, and the `config.py` described in `src/README.md` was never built — so nothing reads `ASK_CHRISTOPHER_EFFORT` and production *is* `low` today. On the evidence above, `low` is adequate for this workload and the ~1.2-cent difference does not argue either way.
+- [ ] **A third `crn-valid-correction` miss.** Turn 6 has now declined to produce a correctable claim in two consecutive runs at two effort settings, so correction handling remains unexercised in a real conversation. The case was only ever exercised single-turn, where its own prompt supplies the prior claim. Either the turn-6 question is not capable of eliciting an error against this corpus, or eliciting one requires a corpus defect the assistant will actually repeat — worth deciding before a third attempt.
 
 ADR-0001 deferred retrieval to Phase 4. **ADR-0002 amends that** — the corpus already exceeds the threshold, so full injection is now classified as a baseline and retrieval as an active requirement.
 
