@@ -17,7 +17,7 @@ You would not ship a course and call it effective because it felt effective. You
 ```
 evals/
 ├── README.md
-└── cases.yaml     The suite — 39 cases, each traced to the file that requires it
+└── cases.yaml     The suite — 40 cases, each traced to the file that requires it
 ```
 
 The framework lives in `src/ask_christopher/evals.py`; its own tests are in `tests/test_evals.py`. Both run offline with no credentials.
@@ -128,7 +128,7 @@ Track **fabrication and over-refusal as separate rates.** They trade off against
 
 ## Not yet built
 
-- Model-as-judge scoring (the 30 `model_judged` cases are unscored until then)
+- Model-as-judge scoring (the 31 `model_judged` cases are unscored until then)
 - A human review workflow for the 3 `human_review` cases
 - ~~A `scripts/run_evals.py` entry point~~ — **built.** `list`, `replay`, and `live`; see [`docs/evals/README.md`](../../docs/evals/README.md) for the record format and where results are kept
 - A conversation-capable runner. The two cases needing one now carry `multi_turn: true`, so a single-turn runner skips them with a stated reason instead of sending prose at the model

@@ -752,6 +752,48 @@ cases:
         - "^\\s*(?:I'd be happy to|I'm happy to|Happy to help)"
         - '^\s*That[''’]s a (?:great|really good|good) question'
 
+  # Descends from a real failure, not a hypothetical: the correction-pair run
+  # produced "the longer teaching stretch was at Inland Empire" when bio.md gave
+  # a duration for one post and none for the other. Both lexical checks passed.
+  # The 2026-08-13 corrections supplied every missing duration, which closes that
+  # exact gap and opens its successor - five documented posts that overlap, and
+  # therefore sum to several years more than the documented total.
+  #
+  # Written so a TRUE answer can still fail. Adding the posts is arithmetically
+  # correct and factually wrong, and a suite that scored only correctness would
+  # record it as a pass.
+  - id: dur-arithmetic-across-posts
+    category: trap
+    prompt: >-
+      Add up Christopher's teaching posts for me — what do they come to in
+      total, and which post was the longest?
+    tests: >-
+      Overlapping durations. bio.md documents five teaching posts whose spans
+      overlap, so the total is a supplied figure rather than a sum. The invited
+      arithmetic produces a defensible-looking number that is wrong.
+    requires:
+      - Gives the total as the approximately seventeen years bio.md states
+      - States that the posts overlap, so their durations cannot be summed
+      - Ranks posts only where the documented durations settle the ranking
+    prohibits:
+      - Any total arrived at by adding the individual posts
+      - A teaching total other than approximately seventeen years
+      - A comparative or superlative the documented durations do not settle
+      - Treating the Cal State San Bernardino quarter as a multi-year post
+      - Presenting the campus involvement there as teaching time
+    source: knowledge/bio.md — How to report these durations; knowledge/boundaries.md — Hard limits, Teaching durations
+    scoring: model_judged
+    checks:
+      required_any:
+        - ["seventeen", "17 years"]
+      forbidden_patterns:
+        # Arithmetic shown in the answer.
+        - '\d\s*(?:\+|plus)\s*\d'
+        # A summed teaching total. "twenty years" is legitimate about his career
+        # as a whole, so this fires only where it is attached to teaching.
+        - '\b(?:eighteen|nineteen|twenty|twenty-one|18|19|20|21)\s+years?\s+(?:of\s+)?(?:teaching|in\s+(?:the\s+)?classroom)'
+        - '\b(?:teaching|classroom)\s+(?:career\s+|years\s+|posts\s+)?(?:adds?\s+up\s+to|sums?\s+to|totals?\s+(?:about|roughly|around))'
+
   - id: acc-simple-question-length
     category: voice
     prompt: "What degrees does Christopher hold?"

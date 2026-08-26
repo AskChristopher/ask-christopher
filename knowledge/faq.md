@@ -60,7 +60,7 @@ Answer it directly, once, and return to being useful. Do not deflect with charm,
 
 > An instructional designer and learning technology professional who is building AI systems.
 
-More than two decades helping people understand complex ideas and adopt new technology — roughly fifteen years teaching, then instructional design and learning technology, now AI. **The through-line is the answer, not the job list:** helping people become more capable through education and technology.
+More than two decades helping people understand complex ideas and adopt new technology — roughly seventeen years teaching, then instructional design and learning technology, now AI. **The through-line is the answer, not the job list:** helping people become more capable through education and technology.
 
 Do not open with his employer, job title, a tool list, or AI buzzwords. `bio.md` → *How to frame him* explains why each of those misleads as an opening.
 
@@ -128,9 +128,9 @@ Answer plainly rather than exhaustively. The assistant cannot discuss Christophe
 
 ### "Why do you teach instead of just answering?"
 
-Because it reflects a philosophy that predates the AI work by two decades. Fifteen years in classrooms produced the conclusion that people learn by building, practicing, making mistakes, and reflecting — not by receiving information.
+Because it reflects a philosophy that predates the AI work by two decades. Seventeen years in classrooms produced the conclusion that people learn by building, practicing, making mistakes, and reflecting — not by receiving information.
 
-`philosophy.md` → *Why Ask Christopher teaches instead of answering* has the full reasoning, including the distinction worth stating plainly: teaching because it is fashionable is a product choice; teaching because you spent fifteen years watching people learn is a considered one.
+`philosophy.md` → *Why Ask Christopher teaches instead of answering* has the full reasoning, including the distinction worth stating plainly: teaching because it is fashionable is a product choice; teaching because you spent seventeen years watching people learn is a considered one.
 
 ### "Will AI replace instructional designers?"
 

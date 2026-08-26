@@ -1,6 +1,8 @@
 # Biography
 
 > **STATUS: COMPLETE.** Written and verified through interview, July 2026.
+> Teaching history amended through interview, 13 August 2026 — post durations,
+> the Cal State San Bernardino post, and the corrected seventeen-year total.
 > All content may be asserted as fact.
 > Keep *Currently studying* and *Professional certifications* current as they change.
 
@@ -77,7 +79,7 @@ The role identifies learning and performance needs, then designs practical solut
 
 Christopher's career spans **over two decades in education, instructional design, and learning technology**.
 
-It began in education. He spent approximately **fifteen years teaching**, in both K–12 and higher education.
+It began in education. He spent approximately **seventeen years teaching**, in both K–12 and higher education.
 
 Throughout his education and career he has been drawn to the intersection of communication, technology, design, and teaching. Those teaching years shaped a conviction that runs through everything since:
 
@@ -95,15 +97,27 @@ Instructional design let him combine education, visual communication, technology
 
 ### Prior roles
 
-Before joining Leidos QTC Health, Christopher spent approximately fifteen years teaching across K–12 and higher education.
+Before joining Leidos QTC Health, Christopher spent approximately seventeen years teaching across K–12 and higher education.
 
-He taught **graphic design and introductory web design at The Art Institute of California – Inland Empire**, helping students develop both creative and technical skills.
+He taught **graphic design and introductory web design at The Art Institute of California – Inland Empire** for approximately four years, helping students develop both creative and technical skills.
+
+During that same period he also **taught one quarter at California State University, San Bernardino**, and remained involved on that campus for about a year afterward. **The teaching there was one quarter.** The campus involvement that followed is not teaching time, and the two must never be combined into a longer appointment or presented alongside the multi-year posts as an equivalent.
 
 Earlier in his career he taught at **The Art Institute of Las Vegas** for roughly three years, while working nights as a DJ. Balancing both careers taught him discipline, adaptability, and the importance of connecting with people from very different backgrounds.
 
 Teaching across multiple campuses put him in front of students with a wide range of backgrounds and learning styles, reinforcing his belief that effective instruction is less about presenting information and more about helping people build confidence through practice.
 
-He also taught in **K–12 classrooms**, giving him experience designing instruction for learners across different ages and abilities.
+He also taught in **K–12 classrooms as a substitute teacher** — approximately ten years in the Inland Empire region and approximately three years in Las Vegas — giving him experience designing instruction for learners across different ages and abilities.
+
+### How to report these durations
+
+> **These posts overlap, and their durations must never be added, subtracted, or ranked beyond what is written above.**
+
+The Las Vegas substitute years ran concurrently with The Art Institute of Las Vegas, and with the DJ nights. The Cal State San Bernardino quarter ran concurrently with Inland Empire.
+
+**The approximately seventeen-year total is a figure Christopher supplied for his teaching career as a whole. It is not a sum of the posts listed above**, and adding those posts together overstates his teaching career by several years. Report each duration as it is written, or report the total as it is written; never compute one from the other, and never offer a total that differs from seventeen.
+
+Comparisons are subject to the same rule. Where the durations above settle which post was longer, saying so is grounded. Ranking posts the durations do not rank — or ranking the campus involvement against a teaching post — is an inference, and it stays wrong even when it happens to be true.
 
 ### Expanding into learning technology, automation, and AI
 
@@ -136,7 +150,7 @@ Looking back, the common thread is a commitment to continuous learning. Every ma
 - **Master of Arts in Education**, specialization in Educational Multimedia — California State Polytechnic University, Pomona (Cal Poly Pomona)
 - **Bachelor of Arts in Communication**, emphasis in Public Relations — California State Polytechnic University, Pomona (Cal Poly Pomona)
 
-The combination is unusual and relevant: a communication foundation, a graduate specialization in educational multimedia, and fifteen years of classroom practice before entering instructional design. It explains why his work consistently sits at the intersection of teaching, technology, and visual communication.
+The combination is unusual and relevant: a communication foundation, a graduate specialization in educational multimedia, and seventeen years of classroom practice before entering instructional design. It explains why his work consistently sits at the intersection of teaching, technology, and visual communication.
 
 ### Teaching credentials
 
@@ -244,7 +258,7 @@ Areas Christopher has worked in professionally. For how deeply — and what he i
 
 The list above is an inventory of areas worked in. This section states how deeply, and it governs how the assistant should characterize Christopher's expertise. **Where the two appear to conflict, this section wins.**
 
-**Established expertise.** Christopher is an experienced instructional designer and learning-technology professional. This is his profession, practiced for nearly eight years at Leidos QTC Health, preceded by roughly fifteen years teaching.
+**Established expertise.** Christopher is an experienced instructional designer and learning-technology professional. This is his profession, practiced for nearly eight years at Leidos QTC Health, preceded by roughly seventeen years teaching.
 
 **Applied AI — practical, real, and current.** He has hands-on experience with prompt engineering, AI-assisted instructional design, Copilot workflow concepts, and designing AI-enabled learning systems. This is genuine applied work, not study.
 

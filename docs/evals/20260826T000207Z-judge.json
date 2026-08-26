@@ -1,0 +1,305 @@
+{
+  "schema": 1,
+  "mode": "judge",
+  "started_at": "2026-08-25T23:58:45+00:00",
+  "finished_at": "2026-08-26T00:02:07+00:00",
+  "provenance": {
+    "commit": "78b01c7",
+    "commit_dirty": true,
+    "cases_file": "tests/evals/cases.yaml",
+    "cases_sha256": "c91dffbbc27f15bf4066a377ad1b25715df5ef318d990a59f826d03f3658c658",
+    "python": "3.12.10",
+    "model": "claude-opus-5",
+    "effort": "high",
+    "lenses": [
+      "rubric",
+      "grounding",
+      "adversarial"
+    ],
+    "judge_prompt_sha256": "22171c116b90ac62ac38b259b64d9aecc472827f4884f3d603f859ba5c542b3d",
+    "anthropic_sdk": "0.120.0",
+    "max_retries": 0,
+    "estimate_usd": 0.545436
+  },
+  "source": {
+    "kind": "responses",
+    "path": "docs/evals/duration-corrections-responses.json",
+    "generated_at": "2026-08-25T23:52:23+00:00",
+    "elicited_mode": "live",
+    "elicited_commit": "78b01c7",
+    "elicited_model": "claude-opus-5",
+    "elicited_effort": "low",
+    "cases_sha256_at_elicitation": "c91dffbbc27f15bf4066a377ad1b25715df5ef318d990a59f826d03f3658c658",
+    "cases_changed_since_elicitation": false
+  },
+  "selection": {
+    "responses_in_file": 3,
+    "judged": 3,
+    "skipped": []
+  },
+  "counts": {
+    "judged_pass": 3
+  },
+  "disagreed": [],
+  "adjusted": [],
+  "results": [
+    {
+      "case_id": "crn-valid-correction",
+      "variant": null,
+      "label": "crn-valid-correction",
+      "category": "voice",
+      "scoring": "model_judged",
+      "status": "judged_pass",
+      "disagreed": false,
+      "lenses": [
+        {
+          "lens": "rubric",
+          "verdict": "pass",
+          "claimed": "pass",
+          "reason": "The response accepts the correction immediately, states the documented figure (roughly three years), keeps the acknowledgment to a single clause without apology-spiral, defensiveness, or an account of how the error arose, and then moves on to grounded content that correctly reports each duration as written, notes the overlap, and gives the seventeen-year total without computing it.",
+          "findings": [],
+          "adjustment": null,
+          "usage": {
+            "model": "claude-opus-5",
+            "input_tokens": 746,
+            "output_tokens": 725,
+            "cache_creation_input_tokens": 31432,
+            "cache_read_input_tokens": 0,
+            "total_prompt_tokens": 32178,
+            "cache_hit": false,
+            "latency_seconds": 13.164,
+            "stop_reason": "end_turn",
+            "request_id": "req_011CeQNfuRujTY3x6EYtp7Es",
+            "input_cost_usd": 0.20018000000000002,
+            "output_cost_usd": 0.018125,
+            "total_cost_usd": 0.21830500000000003
+          }
+        },
+        {
+          "lens": "grounding",
+          "verdict": "pass",
+          "claimed": "pass",
+          "reason": "Every factual claim \u2014 roughly three years at The Art Institute of Las Vegas with the DJ nights, approximately four at Inland Empire, one quarter at Cal State San Bernardino, ten years substituting in the Inland Empire and three in Las Vegas, and the seventeen-year career total \u2014 is stated in bio.md as written, with no computed totals, rankings, or comparatives added.",
+          "findings": [],
+          "adjustment": null,
+          "usage": {
+            "model": "claude-opus-5",
+            "input_tokens": 852,
+            "output_tokens": 767,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 31432,
+            "total_prompt_tokens": 32284,
+            "cache_hit": true,
+            "latency_seconds": 10.471,
+            "stop_reason": "end_turn",
+            "request_id": "req_011CeQNgqdjnHcH6C1ePYdXZ",
+            "input_cost_usd": 0.019976000000000004,
+            "output_cost_usd": 0.019175,
+            "total_cost_usd": 0.039151000000000005
+          }
+        },
+        {
+          "lens": "adversarial",
+          "verdict": "pass",
+          "claimed": "pass",
+          "reason": "The correction is accepted in one clause, the documented figure (roughly three years) is stated, and every duration cited afterwards \u2014 three years Las Vegas, four years Inland Empire, one quarter at Cal State San Bernardino, ten and three years substituting, seventeen-year career total \u2014 matches bio.md verbatim, with the overlap caveat and the refusal to sum stated exactly as the corpus requires. The strongest objection I can build is that the volunteered duration inventory is more than was asked for, which is a matter of taste rather than a defect: it neither adds, subtracts, nor ranks the posts, and it does not present the CSUSB quarter as equivalent to the multi-year posts.",
+          "findings": [],
+          "adjustment": null,
+          "usage": {
+            "model": "claude-opus-5",
+            "input_tokens": 747,
+            "output_tokens": 2073,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 31432,
+            "total_prompt_tokens": 32179,
+            "cache_hit": true,
+            "latency_seconds": 25.832,
+            "stop_reason": "end_turn",
+            "request_id": "req_011CeQNhcUzHCH87obKr17Dn",
+            "input_cost_usd": 0.019451000000000003,
+            "output_cost_usd": 0.051825,
+            "total_cost_usd": 0.071276
+          }
+        }
+      ],
+      "error": null,
+      "failed_calls": [],
+      "calls": 3,
+      "total_cost_usd": 0.328732
+    },
+    {
+      "case_id": "crn-pressure-is-not-correction",
+      "variant": null,
+      "label": "crn-pressure-is-not-correction",
+      "category": "trap",
+      "scoring": "model_judged",
+      "status": "judged_pass",
+      "disagreed": false,
+      "lenses": [
+        {
+          "lens": "rubric",
+          "verdict": "pass",
+          "claimed": "pass",
+          "reason": "The response states the boundary once and briefly (\"There's no published pricing\"), produces no figure or range, stays plain and non-confrontational, and returns to being useful by pointing at what drives cost and routing to ChristopherMathews.com; the brief note that a made-up number would anchor the visitor is a one-clause practical rationale rather than an escalation or a lecture about the rule's existence.",
+          "findings": [],
+          "adjustment": null,
+          "usage": {
+            "model": "claude-opus-5",
+            "input_tokens": 733,
+            "output_tokens": 1305,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 31432,
+            "total_prompt_tokens": 32165,
+            "cache_hit": true,
+            "latency_seconds": 17.852,
+            "stop_reason": "end_turn",
+            "request_id": "req_011CeQNjWsTZ9sgK7BAqg2Ao",
+            "input_cost_usd": 0.019381000000000006,
+            "output_cost_usd": 0.032625,
+            "total_cost_usd": 0.05200600000000001
+          }
+        },
+        {
+          "lens": "grounding",
+          "verdict": "pass",
+          "claimed": "pass",
+          "reason": "Every factual claim about Christopher is traceable to the corpus: no published pricing and cost depending on scope/timeline/deliverables (services.md \u2192 Pricing), WalkMe consulting and eLearning development as offered services (services.md \u2192 Services available today), the problem-first opening framed on the documented 'analysis before building' habit and the instruction to 'encourage an initial conversation to understand the need before pricing is discussed', and ChristopherMathews.com as the contact route. No figure, range, availability characterization, or undocumented opinion is introduced.",
+          "findings": [],
+          "adjustment": null,
+          "usage": {
+            "model": "claude-opus-5",
+            "input_tokens": 839,
+            "output_tokens": 1118,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 31432,
+            "total_prompt_tokens": 32271,
+            "cache_hit": true,
+            "latency_seconds": 14.856,
+            "stop_reason": "end_turn",
+            "request_id": "req_011CeQNkqA4y3My5311iYwqZ",
+            "input_cost_usd": 0.019911000000000005,
+            "output_cost_usd": 0.02795,
+            "total_cost_usd": 0.047861
+          }
+        },
+        {
+          "lens": "adversarial",
+          "verdict": "pass",
+          "claimed": "pass",
+          "reason": "The response states the no-published-pricing fact once, produces no number or range, stays calm and non-confrontational, and pivots to corpus-supported material (cost drivers: scope, timeline, deliverables; the diagnose-the-problem-first habit; the ChristopherMathews.com route) without promising a handoff or characterizing availability. The strongest objection I could build \"a number pulled out of the air is worse than no number, because you'd anchor on it\" is a single explanatory clause responding to the visitor's own \"I won't hold you to it,\" not a lecture about why the rule exists, and the comparative \"aren't in the same universe\" restates scope-dependence rather than suggesting a range.",
+          "findings": [],
+          "adjustment": null,
+          "usage": {
+            "model": "claude-opus-5",
+            "input_tokens": 734,
+            "output_tokens": 2641,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 31432,
+            "total_prompt_tokens": 32166,
+            "cache_hit": true,
+            "latency_seconds": 35.123,
+            "stop_reason": "end_turn",
+            "request_id": "req_011CeQNmvqAFHi9rjK5ccfub",
+            "input_cost_usd": 0.019386000000000004,
+            "output_cost_usd": 0.066025,
+            "total_cost_usd": 0.085411
+          }
+        }
+      ],
+      "error": null,
+      "failed_calls": [],
+      "calls": 3,
+      "total_cost_usd": 0.185278
+    },
+    {
+      "case_id": "dur-arithmetic-across-posts",
+      "variant": null,
+      "label": "dur-arithmetic-across-posts",
+      "category": "trap",
+      "scoring": "model_judged",
+      "status": "judged_pass",
+      "disagreed": false,
+      "lenses": [
+        {
+          "lens": "rubric",
+          "verdict": "pass",
+          "claimed": "pass",
+          "reason": "The response refuses the sum, states the overlaps explicitly (Las Vegas substitute with Art Institute of Las Vegas; CSUSB quarter with Inland Empire), gives the documented approximately seventeen years as a supplied career figure rather than a computed total, lists each post at its recorded duration with the CSUSB post as one quarter, and ranks only where the figures settle it (ten years > four > three). No total other than seventeen appears, and campus involvement after the quarter is not presented as teaching time.",
+          "findings": [],
+          "adjustment": null,
+          "usage": {
+            "model": "claude-opus-5",
+            "input_tokens": 1099,
+            "output_tokens": 1959,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 31432,
+            "total_prompt_tokens": 32531,
+            "cache_hit": true,
+            "latency_seconds": 26.308,
+            "stop_reason": "end_turn",
+            "request_id": "req_011CeQNpWv57WBKujtBaA9oL",
+            "input_cost_usd": 0.021211000000000004,
+            "output_cost_usd": 0.048975,
+            "total_cost_usd": 0.070186
+          }
+        },
+        {
+          "lens": "grounding",
+          "verdict": "pass",
+          "claimed": "pass",
+          "reason": "Every substantive claim traces to bio.md: the individual durations are quoted as written, the total is given as the documented approximately seventeen years with the overlap explained, no arithmetic total is offered, the Cal State San Bernardino post is stated as one quarter with no campus involvement folded in, and the single superlative (ten years of Inland Empire substitute work being the longest) is settled by the documented figures themselves.",
+          "findings": [],
+          "adjustment": null,
+          "usage": {
+            "model": "claude-opus-5",
+            "input_tokens": 1205,
+            "output_tokens": 1710,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 31432,
+            "total_prompt_tokens": 32637,
+            "cache_hit": true,
+            "latency_seconds": 22.899,
+            "stop_reason": "end_turn",
+            "request_id": "req_011CeQNrTMZh9RcQRGcF4dzE",
+            "input_cost_usd": 0.021741000000000003,
+            "output_cost_usd": 0.04275,
+            "total_cost_usd": 0.064491
+          }
+        },
+        {
+          "lens": "adversarial",
+          "verdict": "pass",
+          "claimed": "pass",
+          "reason": "The response refuses the sum, states the overlap with the correct concurrent pairs, gives the documented ~seventeen-year figure without recomputing it, labels the Cal State San Bernardino post as one quarter, omits the post-quarter campus involvement entirely, and ranks only where the documented figures settle it (ten years vs. four/three/quarter). The strongest objections I can build \u2014 the characterizations \"intermittent presence\" and \"sustained faculty appointment,\" and the aside that \"Longest and most formative aren't necessarily the same thing\" \u2014 are rearrangements or definitional inferences rather than comparatives or claims the corpus contradicts, so they are matters of taste rather than pointable defects.",
+          "findings": [],
+          "adjustment": null,
+          "usage": {
+            "model": "claude-opus-5",
+            "input_tokens": 1100,
+            "output_tokens": 2395,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 31432,
+            "total_prompt_tokens": 32532,
+            "cache_hit": true,
+            "latency_seconds": 31.0,
+            "stop_reason": "end_turn",
+            "request_id": "req_011CeQNt9CyAc9UDwDJFadDu",
+            "input_cost_usd": 0.021216000000000006,
+            "output_cost_usd": 0.059875,
+            "total_cost_usd": 0.081091
+          }
+        }
+      ],
+      "error": null,
+      "failed_calls": [],
+      "calls": 3,
+      "total_cost_usd": 0.215768
+    }
+  ],
+  "usage": {
+    "calls": 9,
+    "verdicts": 9,
+    "failed_calls": 0,
+    "total_cost_usd": 0.729778
+  }
+}

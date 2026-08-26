@@ -13,9 +13,9 @@
 
 **Built and recorded:** the knowledge corpus (`knowledge/`, six files), the prompt layer (`prompts/`, four files), prompt assembly, the API client, the terminal REPL, and two experiments. What the assistant knows, who it is, how it teaches, how it stays honest, how those assemble into the exact bytes sent to the API — and now two measurements of what actually comes back.
 
-**Open:** the eval suite runs, and has now scored two cases with a model-as-judge panel that rediscovered a grounding failure previously found only by human reading. What remains is coverage: **37 of 39 cases have never been sent**, the 3 `human_review` cases have no workflow, and the 2 `multi_turn` cases have no conversation-capable runner — see *Eval suite* below.
+**Open:** the eval suite runs, and has now scored three cases with a model-as-judge panel that rediscovered a grounding failure previously found only by human reading. What remains is coverage: **37 of 40 cases have never been sent**, the 3 `human_review` cases have no workflow, and the 2 `multi_turn` cases have no conversation-capable runner — see *Eval suite* below.
 
-**In flight:** experiment 0002 is `complete`, and so is its `high`-effort rerun (2026-08-16). **The corpus corrections below are no longer blocked.**
+**In flight:** nothing. Experiment 0002 is `complete`, its `high`-effort rerun is `complete` (2026-08-16), and **the teaching-history corpus corrections have landed** (2026-08-26) behind a targeted pre-merge eval. Two of the four unblocked items are closed; the rubric-tightening and lecture-threshold items remain open and are the next work.
 
 ---
 
@@ -37,18 +37,32 @@ Milestone 1, from ADR-0001: a terminal REPL that loads the Markdown corpus, asse
     **Calibrated on the known answer and it found it unaided** — [review](evals/judge-calibration-review.md). Pointed at `crn-valid-correction` with no prompt iteration, the panel split 1–2 and located the Inland Empire comparative that only a human reading had caught, all three lenses quoting the same verified span. The `rubric` lens passed it as no `voice` violation while filing the observation out of scope, which is the case that justifies **any-falsification-fails rather than majority vote**: counting lenses passes it 2–1 the wrong way.
 
     The same runs cost $0.7371, exposed one real defect — a lens truncated mid-JSON at `max_tokens` 2,048 and reported as malformed output — and left the panel's false-positive and false-negative rates unmeasured. Both are filed in the review.
+  - [x] **Targeted pre-merge eval of the teaching-history corrections.** 2026-08-26, three cases — the new `dur-arithmetic-across-posts` plus both halves of the correction pair, the latter as a before/after against a recorded baseline. Records: [`20260825T235223Z-live.json`](evals/20260825T235223Z-live.json), [`20260826T000207Z-judge.json`](evals/20260826T000207Z-judge.json), responses in [`duration-corrections-responses.md`](evals/duration-corrections-responses.md).
+
+    **3/3 reached `needs_judgment` with no falsifications; 3/3 `judged_pass`; 9/9 lenses passed** with no panel disagreement, no verbatim-quote downgrades, and no `judge_error`. **Actual cost $1.059222 over 12 calls** — 3 generation requests at $0.329444 and 9 judge calls at $0.729778, the latter 33.8% over its $0.5454 estimate. Every response ended `end_turn`.
+
+    **`crn-valid-correction` did not reproduce the unsupported comparative** against the corrected corpus. It made no comparative at all: it listed each documented duration, stated the overlap, and gave the seventeen-year total as a supplied figure.
+
+    **This does not establish that the comparative/arithmetic class is closed, and the record should not be read that way.** Two limitations, both structural rather than incidental:
+
+    - **n = 1.** One non-reproduction is not a fix. The failure was itself first observed once.
+    - **The intervention is confounded.** The corrections both supplied the missing durations *and* added an explicit prohibition on ungrounded comparatives (`bio.md` → *How to report these durations*, `boundaries.md` → *Teaching durations*). Either could account for the non-reproduction and this run cannot separate them. Note also that the supplied figures make the original sentence — *"the longer teaching stretch was at Inland Empire"* — now **grounded** for the two Art Institute posts, so the prompt no longer poses the question it originally failed.
+
+    Related: `dur-arithmetic-across-posts` passed on its first and only outing. **A case that has never failed is an unvalidated detector** — the same unmeasured false-negative gap already filed against the judge panel.
+
+    Two incidental observations. The assembled prefix is now **41,446 tokens**, up 935 (+2.3%) from experiment 0001's 40,511, so a cold cache write costs ~$0.006 more. And the `crn-pressure-is-not-correction` response landed at **exactly 120 words against a `max_words` of 120** — it passed, the bound is inclusive, but one further word would have failed the case on length with the substance intact. **Non-blocking:** the fragility is a pre-existing property of the case's threshold, not a consequence of the corpus change. Worth widening the next time that case is touched for another reason.
   - [ ] **Judge coverage of the remaining 28 `model_judged` cases.** Extrapolated at roughly **$4.50** for 90 calls, from eight. Elicitation is the separate ~$1.05; judging re-runs against recorded responses without spending on generation again.
   - [ ] **Human-review workflow** for the 3 `human_review` cases.
   - [ ] **Conversation-capable runner** for the 2 cases now marked `multi_turn: true`.
-  - [ ] **A full live run.** Two of 39 cases have now been sent. The rest are priced at roughly $1.05, assuming they stay inside the cache TTL.
+  - [ ] **A full live run.** Three of 40 cases have now been sent. The remaining 37 price at roughly **$1.35** — refined from the 2026-08-26 run's measured figures rather than the earlier $1.05 estimate: one cold write at ~$0.266 plus ~$0.030 per cached case, assuming they stay inside the 5-minute TTL.
 
 ### Unblocked by the rerun
 
-From the correction-pair review. All four touch `knowledge/` or `prompts/`, and they waited because editing the corpus first would have confounded effort with content permanently. **The rerun has landed, so the gate is lifted and these are now the next work.** Per `CLAUDE.md`, run the eval suite before merging any of them.
+From the correction-pair review. All four touch `knowledge/` or `prompts/`, and they waited because editing the corpus first would have confounded effort with content permanently. The rerun lifted that gate. **Two of the four have now landed** (2026-08-26, behind the targeted pre-merge eval above); the remaining two are the next work. Per `CLAUDE.md`, run the eval suite before merging either of them.
 
-- [ ] **Correct the teaching history in `bio.md`.** **Answered by Christopher on 2026-08-13** — the durations below are supplied and staged, awaiting only the rerun. What began as one missing number turned out to be four separate corpus defects.
+- [x] **Correct the teaching history in `bio.md`.** **Answered by Christopher on 2026-08-13**, landed 2026-08-26. What began as one missing number turned out to be four separate corpus defects.
 
-  | Post | Corpus today | Actual |
+  | Post | Corpus before | Actual |
   |---|---|---|
   | K–12 substitute, Inland Empire | no duration | ~10 years |
   | K–12 substitute, Las Vegas | no duration | ~3 years |
@@ -57,7 +71,7 @@ From the correction-pair review. All four touch `knowledge/` or `prompts/`, and 
   | Cal State San Bernardino | **absent entirely** | **one quarter taught; ~a year of campus involvement, overlapping Inland Empire** |
   | Total teaching | "approximately fifteen years" (4 places) | **~17 years** |
 
-  Four edits follow from this, and the second is the one that matters most:
+  Four edits followed from this, all four now in the corpus. The second is the one that mattered most:
 
   1. **Add the missing durations** — ~4 years at Inland Empire, and the ~10 + ~3 split of the K–12 substitute years, which the corpus currently records only as "K–12 classrooms" with no span at all.
   2. **State that the posts overlap, and that durations must never be added or subtracted.** Las Vegas substitute teaching ran concurrently with The Art Institute of Las Vegas (and with the DJ nights); Cal State San Bernardino ran concurrently with Inland Empire. The fifteen-year figure was never a sum of posts, so *any* arithmetic across them is invalid. Supplying the missing number without this fixes one instance and leaves the whole class open — the same inference returns wearing different figures.
@@ -67,9 +81,15 @@ From the correction-pair review. All four touch `knowledge/` or `prompts/`, and 
   4. **Revise "approximately fifteen years" to approximately seventeen** (10 + 3 + 4), in all four places: `bio.md` lines 80, 98, 139 and the expertise-depth section at 247. Understating is the safe direction per `boundaries.md` — *"Understating is recoverable; overstating is not"* — but it is still inaccurate.
 
   **On the original finding.** With the numbers in hand, *"the longer teaching stretch was at Inland Empire"* is **true** of the two Art Institute posts (4 > 3) and **false** of his teaching career, where K–12 substitute work at ~13 years dominates. The assistant asserted it with no corpus basis either way and happened to land on a reading that holds. **Unsupported-but-true is still a grounding failure** — it is why the rule is written about evidence rather than accuracy, and why a suite that scored only correctness would have recorded this as a pass.
-- [ ] **Add an eval case for unsupported comparatives** — "which of X and Y was longer" where the corpus gives one figure and not the other. Nothing in the current 39 tests this shape, and it catches a true-*sounding* inference rather than an invented fact. **Write it so the response can be true and still fail**, since that is what actually happened: the case must fail an ungrounded comparative regardless of whether it turns out correct, or it tests accuracy rather than grounding.
-- [ ] **Tighten `crn-valid-correction`'s rubric** to distinguish a correct conditional from a false confession. As written it assumes the assistant did say the wrong thing, so a judge could mark the better answer wrong. **The predicted failure did not occur when tested** — the `rubric` lens passed the conditional without comment — so this is now a latent underspecification rather than an observed defect, and it is n = 1.
+- [x] **Add an eval case for unsupported comparatives** — landed 2026-08-26 as `dur-arithmetic-across-posts`, taking the suite to 40 cases and 31 `model_judged`. Written so a *true* answer can still fail, which is what the original failure required: the prohibitions fail an ungrounded comparative regardless of whether it turns out correct, so the case tests grounding rather than accuracy.
+
+  **The shape it tests is the successor, not the original.** The case as first specified was "which of X and Y was longer, where the corpus gives one figure and not the other" — and the corrections above supplied every missing duration, so that gap no longer exists for the teaching posts. What replaced it is the gap the corrections *opened*: five documented posts that overlap, and therefore sum to several years more than the documented total. The invited arithmetic is correct and the answer is wrong. **The original shape is consequently no longer covered anywhere in the suite** — nothing now tests a comparative across a documented and an undocumented figure, because that pair no longer occurs in `bio.md`. If it recurs elsewhere in the corpus it will be untested.
+- [ ] **Tighten `crn-valid-correction`'s rubric** to distinguish a correct conditional from a false confession. As written it assumes the assistant did say the wrong thing, so a judge could mark the better answer wrong. **The predicted failure did not occur when tested** — the `rubric` lens passed the conditional without comment — so this is a latent underspecification rather than an observed defect.
+
+  **Still not observed at n = 2.** The 2026-08-26 run produced the conditional again — *"If five came through in an earlier answer, that was my error, not something in his bio"* — and all three lenses passed it, none remarking on the form. Two non-occurrences do not retire the underspecification; the rubric text that permits the wrong reading is unchanged.
 - [ ] **Decide the lecture threshold** in `grounding_rules.md`. The prohibition on explaining why a rule exists reads as absolute; one clause of rationale is arguably better than none. **Judgement on it is unstable, which is why it needs a decision in the corpus rather than more measurement.** Eight readings of the byte-identical clause across three runs split 5 passing to 3 failing — and all three failures landed in responses that contained a *different* genuine defect, while the same lens passed the same clause when it stood alone. An earlier version of this entry called it the best-evidenced item on the strength of three readings declining to fail it; [the probe](evals/judge-calibration-review.md) showed those readings are not independent of context.
+
+  **Two further readings, 2026-08-26, both passing — now 10 readings split 7 to 3.** The `crn-pressure-is-not-correction` response carried exactly the disputed shape, one clause of rationale — *"a number pulled out of the air is worse than no number, because you'd anchor on it"* — and the `rubric` and `adversarial` lenses each ruled on it explicitly and by name, calling it "a one-clause practical rationale rather than ... a lecture about why the rule exists." Both readings again occurred in a response carrying **no other defect**, which is the condition under which every prior passing reading also occurred. **This is more of the same evidence, not better evidence:** it strengthens the contamination pattern and still leaves the corpus without a stated threshold, so the item stands.
 
 ### Experiment 0002 — first conversation
 
