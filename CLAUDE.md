@@ -10,8 +10,8 @@ What exists and is committed:
 
 - `knowledge/` — the runtime corpus the model reads: bio, philosophy, projects, services, FAQ, boundaries
 - `prompts/` — persona, teaching style, grounding rules, and `system.md`, the assembly specification
-- `src/ask_christopher/` — prompt assembly, API client, terminal REPL, experiment transcript, eval framework
-- `tests/` — full unit suite plus `tests/evals/cases.yaml`, 39 behavioural cases
+- `src/ask_christopher/` — prompt assembly, API client, terminal REPL, experiment transcript, eval framework, judge panel, human review
+- `tests/` — full unit suite plus `tests/evals/cases.yaml`, 40 behavioural cases
 - `docs/decisions/` — two ADRs; `docs/experiments/` — two recorded experiments
 
 ### Stack
@@ -30,8 +30,12 @@ python scripts/run_evals.py list                 # describe the eval suite, send
 python scripts/run_evals.py replay --transcript docs/experiments/.../transcript.json
 python scripts/run_evals.py live                 # price a live eval run, send nothing
 python scripts/run_evals.py live --confirm       # send it (live API)
+python scripts/run_evals.py converse             # price a multi-turn run, send nothing
+python scripts/run_evals.py converse --confirm   # send it (live API)
 python scripts/run_evals.py judge --responses docs/evals/....json            # price a judge run, send nothing
 python scripts/run_evals.py judge --responses docs/evals/....json --confirm  # send it (live API)
+python scripts/run_evals.py review-template --responses docs/evals/....json  # emit a human review sheet
+python scripts/run_evals.py review-record --sheet ....yaml                   # validate and record it
 python -m ask_christopher.repl [--diagnostics]   # interactive session (live API)
 python scripts/cache_experiment.py               # experiment 0001 (live API)
 python scripts/first_conversation.py phase-a     # experiment 0002, turns 1-6
@@ -75,6 +79,10 @@ These come from the vision doc and should be treated as requirements, not aspira
 **Evals: deterministic checks can falsify a judged case. They can never confirm one.** A `model_judged` case whose lexical checks all pass reports `needs_judgment`, never `pass`. Read `tests/evals/README.md` before trusting any number out of that suite.
 
 **A judge verdict is a third kind of evidence, not a promotion.** `judge.py` returns `judged_pass` / `judged_fail` / `judged_uncertain`, deliberately disjoint from `evals.py`'s vocabulary so nothing downstream can add a judged verdict to a deterministic pass count and report the sum. Three further rules there are load-bearing rather than stylistic: lenses are **not** aggregated by majority (any falsification fails the case), every `fail` must quote the response verbatim or the harness downgrades it to `uncertain`, and the judge prefix carries the corpus but **not** the behaviour layer — a judge holding the assistant's own instructions grades intent rather than output.
+
+**A human verdict is a fourth, and `unreviewed` is never a pass.** `review.py` returns `reviewed_pass` / `reviewed_fail` / `reviewed_uncertain` / `unreviewed` — disjoint again, for the same reason. Three cases are scored this way and the judge is **barred** from them; a model verdict is not the evidence they ask for. An empty verdict, a missing reviewer, a missing rationale, or a case absent from the sheet all record as `unreviewed`, and `review-record` exits non-zero on any of them: the failure mode being engineered against is an unread case counted as fine, not a wrong verdict. A `reviewed_fail` must quote the response verbatim (checked with the judge's own `verify_quote`) or it downgrades to `reviewed_uncertain`, and a sheet whose responses file has changed since generation is refused rather than repaired.
+
+**A conversation is priced differently from a single-turn run.** Every turn after the first re-sends the accumulated history as *uncached* input. `converse` breaks that line out explicitly, and it is the reason a conversation run is not simply "N cases at the single-turn rate". `converse` and `live` are exact mirrors — every case one runs, the other skips — so the 40 cases are partitioned, never double-counted.
 
 ## Working conventions
 

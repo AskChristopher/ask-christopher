@@ -601,3 +601,354 @@ def test_replay_writes_a_json_record(tmp_path: Path, capsys: Any) -> None:
     assert record["schema"] == run.RECORD_SCHEMA
     assert record["mode"] == "replay"
     assert record["selection"]["ran"] == 6
+
+
+# --------------------------------------------------------------------------
+# Conversations
+# --------------------------------------------------------------------------
+
+
+def _turns(*sends: str) -> Any:
+    from ask_christopher.evals import ConversationTurn
+
+    return tuple(ConversationTurn(send=s) for s in sends)
+
+
+def _conversation_case(case_id: str = "seq", **overrides: Any) -> EvalCase:
+    return _case(case_id, multi_turn=True, turns=_turns("one", "two"), **overrides)
+
+
+def test_the_two_selectors_partition_the_suite_with_no_overlap_and_no_gap() -> None:
+    """Two commands now exist. A case must not fall between them."""
+    run = _runner()
+    cases = load_cases()
+    pick = lambda case: run.Selected(  # noqa: E731
+        case=case, respond=lambda _: "x", fidelity=run.VERBATIM
+    )
+
+    single, _ = run.select(cases, pick, None)
+    conversations, _ = run.select_conversations(cases, pick, None)
+
+    single_ids = {s.case.id for s in single}
+    conversation_ids = {s.case.id for s in conversations}
+    assert single_ids.isdisjoint(conversation_ids)
+    assert single_ids | conversation_ids == {c.id for c in cases}
+
+
+def test_the_conversation_selector_skips_single_turn_cases_with_a_reason() -> None:
+    run = _runner()
+    cases = (_case("single"), _conversation_case())
+
+    selected, skipped = run.select_conversations(
+        cases,
+        lambda case: run.Selected(case=case, respond=lambda _: "x", fidelity=run.VERBATIM),
+        None,
+    )
+
+    assert [s.case.id for s in selected] == ["seq"]
+    assert skipped[0].case_id == "single"
+    assert skipped[0].reason == "single_turn"
+    assert skipped[0].detail
+
+
+def test_single_turn_cases_are_never_sent_by_the_conversation_path() -> None:
+    run = _runner()
+    sent: list[str] = []
+
+    def responder(case: EvalCase) -> Any:
+        sent.append(case.id)
+        return run.Selected(case=case, respond=lambda _: "x", fidelity=run.VERBATIM)
+
+    run.select_conversations((_case("single"),), responder, None)
+
+    assert sent == []
+
+
+def test_conversation_pricing_charges_for_replayed_history() -> None:
+    """The cost a single-turn run never pays. Ignoring it under-prices the run."""
+    run = _runner()
+
+    single = run.estimate_converse_cost([1, 1, 1, 1])
+    one_long = run.estimate_converse_cost([4])
+
+    assert single["turns"] == one_long["turns"] == 4
+    assert single["history"] == 0.0
+    assert one_long["history"] > 0.0
+    assert one_long["total"] > single["total"]
+
+
+def test_conversation_pricing_of_an_empty_run_is_not_negative() -> None:
+    run = _runner()
+    estimate = run.estimate_converse_cost([])
+
+    assert estimate["prefix_reads"] == 0.0
+    assert estimate["turns"] == 0
+
+
+def test_converse_without_confirm_prices_the_run_and_sends_nothing(capsys: Any) -> None:
+    run = _runner()
+
+    code = run.main(["converse"])
+
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "ESTIMATED TOTAL" in out
+    assert "Nothing was sent" in out
+    assert "ext-coaching-project" in out
+    assert "idn-no-repeat-disclosure" in out
+
+
+def _run_conversation_offline(run: Any, tmp_path: Path, replies: Any, **extra: Any) -> Any:
+    """Drive the real conversation path with a stateful stub instead of the API."""
+    from ask_christopher.evals import run_conversation
+
+    def responder(case: EvalCase) -> Any:
+        state = {"turn": 0}
+
+        def respond(text: str) -> str:
+            state["turn"] += 1
+            return replies(case, text, state["turn"])
+
+        return run.Selected(case=case, respond=respond, fidelity=run.VERBATIM)
+
+    args = _namespace(out=str(tmp_path / "record.json"), **extra)
+    code = run._run(
+        args,
+        "converse",
+        responder,
+        {"kind": "converse"},
+        selector=run.select_conversations,
+        score=run_conversation,
+    )
+    return code, json.loads((tmp_path / "record.json").read_text(encoding="utf-8"))
+
+
+def test_a_conversation_run_records_every_turn_without_response_text(tmp_path: Path) -> None:
+    run = _runner()
+
+    # Turn 1 has to satisfy idn-no-repeat-disclosure's premise check, or the
+    # case is legitimately falsified and the run exits non-zero.
+    code, record = _run_conversation_offline(
+        run,
+        tmp_path,
+        lambda case, text, turn: (
+            "not Christopher, an AI" if turn == 1 else f"reply {turn} to {text}"
+        ),
+    )
+
+    assert code == 0
+    assert record["mode"] == "converse"
+    entry = next(r for r in record["suite"]["results"] if r["case_id"] == "ext-coaching-project")
+    assert entry["turns_planned"] == 4
+    assert entry["turns_completed"] == 4
+    assert "reply" not in json.dumps(record)
+
+
+def test_a_conversation_run_accounts_for_every_case_in_the_file(tmp_path: Path) -> None:
+    run = _runner()
+
+    _, record = _run_conversation_offline(
+        run, tmp_path, lambda case, text, turn: "an ordinary answer"
+    )
+
+    ran = record["selection"]["ran"]
+    skipped = len(record["selection"]["skipped"])
+    assert ran + skipped == record["selection"]["total_cases"] == 40
+    assert {s["reason"] for s in record["selection"]["skipped"]} == {"single_turn"}
+
+
+def test_a_conversation_records_no_pass_for_a_human_review_case(tmp_path: Path) -> None:
+    """Both multi_turn cases are human_review. Neither may ever report 'pass'."""
+    run = _runner()
+
+    _, record = _run_conversation_offline(
+        run,
+        tmp_path,
+        lambda case, text, turn: "not Christopher, an AI" if turn == 1 else "ordinary",
+    )
+
+    statuses = {r["case_id"]: r["status"] for r in record["suite"]["results"]}
+    assert set(statuses.values()) == {"needs_judgment"}
+    assert record["suite"]["counts"]["pass"] == 0
+
+
+def test_a_premise_check_failing_falsifies_the_identity_conversation(tmp_path: Path) -> None:
+    """Turn 1 must actually disclose, or turn 4 is measuring something else."""
+    run = _runner()
+
+    _, record = _run_conversation_offline(
+        run, tmp_path, lambda case, text, turn: "sure, ask away"
+    )
+
+    statuses = {r["case_id"]: r["status"] for r in record["suite"]["results"]}
+    assert statuses["idn-no-repeat-disclosure"] == "fail"
+
+
+def test_a_conversation_artifact_carries_every_turn_and_its_intent(tmp_path: Path) -> None:
+    run = _runner()
+    responses = tmp_path / "responses.json"
+
+    _run_conversation_offline(
+        run,
+        tmp_path,
+        lambda case, text, turn: "not Christopher, an AI" if turn == 1 else f"answer {turn}",
+        responses_out=str(responses),
+    )
+
+    data = json.loads(responses.read_text(encoding="utf-8"))
+    entry = next(c for c in data["cases"] if c["case_id"] == "idn-no-repeat-disclosure")
+    assert [t["index"] for t in entry["conversation"]] == [1, 2, 3, 4]
+    assert entry["conversation"][0]["intent"]
+    assert entry["response"] == "answer 4"
+    assert entry["turns_completed"] == 4
+
+    rendered = responses.with_suffix(".md").read_text(encoding="utf-8")
+    assert "THE PROBE" in rendered
+    assert "Turn 4" in rendered
+
+
+def test_an_unfinished_conversation_is_marked_and_not_scored(tmp_path: Path) -> None:
+    """The first conversation completes so a record is written at all.
+
+    A run whose every case errored deliberately writes nothing - a file of
+    identical errors looks like a datapoint and is not one - so the second case
+    is the one that dies mid-conversation.
+    """
+    run = _runner()
+    responses = tmp_path / "responses.json"
+
+    def replies(case: EvalCase, text: str, turn: int) -> str:
+        if case.id == "idn-no-repeat-disclosure" and turn == 3:
+            raise RuntimeError("connection reset")
+        return "not Christopher, an AI" if turn == 1 else "ordinary"
+
+    code, record = _run_conversation_offline(
+        run, tmp_path, replies, responses_out=str(responses)
+    )
+
+    assert code == 1
+    unfinished = next(
+        r for r in record["suite"]["results"] if r["case_id"] == "idn-no-repeat-disclosure"
+    )
+    assert unfinished["status"] == "error"
+    assert unfinished["turns_completed"] == 2
+    assert unfinished["turns_planned"] == 4
+    assert unfinished["deterministic"] == "not_run"
+
+    rendered = responses.with_suffix(".md").read_text(encoding="utf-8")
+    assert "did not finish" in rendered
+
+
+# --------------------------------------------------------------------------
+# Human review, end to end and offline
+# --------------------------------------------------------------------------
+
+
+def _responses_with_human_review(tmp_path: Path) -> Path:
+    run = _runner()
+    responses = tmp_path / "responses.json"
+    _run_conversation_offline(
+        run,
+        tmp_path,
+        lambda case, text, turn: "not Christopher, an AI" if turn == 1 else f"answer {turn}",
+        responses_out=str(responses),
+    )
+    return responses
+
+
+def test_review_template_covers_the_conversations_and_sends_nothing(
+    tmp_path: Path, capsys: Any
+) -> None:
+    run = _runner()
+    responses = _responses_with_human_review(tmp_path)
+    sheet = tmp_path / "sheet.yaml"
+
+    code = run.main(
+        ["review-template", "--responses", str(responses), "--out", str(sheet)]
+    )
+
+    assert code == 0
+    text = sheet.read_text(encoding="utf-8")
+    assert "ext-coaching-project" in text
+    assert "idn-no-repeat-disclosure" in text
+    assert "verdict: ''" in text or 'verdict: ""' in text
+    assert "unreviewed" in capsys.readouterr().out
+
+
+def test_review_template_refuses_to_clobber_a_filled_in_sheet(tmp_path: Path) -> None:
+    run = _runner()
+    responses = _responses_with_human_review(tmp_path)
+    sheet = tmp_path / "sheet.yaml"
+
+    assert run.main(["review-template", "--responses", str(responses), "--out", str(sheet)]) == 0
+    assert run.main(["review-template", "--responses", str(responses), "--out", str(sheet)]) == 1
+
+
+def test_an_unfilled_sheet_records_unreviewed_and_exits_non_zero(
+    tmp_path: Path, capsys: Any
+) -> None:
+    """The single most important behaviour: unread never becomes a pass."""
+    run = _runner()
+    responses = _responses_with_human_review(tmp_path)
+    sheet = tmp_path / "sheet.yaml"
+    out = tmp_path / "review.json"
+    run.main(["review-template", "--responses", str(responses), "--out", str(sheet)])
+
+    code = run.main(["review-record", "--sheet", str(sheet), "--out", str(out)])
+
+    assert code == 1
+    record = json.loads(out.read_text(encoding="utf-8"))
+    assert record["counts"]["unreviewed"] == 2
+    assert record["counts"]["reviewed_pass"] == 0
+    assert "unread, not passing" in capsys.readouterr().out
+
+
+def test_a_filled_in_sheet_records_its_verdicts(tmp_path: Path) -> None:
+    run = _runner()
+    import yaml
+
+    responses = _responses_with_human_review(tmp_path)
+    sheet = tmp_path / "sheet.yaml"
+    out = tmp_path / "review.json"
+    run.main(["review-template", "--responses", str(responses), "--out", str(sheet)])
+
+    document = yaml.safe_load(sheet.read_text(encoding="utf-8"))
+    for entry in document["reviews"]:
+        entry["verdict"] = "reviewed_pass"
+        entry["reviewer"] = "CM"
+        entry["rationale"] = "Read the whole conversation; the fade is there."
+    sheet.write_text(yaml.safe_dump(document, sort_keys=False), encoding="utf-8")
+
+    code = run.main(["review-record", "--sheet", str(sheet), "--out", str(out)])
+
+    assert code == 0
+    record = json.loads(out.read_text(encoding="utf-8"))
+    assert record["counts"]["reviewed_pass"] == 2
+    assert record["counts"]["unreviewed"] == 0
+    assert record["source"]["responses_sha256"]
+    assert record["reviews"][0]["reviewer"] == "CM"
+
+
+def test_review_record_refuses_a_sheet_whose_responses_changed(tmp_path: Path) -> None:
+    run = _runner()
+    responses = _responses_with_human_review(tmp_path)
+    sheet = tmp_path / "sheet.yaml"
+    run.main(["review-template", "--responses", str(responses), "--out", str(sheet)])
+
+    data = json.loads(responses.read_text(encoding="utf-8"))
+    data["cases"][0]["response"] = "something else entirely"
+    responses.write_text(json.dumps(data, indent=2), encoding="utf-8")
+
+    assert run.main(["review-record", "--sheet", str(sheet), "--out", str(tmp_path / "r.json")]) == 1
+
+
+def test_the_judge_still_refuses_the_human_review_cases(tmp_path: Path) -> None:
+    """Unchanged, and asserted here because the review workflow depends on it."""
+    run = _runner()
+    responses = _responses_with_human_review(tmp_path)
+    entries = json.loads(responses.read_text(encoding="utf-8"))["cases"]
+
+    selected, skipped = run.select_for_judging(entries, load_cases(), None)
+
+    assert selected == []
+    assert {s.reason for s in skipped} == {"human_review"}

@@ -22,11 +22,13 @@ from ask_christopher.evals import (
     CATEGORIES,
     SCORING_MODES,
     Checks,
+    ConversationTurn,
     EvalCase,
     EvalCaseError,
     load_cases,
     run_case,
     run_checks,
+    run_conversation,
     run_suite,
 )
 
@@ -419,9 +421,14 @@ def test_multi_turn_defaults_to_false(tmp_path: Path) -> None:
 
 
 def test_multi_turn_is_read_from_the_case_file(tmp_path: Path) -> None:
-    path = _write(tmp_path, MINIMAL_CASE + "    multi_turn: true\n")
+    path = _write(
+        tmp_path,
+        MINIMAL_CASE + "    multi_turn: true\n    turns:\n      - send: 'Hello.'\n",
+    )
 
-    assert load_cases(path)[0].multi_turn is True
+    case = load_cases(path)[0]
+    assert case.multi_turn is True
+    assert [t.send for t in case.turns] == ["Hello."]
 
 
 def test_multi_turn_must_be_boolean(tmp_path: Path) -> None:
@@ -506,3 +513,258 @@ def test_real_suite_deterministic_cases_all_carry_checks() -> None:
     for case in load_cases():
         if case.is_deterministic:
             assert not case.checks.is_empty(), case.id
+
+
+# --------------------------------------------------------------------------
+# Conversations - the turn schema
+# --------------------------------------------------------------------------
+
+_TURNS = """\
+    multi_turn: true
+    turns:
+      - send: "First."
+        intent: "Sets up the probe."
+        checks:
+          required_substrings: ["disclosed"]
+      - send: "Second."
+"""
+
+
+def test_turns_are_parsed_in_order_with_their_own_checks(tmp_path: Path) -> None:
+    case = load_cases(_write(tmp_path, MINIMAL_CASE + _TURNS))[0]
+
+    assert [t.send for t in case.turns] == ["First.", "Second."]
+    assert case.turns[0].intent == "Sets up the probe."
+    assert case.turns[0].checks.required_substrings == ("disclosed",)
+    assert case.turns[1].checks.is_empty()
+
+
+def test_a_multi_turn_case_without_turns_is_refused(tmp_path: Path) -> None:
+    """Unrunnable by construction: skipped by one path, unsendable by the other."""
+    path = _write(tmp_path, MINIMAL_CASE + "    multi_turn: true\n")
+
+    with pytest.raises(EvalCaseError, match="no 'turns' are defined"):
+        load_cases(path)
+
+
+def test_turns_without_the_multi_turn_flag_are_refused(tmp_path: Path) -> None:
+    """The single-turn path would send 'prompt' and silently ignore the turns."""
+    path = _write(tmp_path, MINIMAL_CASE + "    turns:\n      - send: 'Hello.'\n")
+
+    with pytest.raises(EvalCaseError, match="'multi_turn' is not true"):
+        load_cases(path)
+
+
+def test_an_empty_turn_list_is_refused(tmp_path: Path) -> None:
+    path = _write(tmp_path, MINIMAL_CASE + "    multi_turn: true\n    turns: []\n")
+
+    with pytest.raises(EvalCaseError, match="non-empty list"):
+        load_cases(path)
+
+
+def test_a_turn_needs_something_to_send(tmp_path: Path) -> None:
+    path = _write(tmp_path, MINIMAL_CASE + "    multi_turn: true\n    turns:\n      - send: ''\n")
+
+    with pytest.raises(EvalCaseError, match="missing or empty 'send'"):
+        load_cases(path)
+
+
+def test_an_unknown_turn_field_is_rejected(tmp_path: Path) -> None:
+    path = _write(
+        tmp_path,
+        MINIMAL_CASE + "    multi_turn: true\n    turns:\n      - send: 'Hi.'\n        reply: 'No.'\n",
+    )
+
+    with pytest.raises(EvalCaseError, match="unknown field"):
+        load_cases(path)
+
+
+def test_a_deterministic_case_may_carry_its_checks_on_turns_alone(tmp_path: Path) -> None:
+    """Per-turn checks satisfy the 'deterministic cases must assert something' rule."""
+    body = MINIMAL_CASE.replace("scoring: model_judged", "scoring: deterministic") + (
+        "    multi_turn: true\n"
+        "    turns:\n"
+        "      - send: 'Hi.'\n"
+        "        checks:\n"
+        "          max_words: 10\n"
+    )
+    case = load_cases(_write(tmp_path, body))[0]
+
+    assert case.has_any_checks
+    assert case.checks.is_empty()
+
+
+def test_a_deterministic_conversation_with_no_checks_anywhere_is_refused(tmp_path: Path) -> None:
+    body = MINIMAL_CASE.replace("scoring: model_judged", "scoring: deterministic") + (
+        "    multi_turn: true\n    turns:\n      - send: 'Hi.'\n"
+    )
+
+    with pytest.raises(EvalCaseError, match="could never fail"):
+        load_cases(_write(tmp_path, body))
+
+
+# --------------------------------------------------------------------------
+# Conversations - running one
+# --------------------------------------------------------------------------
+
+
+def _conversation(**overrides) -> EvalCase:
+    defaults = {
+        "multi_turn": True,
+        "turns": (ConversationTurn(send="one"), ConversationTurn(send="two")),
+    }
+    return _case(**{**defaults, **overrides})
+
+
+def test_a_conversation_sends_every_turn_in_order() -> None:
+    sent: list[str] = []
+
+    result = run_conversation(_conversation(), lambda text: sent.append(text) or "ok")
+
+    assert sent == ["one", "two"]
+    assert result.status == "needs_judgment"
+    assert result.turns_completed == 2
+
+
+def test_history_accumulates_across_turns() -> None:
+    """The responder is stateful; run_conversation must not reset it per turn."""
+    history: list[str] = []
+
+    def converse(text: str) -> str:
+        history.append(text)
+        return f"seen {len(history)}"
+
+    result = run_conversation(_conversation(), converse)
+
+    assert [t.response for t in result.turns] == ["seen 1", "seen 2"]
+
+
+def test_case_level_checks_apply_to_the_final_turn_only() -> None:
+    """The rule idn-no-repeat-disclosure needs: required on turn 1, banned on the last."""
+    case = _conversation(checks=Checks(forbidden_substrings=("disclaimer",)))
+    replies = iter(["a disclaimer, correctly", "an ordinary answer"])
+
+    result = run_conversation(case, lambda _: next(replies))
+
+    assert result.status == "needs_judgment"
+    assert result.failures == ()
+
+
+def test_a_case_level_check_failing_on_the_final_turn_falsifies_the_case() -> None:
+    case = _conversation(checks=Checks(forbidden_substrings=("disclaimer",)))
+    replies = iter(["fine", "another disclaimer"])
+
+    result = run_conversation(case, lambda _: next(replies))
+
+    assert result.status == "fail"
+    assert result.failures[0].kind == "forbidden_substring"
+
+
+def test_a_per_turn_check_failing_early_falsifies_the_case() -> None:
+    """A conversation whose premise never held is measuring something else."""
+    case = _conversation(
+        turns=(
+            ConversationTurn(send="one", checks=Checks(required_substrings=("disclosed",))),
+            ConversationTurn(send="two"),
+        )
+    )
+
+    result = run_conversation(case, lambda _: "no disclosure here")
+
+    assert result.status == "fail"
+    assert result.turns[0].deterministic == "fail"
+    assert result.turns[1].deterministic == "no_checks"
+
+
+def test_a_failed_turn_stops_the_conversation_and_marks_the_rest_not_run() -> None:
+    calls: list[str] = []
+
+    def converse(text: str) -> str:
+        calls.append(text)
+        raise RuntimeError("connection reset")
+
+    result = run_conversation(_conversation(), converse)
+
+    assert calls == ["one"]
+    assert result.status == "error"
+    assert "connection reset" in (result.error or "")
+    assert result.turns[1].deterministic == "not_run"
+
+
+def test_a_partial_conversation_is_never_scored_on_the_turns_that_finished() -> None:
+    """The probe never ran, so a verdict on the prefix would be a verdict on nothing."""
+    replies = iter(["a clean first turn"])
+
+    def converse(_text: str) -> str:
+        try:
+            return next(replies)
+        except StopIteration:
+            raise RuntimeError("no more") from None
+
+    case = _conversation(checks=Checks(required_substrings=("clean",)))
+    result = run_conversation(case, converse)
+
+    assert result.status == "error"
+    assert result.deterministic == "not_run"
+    # The final-turn check would have passed against turn 1's text. It is not
+    # applied, because turn 1 is not the probe.
+    assert result.failures == ()
+
+
+def test_a_non_string_reply_is_an_error_not_a_crash() -> None:
+    result = run_conversation(_conversation(), lambda _: 42)
+
+    assert result.status == "error"
+    assert "expected str" in (result.error or "")
+
+
+def test_a_deterministic_conversation_that_passes_reports_pass() -> None:
+    case = _conversation(scoring="deterministic", checks=Checks(max_words=10))
+
+    result = run_conversation(case, lambda _: "short enough")
+
+    assert result.status == "pass"
+    assert result.deterministic == "pass"
+
+
+def test_run_conversation_refuses_a_case_with_no_turns() -> None:
+    with pytest.raises(EvalCaseError, match="needs 'turns'"):
+        run_conversation(_case(), lambda _: "x")
+
+
+def test_the_result_record_carries_no_response_text() -> None:
+    """Same invariant as CaseResult: the record is a metrics series, not an archive."""
+    result = run_conversation(_conversation(), lambda _: "secret words here")
+
+    blob = repr(result.as_dict())
+    assert "secret words here" not in blob
+    assert result.as_dict()["turns_completed"] == 2
+    assert result.as_dict()["turns"][0]["response_words"] == 3
+
+
+def test_single_turn_results_carry_no_turn_block_at_all() -> None:
+    """Existing records stay comparable with earlier runs."""
+    result = run_case(_case(), lambda _: "x")
+
+    assert "turns" not in result.as_dict()
+
+
+# --------------------------------------------------------------------------
+# The real suite's conversations
+# --------------------------------------------------------------------------
+
+
+def test_every_real_multi_turn_case_has_runnable_turns() -> None:
+    multi = [c for c in load_cases() if c.multi_turn]
+
+    assert len(multi) == 2
+    for case in multi:
+        assert case.turns, case.id
+        assert all(t.send.strip() for t in case.turns), case.id
+
+
+def test_no_real_multi_turn_case_relies_on_its_prose_prompt() -> None:
+    """The prompt may be a description. The turns are what actually get sent."""
+    for case in load_cases():
+        if case.multi_turn:
+            assert case.turns[0].send != "", case.id

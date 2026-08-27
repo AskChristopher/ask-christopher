@@ -44,7 +44,17 @@ A `model_judged` or `human_review` case whose checks all pass is reported as **`
 
 Two smoke runs make the bound concrete. Against a deliberately terrible responder (`"Great question! His rate is $200/hour and I'll pass this along to him."`) the suite catches 8 cases — and still records 1 *pass*, because that answer happens to be short and unformatted, which is all the length check was ever asserting. Against an inert responder that says nothing wrong and nothing useful, 3 cases pass. **Neither responder would survive judgment.** That gap is the honest measure of what lexical scoring is worth.
 
-Model-as-judge scoring is deliberately not implemented. The record has room for it; nothing here calls a model.
+### Three kinds of evidence, deliberately unsummable
+
+Lexical scoring is one of three ways a case gets scored, and each reports in its own vocabulary so no reader can add them up:
+
+| Scorer | Verdicts | Lives in |
+|---|---|---|
+| Deterministic | `pass` / `fail` / `needs_judgment` / `error` | `evals.py` |
+| Judge panel | `judged_pass` / `judged_fail` / `judged_uncertain` | `judge.py` |
+| Human review | `reviewed_pass` / `reviewed_fail` / `reviewed_uncertain` / `unreviewed` | `review.py` |
+
+No name is shared, so a judged or reviewed verdict cannot be quietly folded into a deterministic pass count and reported as a total. A judge verdict and a human verdict are each **a third kind of evidence, not a promotion** of the lexical result.
 
 ## Case format
 
@@ -70,9 +80,24 @@ Model-as-judge scoring is deliberately not implemented. The record has room for 
     min_words: 0
   multi_turn: false               # optional; true means a single-turn runner
                                   # must skip this, not send the prompt
+  turns:                          # required when multi_turn; the conversation
+    - send: "..."                 # the user turn, verbatim
+      intent: Why this turn exists
+      checks: {...}               # optional, same shape as case-level checks
 ```
 
 `requires` and `prohibits` are the rubric. `checks` is the much smaller executable subset — deliberately so.
+
+### Multi-turn cases
+
+Two cases measure something no single reply can show — whether scaffolding *fades* across a conversation, and whether a disclosure stays un-repeated once established. Both now carry a scripted `turns` list.
+
+- **Turn 1 is the case prompt verbatim** where the prompt is a real prompt, so the conversation opens on the case as written.
+- **No assistant turn is ever scripted.** The behaviour under test has to be the model's own; a planted reply would measure the script.
+- **Case-level `requires`/`prohibits` apply to the final turn** — the probe. Earlier turns exist to build the state the probe depends on.
+- **Per-turn `checks` assert the premise, not the behaviour.** `idn-no-repeat-disclosure` checks turn 1 for the disclosure itself: if the assistant never discloses, the probe on turn 4 is meaningless, so the check falsifies the case rather than letting the harness pretend the premise held.
+
+`run_conversation` scores the accumulated exchange; a case's `turns_completed` is part of the record.
 
 ### Rules the loader enforces
 
@@ -120,6 +145,33 @@ def respond(prompt: str) -> str:
 
 A live run costs tokens. It is small next to shipping an assistant that misstates your credentials. Run it before merging any change to `prompts/` or `knowledge/` — those are the changes that alter behavior. Code-only changes rarely need it.
 
+For a conversation, inject a `converse` callable instead — a function that appends each prompt to a running history and returns the reply:
+
+```python
+from ask_christopher.evals import run_conversation
+
+result = run_conversation(case, converse)   # case.turns drives the exchange
+```
+
+**A conversation is priced differently from a single-turn run.** Every turn after the first re-sends the accumulated history as *uncached* input, which a single-turn run never pays. `run_evals.py converse` breaks that out — prefix write, prefix reads, replayed history, output — and refuses to spend without `--confirm`.
+
+## Human review
+
+Three cases name a reader on purpose — warmth calibration, whether scaffolding faded, and whether a repeated disclaimer read as evasion. A lexical check cannot see any of those, and **the judge panel is barred from them**: `select_for_judging` skips a `human_review` case with the stated reason that a model verdict is not the evidence the case asks for.
+
+```bash
+python scripts/run_evals.py review-template --responses docs/evals/....json   # emit a sheet
+# a person fills in verdict, reviewer, rationale, evidence
+python scripts/run_evals.py review-record --sheet ....yaml                    # validate and record
+```
+
+Neither command sends anything. Four rules are enforced in code rather than trusted:
+
+- **`unreviewed` is the default, and it is the point.** No entry, an empty verdict, a verdict with no reviewer, or a verdict with no rationale all record as `unreviewed` — never a pass. A generated sheet nobody filled in records every case unreviewed, and `review-record` **exits non-zero** so an unread suite cannot pass a gate. The failure mode being engineered against is not a wrong verdict; it is an unread case counted as fine.
+- **A `reviewed_fail` must quote the response verbatim**, checked with the judge's own `verify_quote`. A fail whose every quote is absent downgrades to `reviewed_uncertain` — never to a pass, and the downgrade is printed with its reason.
+- **The sheet is bound to the evidence.** A binding block carries the responses-file hash, per-response hashes, commit, model, effort, and prompt fingerprint. Edit the responses file after generating the sheet and `review-record` refuses it outright: a verdict whose text nobody can now reproduce would otherwise attach to the wrong evidence.
+- **A `reviewed_fail` is a finding, not a malfunction** — it exits clean. Only `unreviewed` exits non-zero.
+
 ## Recording results
 
 Keep results over time, not just the latest run. A gradual decline in teaching quality across ten prompt revisions is invisible in any single run and obvious in a trend.
@@ -128,7 +180,11 @@ Track **fabrication and over-refusal as separate rates.** They trade off against
 
 ## Not yet built
 
-- Model-as-judge scoring (the 31 `model_judged` cases are unscored until then)
-- A human review workflow for the 3 `human_review` cases
-- ~~A `scripts/run_evals.py` entry point~~ — **built.** `list`, `replay`, and `live`; see [`docs/evals/README.md`](../../docs/evals/README.md) for the record format and where results are kept
-- A conversation-capable runner. The two cases needing one now carry `multi_turn: true`, so a single-turn runner skips them with a stated reason instead of sending prose at the model
+Every scoring path now exists. What is missing is **coverage** — cases that have been sent, and verdicts actually recorded.
+
+- **Coverage.** 3 of 40 cases have ever been sent. The 31 `model_judged` cases are unscored until judged; the 3 `human_review` cases are `unreviewed` until read
+- **A false-positive and false-negative rate for the judge panel.** It has caught the one defect it was pointed at, which is not a detection rate
+- ~~A `scripts/run_evals.py` entry point~~ — **built.** `list`, `replay`, `live`, `converse`, `review-template`, `review-record`, `judge`; see [`docs/evals/README.md`](../../docs/evals/README.md) for the record format and where results are kept
+- ~~Model-as-judge scoring~~ — **built.** `judge.py`, a three-lens panel; see [`docs/evals/README.md`](../../docs/evals/README.md)
+- ~~A human review workflow~~ — **built.** `review.py`, above
+- ~~A conversation-capable runner~~ — **built.** `run_conversation` and `run_evals.py converse`; both `multi_turn` cases now carry scripted `turns`

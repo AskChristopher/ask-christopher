@@ -13,9 +13,9 @@
 
 **Built and recorded:** the knowledge corpus (`knowledge/`, six files), the prompt layer (`prompts/`, four files), prompt assembly, the API client, the terminal REPL, and two experiments. What the assistant knows, who it is, how it teaches, how it stays honest, how those assemble into the exact bytes sent to the API — and now two measurements of what actually comes back.
 
-**Open:** the eval suite runs, and has now scored three cases with a model-as-judge panel that rediscovered a grounding failure previously found only by human reading. What remains is coverage: **37 of 40 cases have never been sent**, the 3 `human_review` cases have no workflow, and the 2 `multi_turn` cases have no conversation-capable runner — see *Eval suite* below.
+**Open:** the eval suite runs, and has now scored three cases with a model-as-judge panel that rediscovered a grounding failure previously found only by human reading. **Every scoring path now exists** — deterministic, judged, human, single-turn and conversational. What remains is coverage rather than machinery: **37 of 40 cases have never been sent**, the 2 `multi_turn` cases have a runner but no run, and the 3 `human_review` cases have a workflow but no reader — see *Eval suite* below.
 
-**In flight:** nothing. Experiment 0002 is `complete`, its `high`-effort rerun is `complete` (2026-08-16), and **the teaching-history corpus corrections have landed** (2026-08-26) behind a targeted pre-merge eval. Two of the four unblocked items are closed; the rubric-tightening and lecture-threshold items remain open and are the next work.
+**In flight:** nothing. Experiment 0002 is `complete`, its `high`-effort rerun is `complete` (2026-08-16), **the teaching-history corpus corrections have landed** (2026-08-26) behind a targeted pre-merge eval, and **the human-review workflow and conversation runner landed** (2026-08-26). Two of the four unblocked items are closed; the rubric-tightening and lecture-threshold items remain open and are the next work.
 
 ---
 
@@ -28,7 +28,7 @@ Milestone 1, from ADR-0001: a terminal REPL that loads the Markdown corpus, asse
 - [x] Prompt assembly — `src/ask_christopher/prompt.py`, with byte-stability tests
 - [x] **Milestone 2 — cache baseline.** Recorded as [experiment 0001](experiments/0001-prompt-cache-baseline.md). Caching confirmed on the first attempt with no tuning: 40,511 tokens written then read back, input cost down 92.0%. It also contradicted the pre-run token estimate by 19.6% and observed *no* latency improvement — the measurement cannot isolate that, which the record says explicitly.
 - [x] Terminal REPL — `src/ask_christopher/repl.py`, `Session` separated from the loop so conversation behaviour is testable without credentials or a terminal
-- [ ] **Eval suite — the open item, now partly closed.** `tests/evals/cases.yaml` holds 39 cases across the seven categories, with eight tradeoffs guarded in both directions, and `src/ask_christopher/evals.py` scores them against any injected response function.
+- [ ] **Eval suite — the open item, now partly closed.** `tests/evals/cases.yaml` holds 40 cases across the seven categories, with eight tradeoffs guarded in both directions, and `src/ask_christopher/evals.py` scores them against any injected response function.
   - [x] **Runner** — `scripts/run_evals.py`, with `list`, `replay`, and `live`. Every case lands in `ran` or in `skipped` with a stated reason, records go to `docs/evals/`, and no suite-wide pass rate is ever reported. A live run is priced and refuses to spend without `--confirm`.
   - [x] **First replay** — experiment 0002's transcript scored through the suite. 6 of 39 cases covered, **nothing falsified and nothing confirmed**: 2 had checks that passed, 4 carry no executable checks at all. That is the honest ceiling of lexical scoring, measured rather than argued.
   - [x] **Correction pair, judged.** Both halves run single-turn for $0.2833 and judged to pass — [review](evals/correction-pair-review.md). `crn-valid-correction` supplies the prior claim in its own prompt, so it never needed a conversation. **It also produced the first real grounding failure the suite has caught:** an unsupported comparative — *"the longer teaching stretch was at Inland Empire"* — where `bio.md` gives a duration for one post and none for the other. Both lexical checks passed; only a human reading caught it.
@@ -52,8 +52,18 @@ Milestone 1, from ADR-0001: a terminal REPL that loads the Markdown corpus, asse
 
     Two incidental observations. The assembled prefix is now **41,446 tokens**, up 935 (+2.3%) from experiment 0001's 40,511, so a cold cache write costs ~$0.006 more. And the `crn-pressure-is-not-correction` response landed at **exactly 120 words against a `max_words` of 120** — it passed, the bound is inclusive, but one further word would have failed the case on length with the substance intact. **Non-blocking:** the fragility is a pre-existing property of the case's threshold, not a consequence of the corpus change. Worth widening the next time that case is touched for another reason.
   - [ ] **Judge coverage of the remaining 28 `model_judged` cases.** Extrapolated at roughly **$4.50** for 90 calls, from eight. Elicitation is the separate ~$1.05; judging re-runs against recorded responses without spending on generation again.
-  - [ ] **Human-review workflow** for the 3 `human_review` cases.
-  - [ ] **Conversation-capable runner** for the 2 cases now marked `multi_turn: true`.
+  - [x] **Human-review workflow** for the 3 `human_review` cases. `src/ask_christopher/review.py` plus `run_evals.py review-template` / `review-record` — generate a sheet bound to a responses file, fill it in, validate and record. Neither command sends anything.
+
+    **A human verdict is a third kind of evidence, not a promotion.** `reviewed_pass` / `reviewed_fail` / `reviewed_uncertain` / `unreviewed`, disjoint from both `evals.py` and `judge.py` so nothing downstream can sum across the three.
+
+    Two rules carry the design. **`unreviewed` is the default and exits non-zero** — a missing entry, an empty verdict, or a verdict with no reviewer or no rationale all record as unread rather than passing, because the failure mode worth engineering against is not a wrong verdict but an unread case counted as fine. And **a `reviewed_fail` must quote the response verbatim**, checked with the judge's own `verify_quote`; a fail whose quotes are absent downgrades to `reviewed_uncertain`. The sheet's binding block ties every verdict to the exact response hash, commit, model, and prompt fingerprint, and a sheet whose responses file has since changed is refused outright.
+
+    **The workflow is built; the three cases remain `unreviewed`.** That is the honest status, and closing this box does not close the reading.
+  - [x] **Conversation-capable runner** for the 2 cases marked `multi_turn: true`. `run_conversation` in `evals.py` plus `run_evals.py converse`, the exact mirror of `live` — every case one runs, the other skips, so the 40 are partitioned rather than double-counted.
+
+    Both cases now carry scripted `turns`, four each: a `send`, an `intent`, and optional per-turn `checks`. **No assistant turn is ever scripted** — the behaviour under test has to be the model's own. Case-level `requires`/`prohibits` apply to the final turn, the probe; earlier turns exist to build the state it depends on. `idn-no-repeat-disclosure` puts its one check on turn 1, asserting the *premise* rather than the behaviour: if the assistant never discloses, the probe on turn 4 measures nothing, so the check falsifies the case instead of the harness pretending the premise held.
+
+    Priced at **$0.4540** for 8 turns, and the estimator breaks out the line a single-turn run never pays: a conversation re-sends its accumulated history as uncached input on every turn after the first. **Not yet sent** — the runner is built, the measurement is not made.
   - [ ] **A full live run.** Three of 40 cases have now been sent. The remaining 37 price at roughly **$1.35** — refined from the 2026-08-26 run's measured figures rather than the earlier $1.05 estimate: one cold write at ~$0.266 plus ~$0.030 per cached case, assuming they stay inside the 5-minute TTL.
 
 ### Unblocked by the rerun

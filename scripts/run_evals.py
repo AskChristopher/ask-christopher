@@ -60,6 +60,7 @@ from ask_christopher.evals import (  # noqa: E402
     default_cases_path,
     load_cases,
     run_case,
+    run_conversation,
 )
 
 RECORD_SCHEMA = 1
@@ -74,6 +75,10 @@ _WRITE_MULTIPLIER, _READ_MULTIPLIER = 1.25, 0.1
 
 #: Midpoint of the 151-285 output range observed across experiment 0002.
 _TYPICAL_OUTPUT = 220
+
+#: A case prompt is short. Used only to estimate how fast a conversation's
+#: history grows, which is the cost a single-turn run does not have.
+_TYPICAL_USER = 30
 
 _NO_CREDENTIALS = """
 No credentials found. A live run makes real, billed API calls.
@@ -155,7 +160,13 @@ def select(
     responder: Callable[[EvalCase], Selected | Skipped],
     only: frozenset[str] | None,
 ) -> tuple[list[Selected], list[Skipped]]:
-    """Partition every case into exactly one of run or skipped."""
+    """Partition every case into exactly one of run or skipped.
+
+    The single-turn path. It still skips ``multi_turn`` cases with the same
+    stated reason it always has: a conversation-capable path now exists, but it
+    is a different command, and sending a case's prose description as a prompt
+    would measure nothing here.
+    """
     selected: list[Selected] = []
     skipped: list[Skipped] = []
 
@@ -168,7 +179,43 @@ def select(
                 Skipped(
                     case.id,
                     "multi_turn",
-                    "needs a conversation-capable runner; a single prompt cannot measure it",
+                    "needs a conversation; run 'converse' instead",
+                )
+            )
+            continue
+        outcome = responder(case)
+        if isinstance(outcome, Skipped):
+            skipped.append(outcome)
+        else:
+            selected.append(outcome)
+
+    return selected, skipped
+
+
+def select_conversations(
+    cases: tuple[EvalCase, ...],
+    responder: Callable[[EvalCase], Selected | Skipped],
+    only: frozenset[str] | None,
+) -> tuple[list[Selected], list[Skipped]]:
+    """The mirror of :func:`select`: conversations only.
+
+    The two selectors partition the suite between them with no overlap and no
+    gap, which is the property that stops a case falling between the commands
+    now that there are two. Asserted in ``tests/test_run_evals.py``.
+    """
+    selected: list[Selected] = []
+    skipped: list[Skipped] = []
+
+    for case in cases:
+        if only is not None and case.id not in only:
+            skipped.append(Skipped(case.id, "not_selected", "excluded by --only"))
+            continue
+        if not case.multi_turn:
+            skipped.append(
+                Skipped(
+                    case.id,
+                    "single_turn",
+                    "one prompt is enough; run 'live' or 'replay' instead",
                 )
             )
             continue
@@ -260,9 +307,76 @@ def live_responder(
     return responder
 
 
+def converse_responder(
+    client: Any, prompt: Any, model: str, max_tokens: int, effort: str, usage: list[dict[str, Any]]
+) -> Callable[[EvalCase], Selected | Skipped]:
+    """Send each case as one continuing conversation.
+
+    One ``Session`` per case, created when the case is selected, so successive
+    calls to the returned ``respond`` continue the same conversation. ``Session``
+    already accumulates history and mutates it **only on success**, so a turn
+    that fails leaves the conversation exactly as it was rather than stacking a
+    duplicate user message.
+
+    The prompt object is shared across cases for the same reason it is in
+    :func:`live_responder`: the cached prefix stays byte-identical, so only the
+    very first turn of the very first case pays a cache write.
+    """
+    from ask_christopher.repl import Session
+
+    def responder(case: EvalCase) -> Selected | Skipped:
+        if not case.turns:
+            return Skipped(case.id, "no_turns", "multi_turn case defines no turns")
+
+        session = Session(
+            client=client, prompt=prompt, model=model, max_tokens=max_tokens, effort=effort
+        )
+
+        def respond(text: str) -> str:
+            turn = session.send(text)
+            usage.append(
+                {"case_id": case.id, "turn": session.turn_count, **turn.metrics.as_dict()}
+            )
+            return turn.reply
+
+        return Selected(case=case, respond=respond, fidelity=VERBATIM)
+
+    return responder
+
+
 # --------------------------------------------------------------------------
 # Reporting
 # --------------------------------------------------------------------------
+
+
+def estimate_converse_cost(turn_counts: list[int]) -> dict[str, float]:
+    """Price a conversation run.
+
+    Two costs a single-turn run does not have. Every turn after the first in a
+    conversation re-sends the accumulated history as **uncached** input, and that
+    history grows linearly, so a four-turn case pays for six turns' worth of
+    replayed context. The prefix itself still caches: one write, then a read per
+    turn across the whole run.
+    """
+    total_turns = sum(turn_counts)
+    write = PREFIX_TOKENS * _IN * _WRITE_MULTIPLIER
+    reads = PREFIX_TOKENS * _IN * _READ_MULTIPLIER * max(0, total_turns - 1)
+
+    # Turn k re-sends k-1 previous exchanges. Summed over a conversation of n
+    # turns that is n(n-1)/2 exchanges of replayed history.
+    exchanges = sum(n * (n - 1) // 2 for n in turn_counts)
+    history = exchanges * (_TYPICAL_OUTPUT + _TYPICAL_USER) * _IN
+    output = total_turns * _TYPICAL_OUTPUT * _OUT
+
+    return {
+        "conversations": len(turn_counts),
+        "turns": total_turns,
+        "prefix_write": round(write, 6),
+        "prefix_reads": round(reads, 6),
+        "history": round(history, 6),
+        "output": round(output, 6),
+        "total": round(write + reads + history + output, 6),
+    }
 
 
 def estimate_live_cost(case_count: int) -> dict[str, float]:
@@ -418,31 +532,52 @@ def build_responses(
     status = {r.case_id: r for r in suite.results}
 
     entries: list[dict[str, Any]] = []
-    for case_id, text in captured.items():
+    for case_id, exchanges in captured.items():
         item = by_id[case_id]
         result = status[case_id]
-        entries.append(
-            {
-                "case_id": case_id,
-                "category": item.case.category,
-                "scoring": item.case.scoring,
-                "status": result.status,
-                "deterministic": result.deterministic,
-                "failures": [f.as_dict() for f in result.failures],
-                "fidelity": item.fidelity,
-                "rubric": {
-                    "tests": item.case.tests,
-                    "requires": list(item.case.requires),
-                    "prohibits": list(item.case.prohibits),
-                    "source": item.case.source,
-                },
-                "case_prompt": item.case.prompt,
-                "prompt_sent": text["prompt_sent"],
-                "elicited_by": item.elicited_by,
-                "response": text["response"],
-                "response_words": result.response_words,
-            }
-        )
+        if not exchanges:
+            continue
+
+        entry: dict[str, Any] = {
+            "case_id": case_id,
+            "category": item.case.category,
+            "scoring": item.case.scoring,
+            "status": result.status,
+            "deterministic": result.deterministic,
+            "failures": [f.as_dict() for f in result.failures],
+            "fidelity": item.fidelity,
+            "rubric": {
+                "tests": item.case.tests,
+                "requires": list(item.case.requires),
+                "prohibits": list(item.case.prohibits),
+                "source": item.case.source,
+            },
+            "case_prompt": item.case.prompt,
+            "prompt_sent": exchanges[0]["prompt_sent"],
+            "elicited_by": item.elicited_by,
+            # The final reply. For a conversation that is the probe turn - what
+            # the rubric is actually about - so a judge or reviewer reading only
+            # this field is reading the right one.
+            "response": exchanges[-1]["response"],
+            "response_words": result.response_words,
+        }
+
+        if item.case.turns:
+            intents = {t.index: t.intent for t in result.turns}
+            entry["conversation"] = [
+                {
+                    "index": position,
+                    "intent": intents.get(position),
+                    "send": exchange["prompt_sent"],
+                    "response": exchange["response"],
+                    "response_words": len(exchange["response"].split()),
+                }
+                for position, exchange in enumerate(exchanges, start=1)
+            ]
+            entry["turns_planned"] = len(item.case.turns)
+            entry["turns_completed"] = len(exchanges)
+
+        entries.append(entry)
 
     return {
         "schema": RECORD_SCHEMA,
@@ -505,6 +640,41 @@ def render_responses(data: dict[str, Any]) -> str:
         if entry["failures"]:
             lines += ["", "**Failed checks**", ""]
             lines += [f"- `{f['kind']}`: {f['detail']}" for f in entry["failures"]]
+
+        conversation = entry.get("conversation")
+        if conversation:
+            planned = entry.get("turns_planned", len(conversation))
+            done = entry.get("turns_completed", len(conversation))
+            lines += ["", f"**Conversation** - {done} of {planned} turns completed", ""]
+            if done < planned:
+                lines += [
+                    "> This conversation did not finish. The case is not scored on the "
+                    "turns that did complete - the probe never ran.",
+                    "",
+                ]
+            for turn in conversation:
+                label = f"Turn {turn['index']}"
+                if turn["index"] == planned:
+                    label += " - THE PROBE (the rubric above applies here)"
+                lines += [f"#### {label}", ""]
+                if turn.get("intent"):
+                    lines += [f"*{turn['intent']}*", ""]
+                lines += [
+                    "**Sent**",
+                    "",
+                    "```text",
+                    turn["send"],
+                    "```",
+                    "",
+                    f"**Reply** ({turn['response_words']} words)",
+                    "",
+                    "```text",
+                    turn["response"],
+                    "```",
+                    "",
+                ]
+            lines += ["---", ""]
+            continue
 
         lines += ["", "**Prompt**", "", "```text", entry["prompt_sent"], "```", ""]
         if entry["fidelity"] != VERBATIM:
@@ -575,7 +745,16 @@ def _run(
     source: dict[str, Any],
     extra_provenance: dict[str, Any] | None = None,
     usage: list[dict[str, Any]] | None = None,
+    selector: Callable[..., tuple[list[Selected], list[Skipped]]] = select,
+    score: Callable[[EvalCase, Callable[[str], str]], CaseResult] = run_case,
 ) -> int:
+    """One scoring path for every response source.
+
+    ``selector`` and ``score`` are the only difference between a single-turn run
+    and a conversation run - everything after them (bookkeeping, records,
+    artifacts, the abort-on-error rule) is shared, so the two paths cannot drift
+    apart in how they account for a case.
+    """
     started_at = utc_now()
     cases_path = Path(args.cases) if args.cases else default_cases_path()
     cases = load_cases(cases_path)
@@ -587,7 +766,7 @@ def _run(
             print(f"Unknown case id(s): {sorted(unknown)}", file=sys.stderr)
             return 1
 
-    selected, skipped = select(cases, responder, only)
+    selected, skipped = selector(cases, responder, only)
     if not selected:
         print("Nothing to run - every case was skipped.", file=sys.stderr)
         for skip in skipped:
@@ -597,12 +776,17 @@ def _run(
     total_selected = len(selected)
 
     responses_out = getattr(args, "responses_out", None)
-    captured: dict[str, dict[str, str]] = {}
+    # A list per case, not one entry: a conversation captures every turn, and a
+    # single-turn case is the one-element case of the same shape.
+    captured: dict[str, list[dict[str, str]]] = {}
 
     results: list[CaseResult] = []
     for index, item in enumerate(selected, start=1):
         marker = "" if item.fidelity == VERBATIM else " (paraphrase)"
-        print(f"[{index}/{total_selected}] {item.case.id}{marker} ... ", end="", flush=True)
+        turns = f" ({len(item.case.turns)} turns)" if item.case.turns else ""
+        print(
+            f"[{index}/{total_selected}] {item.case.id}{marker}{turns} ... ", end="", flush=True
+        )
 
         respond = item.respond
         if responses_out:
@@ -610,10 +794,10 @@ def _run(
             # guarantee that a result record carries no response text.
             def respond(text: str, _id: str = item.case.id, _inner: Any = item.respond) -> str:
                 reply = _inner(text)
-                captured[_id] = {"prompt_sent": text, "response": reply}
+                captured.setdefault(_id, []).append({"prompt_sent": text, "response": reply})
                 return reply
 
-        result = run_case(item.case, respond)
+        result = score(item.case, respond)
         results.append(result)
         print(result.status)
 
@@ -1181,6 +1365,201 @@ def cmd_live(args: argparse.Namespace) -> int:
     return _run(args, "live", responder, source, extra_provenance=extra, usage=usage)
 
 
+def cmd_converse(args: argparse.Namespace) -> int:
+    """Run the multi_turn cases as real conversations. Costs money."""
+    from ask_christopher.prompt import build_system_prompt
+    from ask_christopher.transcript import prompt_fingerprint
+
+    cases_path = Path(args.cases) if args.cases else default_cases_path()
+    cases = load_cases(cases_path)
+    only = frozenset(i.strip() for i in args.only.split(",")) if args.only else None
+    would_run = [c for c in cases if c.multi_turn and (only is None or c.id in only)]
+    estimate = estimate_converse_cost([len(c.turns) for c in would_run])
+
+    if not args.confirm:
+        print(
+            f"A conversation run would send {estimate['conversations']} of {len(cases)} "
+            f"cases as {estimate['turns']} turns.\n"
+        )
+        for case in would_run:
+            print(f"  {case.id:34} {len(case.turns)} turns")
+        print("")
+        print(f"  prefix write (first turn) ${estimate['prefix_write']:.4f}")
+        print(f"  prefix reads (remainder)  ${estimate['prefix_reads']:.4f}")
+        print(f"  replayed history          ${estimate['history']:.4f}")
+        print(f"  output (est. {_TYPICAL_OUTPUT}/turn)    ${estimate['output']:.4f}")
+        print(f"  ESTIMATED TOTAL           ${estimate['total']:.4f}")
+        print("\nA conversation re-sends its accumulated history as uncached input on")
+        print("every turn after the first, which a single-turn run never pays.")
+        print("\nNothing was sent. Re-run with --confirm to authorise the spend.")
+        return 0
+
+    if not would_run:
+        print("No multi_turn cases selected.", file=sys.stderr)
+        return 1
+
+    try:
+        import anthropic
+    except ModuleNotFoundError:
+        print("The `anthropic` package is not installed.  pip install anthropic", file=sys.stderr)
+        return 1
+
+    load_env_reporting()
+    client = anthropic.Anthropic(max_retries=0)
+    if not (getattr(client, "api_key", None) or getattr(client, "auth_token", None)):
+        print(_NO_CREDENTIALS, file=sys.stderr)
+        return 1
+
+    prompt = build_system_prompt()
+    usage: list[dict[str, Any]] = []
+    source = {"kind": "converse", "estimate_usd": estimate["total"], "turns": estimate["turns"]}
+    extra = {
+        "model": args.model,
+        "max_tokens": args.max_tokens,
+        "effort": args.effort,
+        "prompt_sha256": prompt_fingerprint(prompt),
+        "anthropic_sdk": anthropic.__version__,
+        "max_retries": 0,
+    }
+    responder = converse_responder(
+        client, prompt, args.model, args.max_tokens, args.effort, usage
+    )
+    return _run(
+        args,
+        "converse",
+        responder,
+        source,
+        extra_provenance=extra,
+        usage=usage,
+        selector=select_conversations,
+        score=run_conversation,
+    )
+
+
+# --------------------------------------------------------------------------
+# Human review - the cases no automated scorer is allowed to decide
+# --------------------------------------------------------------------------
+
+
+def cmd_review_template(args: argparse.Namespace) -> int:
+    """Emit a review sheet bound to a responses file. Sends nothing."""
+    from ask_christopher.review import ReviewError, build_template, render_template, load_responses
+
+    responses_path = Path(args.responses)
+    try:
+        responses, digest = load_responses(responses_path)
+        template = build_template(
+            responses,
+            responses_path=_repo_relative(responses_path),
+            responses_sha256=digest,
+        )
+    except ReviewError as exc:
+        print(f"{exc}", file=sys.stderr)
+        return 1
+
+    out = Path(args.out) if args.out else responses_path.with_name(
+        responses_path.stem + "-review-sheet.yaml"
+    )
+    if out.exists() and not args.force:
+        print(
+            f"{out} already exists. A filled-in sheet must not be silently "
+            f"overwritten - pass --force if that is what you want.",
+            file=sys.stderr,
+        )
+        return 1
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(render_template(template), encoding="utf-8")
+
+    print(f"Review sheet: {out}")
+    print(f"Cases to read: {len(template['reviews'])}")
+    for entry in template["reviews"]:
+        turns = f" ({entry['turns']} turns)" if entry.get("turns") else ""
+        print(f"  {entry['case_id']}{turns}")
+    print("\nRead the responses alongside it:")
+    print(f"  {responses_path.with_suffix('.md')}")
+    print("\nFill in verdict, reviewer, rationale, and evidence, then:")
+    print(f"  python scripts/run_evals.py review-record --sheet {out}")
+    print("\nAn unfilled sheet records every case as unreviewed, which is the")
+    print("honest result. Nothing here becomes a pass by default.")
+    return 0
+
+
+def cmd_review_record(args: argparse.Namespace) -> int:
+    """Validate a filled-in sheet and write the immutable review record."""
+    from ask_christopher.review import (
+        ReviewError,
+        UNREVIEWED,
+        build_review_record,
+        load_responses,
+        load_sheet,
+        resolve_sheet,
+        verify_binding,
+    )
+
+    sheet_path = Path(args.sheet)
+    try:
+        sheet = load_sheet(sheet_path)
+        responses_path = Path(args.responses) if args.responses else (
+            ROOT / sheet["binding"]["responses_file"]
+        )
+        responses, digest = load_responses(responses_path)
+        verify_binding(sheet, digest)
+        outcome = resolve_sheet(sheet, responses)
+    except ReviewError as exc:
+        print(f"{exc}", file=sys.stderr)
+        return 1
+
+    commit, dirty = git_commit()
+    cases_path = Path(args.cases) if args.cases else default_cases_path()
+    record = build_review_record(
+        sheet=sheet,
+        sheet_path=Path(_repo_relative(sheet_path)),
+        responses=responses,
+        responses_path=Path(_repo_relative(responses_path)),
+        responses_sha256=digest,
+        outcome=outcome,
+        provenance={
+            "commit": commit,
+            "commit_dirty": dirty,
+            "cases_file": _repo_relative(cases_path),
+            "cases_sha256": cases_fingerprint(cases_path),
+            "python": sys.version.split()[0],
+        },
+        reviewed_at=utc_now(),
+    )
+
+    counts = record["counts"]
+    print("")
+    print(f"Cases in sheet     : {len(outcome.reviewed)}")
+    print(f"Not in sheet       : {len(outcome.missing)}")
+    print("")
+    for name in ("reviewed_pass", "reviewed_fail", "reviewed_uncertain", UNREVIEWED):
+        print(f"{name:19}: {counts[name]}")
+    print("")
+    for item in outcome.reviewed:
+        who = f" ({item.reviewer})" if item.reviewer else ""
+        print(f"  {item.case_id:34} {item.status}{who}")
+        if item.adjustment:
+            print(f"      {item.adjustment}")
+        for problem in item.problems:
+            print(f"      note: {problem}")
+    for missing in outcome.missing:
+        print(f"  {missing['case_id']:34} {UNREVIEWED} (absent from the sheet)")
+
+    print("")
+    print("Human verdicts use their own vocabulary and are never added to the")
+    print("deterministic or judged counts. An unreviewed case is unread, not passing.")
+
+    out = Path(args.out) if args.out else default_out("review")
+    print(f"\nRecord: {write_record(record, out)}")
+
+    # An unreviewed case is the thing this workflow exists to make visible, so
+    # it is reported as a non-zero exit rather than a line in a summary nobody
+    # reads. A reviewed_fail is a finding, not a malfunction, and exits clean.
+    return 1 if counts[UNREVIEWED] else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="run-evals",
@@ -1214,6 +1593,39 @@ def main(argv: list[str] | None = None) -> int:
     live.add_argument("--max-tokens", type=int, default=2048)
     live.add_argument("--effort", default="low")
     live.set_defaults(func=cmd_live)
+
+    converse = sub.add_parser(
+        "converse", help="run the multi_turn cases as conversations; costs money"
+    )
+    converse.add_argument("--confirm", action="store_true", help="authorise the spend")
+    converse.add_argument("--only", help="comma-separated case ids")
+    converse.add_argument("--out", help="where to write the JSON record")
+    converse.add_argument("--responses-out", help=responses_help)
+    converse.add_argument("--model", default="claude-opus-5")
+    converse.add_argument("--max-tokens", type=int, default=2048)
+    converse.add_argument("--effort", default="low")
+    converse.set_defaults(func=cmd_converse)
+
+    template = sub.add_parser(
+        "review-template",
+        help="emit a human review sheet for the human_review cases; sends nothing",
+    )
+    template.add_argument("--responses", required=True, help="path to a responses JSON file")
+    template.add_argument("--out", help="where to write the sheet")
+    template.add_argument(
+        "--force", action="store_true", help="overwrite an existing sheet"
+    )
+    template.set_defaults(func=cmd_review_template)
+
+    recording = sub.add_parser(
+        "review-record", help="validate a filled-in review sheet and record it; sends nothing"
+    )
+    recording.add_argument("--sheet", required=True, help="path to a filled-in review sheet")
+    recording.add_argument(
+        "--responses", help="override the responses file named in the sheet's binding"
+    )
+    recording.add_argument("--out", help="where to write the JSON record")
+    recording.set_defaults(func=cmd_review_record)
 
     judging = sub.add_parser(
         "judge", help="score already-recorded responses with the judge panel; costs money"

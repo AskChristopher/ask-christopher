@@ -18,11 +18,17 @@ python scripts/run_evals.py list                      # describe the suite, send
 python scripts/run_evals.py replay --transcript ...   # score responses already recorded
 python scripts/run_evals.py live                      # price a live run, send nothing
 python scripts/run_evals.py live --confirm            # send it; costs money
+python scripts/run_evals.py converse                  # price a conversation run, send nothing
+python scripts/run_evals.py converse --confirm        # send it; costs money
 python scripts/run_evals.py judge --responses ...     # price a judge run, send nothing
 python scripts/run_evals.py judge --responses ... --confirm   # send it; costs money
+python scripts/run_evals.py review-template --responses ...   # emit a human review sheet
+python scripts/run_evals.py review-record --sheet ...         # validate and record a filled-in sheet
 ```
 
 `--out` overrides the destination; the default is `docs/evals/<UTC timestamp>-<mode>.json`.
+
+Only `live`, `converse --confirm`, and `judge --confirm` cost money. The review commands never call a model.
 
 **Elicitation and judgement are separate steps on purpose.** Sending the suite is the expensive, non-idempotent half; judging re-runs against the same recorded responses as a rubric or a lens changes, without paying for generation twice.
 
@@ -30,7 +36,7 @@ python scripts/run_evals.py judge --responses ... --confirm   # send it; costs m
 
 | Field | Meaning |
 |---|---|
-| `mode` | `replay`, `live`, or `judge` |
+| `mode` | `replay`, `live`, `converse`, `judge`, or `review` |
 | `provenance` | Commit, tree cleanliness, case-file hash; live runs add model, effort, and prompt hash |
 | `source` | For replay, which transcript and both of its commits |
 | `selection` | `total_cases`, `ran`, and every skip with a reason |
@@ -44,7 +50,7 @@ python scripts/run_evals.py judge --responses ... --confirm   # send it; costs m
 
 ## Three things a record deliberately does not contain
 
-**A pass rate.** Only 6 of 39 cases carry enough executable checks to be scored lexically. A percentage over the other 33 would be a number that measures nothing, which is worse than no number. `scored` and `unscored` are reported separately so nobody can compute one by accident.
+**A pass rate.** Only 6 of 40 cases carry enough executable checks to be scored lexically. A percentage over the other 34 would be a number that measures nothing, which is worse than no number. `scored` and `unscored` are reported separately so nobody can compute one by accident.
 
 **A `pass` on a judged case.** A `model_judged` or `human_review` case whose lexical checks all pass is recorded as `needs_judgment`. Deterministic checks can *falsify* a judged case. They can never confirm one.
 
@@ -56,11 +62,15 @@ Every case in the file appears either in `ran` or in `selection.skipped` with a 
 
 | Reason | Meaning |
 |---|---|
-| `multi_turn` | Needs a conversation; a single prompt cannot measure it |
+| `multi_turn` | Needs a conversation; a single prompt cannot measure it. Run these with `converse` |
+| `single_turn` | `converse` only — the mirror skip; this case is not a conversation |
 | `no_recorded_response` | Replay only — the transcript has no turn linked to this case |
 | `not_selected` | Excluded by `--only` |
+| `human_review` | Judge only — scoring is `human_review`; a model verdict is not the evidence this case asks for |
 
 A silently dropped case is a behaviour nobody is measuring while the summary still reads as complete. The counts are asserted to add up in `tests/test_run_evals.py`.
+
+`converse` and `live` are exact mirrors: every case one runs, the other skips. Between them the 40 cases are partitioned, never double-counted.
 
 ## Reading a judge record
 
@@ -81,9 +91,31 @@ A silently dropped case is a behaviour nobody is measuring while the summary sti
 
 **Findings within one verdict are not independent.** In a `judged_fail`, the finding that drove the verdict is the trustworthy one; the others may be accretion. Measured, not assumed: a borderline clause was passed five times and failed three, on byte-identical text, and **every failure occurred in a response that contained a different, genuine defect.** Once a lens has found something real, it convicts on marginal items it otherwise excuses. So a borderline item's only clean reading is one where nothing else in the response failed — and conversely, a `judged_pass` is stronger evidence than it looks, since it comes from lenses demonstrably willing to convict when primed.
 
+## Reading a review record
+
+`mode: review` records carry a human's reading of the three `human_review` cases. The vocabulary is `reviewed_pass` / `reviewed_fail` / `reviewed_uncertain` / `unreviewed` — disjoint from both the deterministic and judged sets, for the same reason those two are disjoint from each other.
+
+| Field | Meaning |
+|---|---|
+| `source` | The sheet, the responses file and its hash, and the commit, model, and effort the responses were **elicited** at |
+| `provenance` | The commit that recorded the review — kept apart from `source`, which describes elicitation |
+| `counts` | `reviewed_pass` / `reviewed_fail` / `reviewed_uncertain` / `unreviewed` |
+| `unreviewed` | Cases nobody read, **including cases absent from the sheet entirely** |
+| `not_in_sheet` | Cases the responses file contained and the sheet omitted |
+| `adjusted` | Verdicts the harness downgraded, with what was claimed and why |
+| `reviews` | Per-case verdict, reviewer, rationale, and each quote with its `quote_verified` flag |
+
+**`unreviewed` is the default and a non-zero exit.** A missing entry, an empty verdict, a verdict with no reviewer, or a verdict with no rationale all record as `unreviewed` — never a pass. A `reviewed_fail`, by contrast, is a finding rather than a malfunction and exits clean. The gate is on cases nobody read, not on cases that failed.
+
+**A `reviewed_fail` must quote the response verbatim,** checked with the judge's own `verify_quote`. A fail with no evidence, or whose every quote is absent, downgrades to `reviewed_uncertain` — never to a pass.
+
+**The sheet is bound to the exact text reviewed.** `binding.responses_sha256` plus a per-response digest means editing the responses file after generating the sheet makes `review-record` refuse it outright, rather than attaching a verdict to text nobody read.
+
 ## Still missing
 
-- **Coverage.** 37 of 39 cases have never been sent; two have been judged
-- **A human-review workflow** for the 3 `human_review` cases
-- **A conversation-capable runner** for the 2 `multi_turn` cases
+Every scoring path now exists — deterministic, judged, human, single-turn and conversational. What is missing is coverage and calibration.
+
+- **Coverage.** 37 of 40 cases have never been sent; three have been judged
+- **Conversation coverage.** Both `multi_turn` cases now have scripted turns and a runner, but **neither has been sent.** The run prices at **$0.4540** for 8 turns
+- **Human verdicts.** The workflow exists; the 3 `human_review` cases are still `unreviewed`, which is the honest status and not a pass
 - **A false-positive and false-negative rate for the panel.** It has caught the one defect it was pointed at. That is not a detection rate — see the review's *What this does not establish*

@@ -39,14 +39,17 @@ __all__ = [
     "SCORING_MODES",
     "CATEGORIES",
     "Checks",
+    "ConversationTurn",
     "EvalCase",
     "CheckFailure",
+    "TurnResult",
     "CaseResult",
     "SuiteResult",
     "default_cases_path",
     "load_cases",
     "run_checks",
     "run_case",
+    "run_conversation",
     "run_suite",
 ]
 
@@ -88,7 +91,10 @@ _CASE_KEYS = frozenset(_REQUIRED_FIELDS) | {
     "pair",
     "checks",
     "multi_turn",
+    "turns",
 }
+
+_TURN_KEYS = frozenset({"send", "intent", "checks"})
 
 
 @dataclass(frozen=True)
@@ -114,12 +120,42 @@ class Checks:
 
 
 @dataclass(frozen=True)
+class ConversationTurn:
+    """One user message in an ordered conversation.
+
+    **Only the user side is authored.** There is deliberately no field for a
+    scripted assistant reply: a conversation whose history was written for the
+    model tests it against words it never said. ``idn-no-repeat-disclosure`` is
+    the case that makes this load-bearing — whether identity "was already
+    disclosed" has to be the assistant's own doing, or the probe measures
+    nothing.
+
+    ``intent`` is prose for the human reading the transcript. A reviewer facing
+    four turns needs to know which one is the probe and what the others set up.
+
+    ``checks`` are lexical assertions on *this* turn's reply. They exist mainly
+    to falsify a conversation's premise early: if turn 1 was supposed to elicit
+    disclosure and did not, every later turn is measuring something else.
+    """
+
+    send: str
+    intent: str | None = None
+    checks: Checks = field(default_factory=Checks)
+
+
+@dataclass(frozen=True)
 class EvalCase:
     """One behavioural case.
 
     ``requires`` and ``prohibits`` are prose, not assertions — they are the
     rubric a model or a person scores against. ``checks`` is the executable
     subset, and is deliberately much smaller.
+
+    **When ``turns`` is present it is what gets sent, and ``prompt`` is the
+    case's description rather than a message.** Two of the forty cases describe
+    a sequence in prose that was never sendable; ``prompt`` stays required
+    because thirty-eight cases use it as the message, and changing that for all
+    of them to tidy two is not worth the churn.
     """
 
     id: str
@@ -136,10 +172,19 @@ class EvalCase:
     #: in prose, or what it measures only becomes visible across turns. A
     #: single-turn runner must skip these and say so rather than send the prose.
     multi_turn: bool = False
+    #: The ordered user messages. Required when ``multi_turn`` is set, forbidden
+    #: otherwise, so a case can never be flagged as needing a conversation while
+    #: carrying no conversation to run.
+    turns: tuple[ConversationTurn, ...] = ()
 
     @property
     def is_deterministic(self) -> bool:
         return self.scoring == "deterministic"
+
+    @property
+    def has_any_checks(self) -> bool:
+        """Any executable assertion, at case level or on any turn."""
+        return not self.checks.is_empty() or any(not t.checks.is_empty() for t in self.turns)
 
 
 @dataclass(frozen=True)
@@ -149,6 +194,41 @@ class CheckFailure:
 
     def as_dict(self) -> dict[str, str]:
         return {"kind": self.kind, "detail": self.detail}
+
+
+@dataclass(frozen=True)
+class TurnResult:
+    """Outcome for one turn of a conversation.
+
+    ``response`` is held for the caller that builds the readable artifact and is
+    deliberately absent from :meth:`as_dict`, for the same reason
+    :class:`CaseResult` never carries response text: the result record is a
+    metrics series compared across runs, not a transcript archive.
+
+    ``deterministic`` is ``pass``, ``fail``, ``no_checks``, or ``not_run`` — the
+    last meaning the conversation ended before this turn was reached.
+    """
+
+    index: int
+    send: str
+    intent: str | None
+    deterministic: str
+    response: str | None = None
+    failures: tuple[CheckFailure, ...] = ()
+    response_words: int = 0
+    response_chars: int = 0
+    error: str | None = None
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "index": self.index,
+            "intent": self.intent,
+            "deterministic": self.deterministic,
+            "failures": [f.as_dict() for f in self.failures],
+            "response_words": self.response_words,
+            "response_chars": self.response_chars,
+            "error": self.error,
+        }
 
 
 @dataclass(frozen=True)
@@ -165,7 +245,9 @@ class CaseResult:
     ``needs_judgment``
         Nothing falsified it, but confirming it requires a model or a person.
     ``error``
-        The response function raised.
+        The response function raised, or a conversation ended before its last
+        turn. An unfinished conversation is never scored on the turns that did
+        complete — see :func:`run_conversation`.
     """
 
     case_id: str
@@ -177,9 +259,16 @@ class CaseResult:
     response_words: int = 0
     response_chars: int = 0
     error: str | None = None
+    #: Populated only by :func:`run_conversation`. Empty for single-turn cases,
+    #: which keeps every existing record byte-comparable with earlier runs.
+    turns: tuple[TurnResult, ...] = ()
+
+    @property
+    def turns_completed(self) -> int:
+        return sum(1 for t in self.turns if t.response is not None)
 
     def as_dict(self) -> dict[str, Any]:
-        return {
+        payload: dict[str, Any] = {
             "case_id": self.case_id,
             "category": self.category,
             "scoring": self.scoring,
@@ -190,6 +279,11 @@ class CaseResult:
             "response_chars": self.response_chars,
             "error": self.error,
         }
+        if self.turns:
+            payload["turns_planned"] = len(self.turns)
+            payload["turns_completed"] = self.turns_completed
+            payload["turns"] = [t.as_dict() for t in self.turns]
+        return payload
 
 
 @dataclass(frozen=True)
@@ -306,16 +400,26 @@ def _build_case(entry: Any, index: int) -> EvalCase:
         raise EvalCaseError(f"{where}: 'multi_turn' must be true or false when present")
 
     checks = _build_checks(entry.get("checks"), where)
+    turns = _build_turns(entry.get("turns"), where)
+
+    # A case flagged as needing a conversation but carrying none is unrunnable
+    # by construction: the single-turn path skips it and the conversation path
+    # has nothing to send. That is exactly the silent-gap failure this module
+    # raises on elsewhere, so it raises here too.
+    if multi_turn and not turns:
+        raise EvalCaseError(
+            f"{where}: 'multi_turn' is true but no 'turns' are defined — "
+            f"nothing could run it. Add turns, or drop the multi_turn flag."
+        )
+    if turns and not multi_turn:
+        raise EvalCaseError(
+            f"{where}: 'turns' are defined but 'multi_turn' is not true — "
+            f"the single-turn path would send 'prompt' and ignore them."
+        )
 
     # A deterministic case with no checks can never fail, which would quietly
     # inflate the pass rate with cases that assert nothing.
-    if scoring == "deterministic" and checks.is_empty():
-        raise EvalCaseError(
-            f"{where}: scoring is 'deterministic' but no checks are defined — "
-            f"the case could never fail. Add checks, or use 'model_judged'."
-        )
-
-    return EvalCase(
+    case = EvalCase(
         id=entry["id"],
         category=category,
         prompt=entry["prompt"],
@@ -327,7 +431,48 @@ def _build_case(entry: Any, index: int) -> EvalCase:
         pair=pair,
         checks=checks,
         multi_turn=multi_turn,
+        turns=turns,
     )
+    if scoring == "deterministic" and not case.has_any_checks:
+        raise EvalCaseError(
+            f"{where}: scoring is 'deterministic' but no checks are defined — "
+            f"the case could never fail. Add checks, or use 'model_judged'."
+        )
+    return case
+
+
+def _build_turns(raw: Any, where: str) -> tuple[ConversationTurn, ...]:
+    if raw is None:
+        return ()
+    if not isinstance(raw, list) or not raw:
+        raise EvalCaseError(f"{where}: 'turns' must be a non-empty list")
+
+    turns: list[ConversationTurn] = []
+    for position, item in enumerate(raw, start=1):
+        spot = f"{where}: turn {position}"
+        if not isinstance(item, Mapping):
+            raise EvalCaseError(f"{spot}: expected a mapping, got {type(item).__name__}")
+
+        unknown = set(item) - _TURN_KEYS
+        if unknown:
+            raise EvalCaseError(
+                f"{spot}: unknown field(s) {sorted(unknown)} "
+                f"(expected any of {sorted(_TURN_KEYS)})"
+            )
+
+        send = item.get("send")
+        if not isinstance(send, str) or not send.strip():
+            raise EvalCaseError(f"{spot}: missing or empty 'send'")
+
+        intent = item.get("intent")
+        if intent is not None and (not isinstance(intent, str) or not intent.strip()):
+            raise EvalCaseError(f"{spot}: 'intent' must be a non-empty string when present")
+
+        turns.append(
+            ConversationTurn(send=send, intent=intent, checks=_build_checks(item.get("checks"), spot))
+        )
+
+    return tuple(turns)
 
 
 def _build_checks(raw: Any, where: str) -> Checks:
@@ -516,6 +661,137 @@ def run_case(case: EvalCase, respond: Callable[[str], str]) -> CaseResult:
         response_words=len(response.split()),
         response_chars=len(response),
     )
+
+
+def run_conversation(case: EvalCase, converse: Callable[[str], str]) -> CaseResult:
+    """Run a multi-turn case as one conversation.
+
+    ``converse`` is **stateful**: successive calls continue the same
+    conversation, so the callable is expected to wrap something like
+    :class:`ask_christopher.repl.Session`, which accumulates history and mutates
+    it only on success. Nothing here knows about the API.
+
+    Three rules decide the status, and the third is the one that matters:
+
+    * Each turn's own ``checks`` are applied to that turn's reply.
+    * The **case-level** checks are applied to the **final** turn only. That is
+      what makes single-turn the one-turn special case of this function rather
+      than a different thing, and it is what the two multi-turn cases actually
+      need: ``idn-no-repeat-disclosure`` requires disclosure on turn 1 and
+      prohibits it on the last, so a case-level prohibition applied to every
+      turn would contradict the case.
+    * **An unfinished conversation is never scored.** If any turn raises, the
+      case is ``error`` and the case-level checks are not applied to whichever
+      turn happened to be last. Scoring the prefix of a conversation would
+      report a verdict on a probe that never ran.
+    """
+    if not case.turns:
+        raise EvalCaseError(f"case '{case.id}': run_conversation needs 'turns'")
+
+    turns: list[TurnResult] = []
+    failures: list[CheckFailure] = []
+    error: str | None = None
+
+    for index, turn in enumerate(case.turns, start=1):
+        if error is not None:
+            turns.append(
+                TurnResult(index=index, send=turn.send, intent=turn.intent, deterministic="not_run")
+            )
+            continue
+
+        try:
+            reply = converse(turn.send)
+        except Exception as exc:  # noqa: BLE001 - one bad turn must not halt a suite
+            error = f"turn {index}: {type(exc).__name__}: {exc}"
+            turns.append(
+                TurnResult(
+                    index=index,
+                    send=turn.send,
+                    intent=turn.intent,
+                    deterministic="not_run",
+                    error=error,
+                )
+            )
+            continue
+
+        if not isinstance(reply, str):
+            error = f"turn {index}: response function returned {type(reply).__name__}, expected str"
+            turns.append(
+                TurnResult(
+                    index=index,
+                    send=turn.send,
+                    intent=turn.intent,
+                    deterministic="not_run",
+                    error=error,
+                )
+            )
+            continue
+
+        is_final = index == len(case.turns)
+        turn_failures = list(run_checks(_as_case(case, turn.checks), reply))
+        turn_deterministic = (
+            "no_checks" if turn.checks.is_empty() else ("fail" if turn_failures else "pass")
+        )
+
+        # Case-level checks belong to the final turn, and only once the
+        # conversation actually got there.
+        if is_final:
+            turn_failures.extend(run_checks(case, reply))
+
+        failures.extend(turn_failures)
+        turns.append(
+            TurnResult(
+                index=index,
+                send=turn.send,
+                intent=turn.intent,
+                deterministic=turn_deterministic,
+                response=reply,
+                failures=tuple(turn_failures),
+                response_words=len(reply.split()),
+                response_chars=len(reply),
+            )
+        )
+
+    final = turns[-1] if turns else None
+    completed = final is not None and final.response is not None
+
+    if not case.has_any_checks:
+        deterministic = "no_checks"
+    elif not completed:
+        deterministic = "not_run"
+    elif failures:
+        deterministic = "fail"
+    else:
+        deterministic = "pass"
+
+    if error is not None:
+        status = "error"
+    elif failures:
+        status = "fail"
+    elif case.is_deterministic:
+        status = "pass"
+    else:
+        status = "needs_judgment"
+
+    return CaseResult(
+        case_id=case.id,
+        category=case.category,
+        scoring=case.scoring,
+        status=status,
+        deterministic=deterministic,
+        failures=tuple(failures),
+        response_words=final.response_words if completed and final else 0,
+        response_chars=final.response_chars if completed and final else 0,
+        error=error,
+        turns=tuple(turns),
+    )
+
+
+def _as_case(case: EvalCase, checks: Checks) -> EvalCase:
+    """``case`` with ``checks`` swapped in, so ``run_checks`` stays single-purpose."""
+    from dataclasses import replace
+
+    return replace(case, checks=checks)
 
 
 def run_suite(cases: Iterable[EvalCase], respond: Callable[[str], str]) -> SuiteResult:

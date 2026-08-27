@@ -434,6 +434,7 @@ def test_loop_survives_a_failed_turn_and_continues() -> None:
     [
         "src/ask_christopher/repl.py",
         "src/ask_christopher/env.py",
+        "src/ask_christopher/review.py",
         "scripts/cache_experiment.py",
         "scripts/first_conversation.py",
         "scripts/run_evals.py",
