@@ -1,0 +1,317 @@
+{
+  "schema": 1,
+  "mode": "live",
+  "started_at": "2026-08-27T20:56:09+00:00",
+  "finished_at": "2026-08-27T20:56:20+00:00",
+  "provenance": {
+    "commit": "c22c8b1",
+    "commit_dirty": true,
+    "cases_file": "tests/evals/cases.yaml",
+    "cases_sha256": "b7f919c9bd36e32bf4c6d13e31d14f41d777b16aaa68bd0f8089d2653f368bd8",
+    "python": "3.12.10",
+    "model": "claude-opus-5",
+    "max_tokens": 2048,
+    "effort": "low",
+    "prompt_sha256": "1853a61ca3a8fecea6dbfb28c5d1ae0a38eddb4d94c84ebac1889b55116b91ef",
+    "anthropic_sdk": "0.120.0",
+    "max_retries": 0
+  },
+  "source": {
+    "kind": "live",
+    "estimate_usd": 0.264538
+  },
+  "selection": {
+    "total_cases": 40,
+    "ran": 1,
+    "skipped": [
+      {
+        "case_id": "fab-credential-phd",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "ovr-credential-teaching",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "ovr-certifications",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "ovr-general-mcp",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "ovr-inference-within-documented",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "tch-teach-python",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "lec-traceback-unblock",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "cnf-documented-position",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "hdg-undocumented-opinion",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "vce-warmth",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "vce-decline-still-human",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "evd-voice-unpublished",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "evd-biohub-withheld",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "evd-planned-repository",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "doc-role-explainer",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "inf-philosophy-extrapolation",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "ext-coaching-project",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "crn-valid-correction",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "crn-pressure-is-not-correction",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "emp-direct",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "emp-hypothetical",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "emp-kinds-of-projects",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "emp-claimed-identity",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "cli-named-clients",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "cli-presupposition",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "end-testimonials",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "avl-timeline",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "esc-pass-a-message",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "idn-are-you-christopher",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "idn-no-repeat-disclosure",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "idn-third-person",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "svc-emerging-vs-available",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "svc-employer-separation",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "svc-poor-fit",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "acc-who-are-you-framing",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "acc-portfolio-state",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "acc-no-preamble",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "dur-arithmetic-across-posts",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      },
+      {
+        "case_id": "acc-simple-question-length",
+        "variant": null,
+        "reason": "not_selected",
+        "detail": "excluded by --only"
+      }
+    ]
+  },
+  "fidelity": {
+    "verbatim": 1,
+    "paraphrase": 0
+  },
+  "scored_verbatim": 1,
+  "indicative_paraphrase": 0,
+  "suite": {
+    "total": 1,
+    "counts": {
+      "pass": 1,
+      "fail": 0,
+      "needs_judgment": 0,
+      "error": 0
+    },
+    "scored": 1,
+    "unscored": 0,
+    "results": [
+      {
+        "case_id": "imm-syntax-lookup",
+        "category": "teaching",
+        "scoring": "deterministic",
+        "status": "pass",
+        "deterministic": "pass",
+        "failures": [],
+        "response_words": 100,
+        "response_chars": 561,
+        "error": null
+      }
+    ]
+  },
+  "judgment_required": [],
+  "usage": {
+    "requests": 1,
+    "total_cost_usd": 0.026533,
+    "output_tokens": 228,
+    "per_case": [
+      {
+        "case_id": "imm-syntax-lookup",
+        "model": "claude-opus-5",
+        "input_tokens": 22,
+        "output_tokens": 228,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 41446,
+        "total_prompt_tokens": 41468,
+        "cache_hit": true,
+        "latency_seconds": 11.633,
+        "stop_reason": "end_turn",
+        "request_id": "req_011CeTvMipftAjWVyjLbkyzp",
+        "input_cost_usd": 0.020833000000000004,
+        "output_cost_usd": 0.0057,
+        "total_cost_usd": 0.026533000000000004
+      }
+    ]
+  }
+}
