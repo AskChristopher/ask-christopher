@@ -65,9 +65,18 @@ from ask_christopher.evals import (  # noqa: E402
 
 RECORD_SCHEMA = 1
 
-#: Measured, not estimated: experiments 0001 and 0002 both reported exactly this
-#: prefix. Used only to price a live run before it is authorised.
-PREFIX_TOKENS = 40_511
+#: Measured, not estimated: the provider reported exactly this as
+#: `cache_creation_input_tokens` on the 2026-08-25 live run, recorded in
+#: `docs/evals/20260825T235223Z-live.json`. That run's `prompt_sha256` is
+#: byte-identical to what `build_system_prompt()` assembles today, which is what
+#: makes the figure current rather than historical - re-check that fingerprint
+#: before trusting this number, not the date.
+#:
+#: Was 40,511 through experiments 0001 and 0002. The teaching-history corrections
+#: at 04b1c3c added 935 tokens (+2.3%); carrying the old figure forward
+#: under-priced every prefix line by that margin. Used only to price a run before
+#: it is authorised.
+PREFIX_TOKENS = 41_446
 
 #: List pricing for claude-opus-5, per token.
 _IN, _OUT = 5.0 / 1e6, 25.0 / 1e6
@@ -858,9 +867,9 @@ def _run(
 def estimate_judge_cost(prefix_tokens: int, case_count: int, lens_count: int) -> dict[str, float]:
     """Price a judge run. One cache write, the rest reads inside the TTL.
 
-    ``prefix_tokens`` is estimated by character ratio against the 40,511 the
-    assistant prefix measured in experiments 0001 and 0002 - the judge prefix has
-    never itself been measured, so this is an estimate and the record says so.
+    ``prefix_tokens`` is estimated by character ratio against the 41,446 the
+    assistant prefix measured on the 2026-08-25 run - the judge prefix has never
+    itself been measured, so this is an estimate and the record says so.
     """
     calls = case_count * lens_count
     write = prefix_tokens * _IN * _WRITE_MULTIPLIER
@@ -1206,8 +1215,8 @@ def cmd_judge(args: argparse.Namespace) -> int:
         print(f"  case briefs (uncached)    ${estimate['briefs']:.4f}")
         print(f"  output (est. {_JUDGE_OUTPUT_TOKENS}/call)   ${estimate['output']:.4f}")
         print(f"  ESTIMATED TOTAL           ${estimate['total']:.4f}")
-        print("\nThe prefix size is estimated by character ratio against the 40,511")
-        print("tokens measured in experiment 0001, not measured directly.")
+        print("\nThe prefix size is estimated by character ratio against the 41,446")
+        print("tokens measured on the 2026-08-25 run, not measured directly.")
         print("\nNothing was sent. Re-run with --confirm to authorise the spend.")
         return 0
 
