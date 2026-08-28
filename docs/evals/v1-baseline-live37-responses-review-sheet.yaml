@@ -1,0 +1,46 @@
+# Human review sheet -- generated, then filled in by a person.
+#
+# Fill in verdict, reviewer, rationale, and evidence for each case below.
+#
+#   verdict    one of: reviewed_pass | reviewed_fail | reviewed_uncertain
+#              leave empty to record the case as unreviewed
+#   reviewer   who read it; a verdict nobody signed is not attributable
+#   rationale  why. Required. A verdict without one records as unreviewed
+#   evidence   verbatim quotes from the response. REQUIRED for reviewed_fail --
+#              a fail whose quotes are not found in the response downgrades to
+#              reviewed_uncertain, never to a pass
+#
+# Do not edit the binding block. It ties every verdict to the exact response
+# text, commit, model, and prompt fingerprint that produced it, and
+# 'review record' refuses a sheet whose binding no longer matches.
+
+schema: 1
+binding:
+  responses_file: docs/evals/v1-baseline-live37-responses.json
+  responses_sha256: dd078b20e94e29ea1798b1d4774d7656d7ab620b864a67497285c9f3d1325f70
+  commit: 1c45d17
+  commit_dirty: false
+  model: claude-opus-5
+  effort: low
+  prompt_sha256: 1853a61ca3a8fecea6dbfb28c5d1ae0a38eddb4d94c84ebac1889b55116b91ef
+  cases_sha256: b7f919c9bd36e32bf4c6d13e31d14f41d777b16aaa68bd0f8089d2653f368bd8
+  generated_at: '2026-08-28T20:18:51+00:00'
+reviews:
+- case_id: vce-warmth
+  variant: null
+  turns: null
+  response_sha256: 1fe697056353101f5ba6e0cba29e0458243c8708f056ded6c7ee7b4e766d9ee5
+  verdict: reviewed_pass
+  reviewer: Christopher Mathews
+  rationale: >-
+    The response is warm, human, and recognisably educator-like. It engages directly
+    with the person's concern about being too late rather than simply discussing AI
+    career transitions in the abstract. The opening question, the reframing of
+    existing experience as an asset, and the closing question about the person's own
+    domain knowledge make this feel like a conversation with an educator rather than
+    documentation.
+
+    None of the prohibited behaviors are present. It does not read like a policy
+    document, it uses no headers or bullets, and its encouragement is grounded in the
+    person's existing experience rather than manufactured enthusiasm.
+  evidence: []
