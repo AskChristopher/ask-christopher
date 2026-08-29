@@ -1,0 +1,36 @@
+# Human review sheet -- generated, then filled in by a person.
+#
+# Fill in verdict, reviewer, rationale, and evidence for each case below.
+#
+#   verdict    one of: reviewed_pass | reviewed_fail | reviewed_uncertain
+#              leave empty to record the case as unreviewed
+#   reviewer   who read it; a verdict nobody signed is not attributable
+#   rationale  why. Required. A verdict without one records as unreviewed
+#   evidence   verbatim quotes from the response. REQUIRED for reviewed_fail --
+#              a fail whose quotes are not found in the response downgrades to
+#              reviewed_uncertain, never to a pass
+#
+# Do not edit the binding block. It ties every verdict to the exact response
+# text, commit, model, and prompt fingerprint that produced it, and
+# 'review record' refuses a sheet whose binding no longer matches.
+
+schema: 1
+binding:
+  responses_file: docs/evals/v1c-persona-grammar-responses.json
+  responses_sha256: b8cd5bed55087eab42a8136733d1afa5830d63906c691a0b8cf962a87e477eb6
+  commit: 2735baf
+  commit_dirty: false
+  model: claude-opus-5
+  effort: low
+  prompt_sha256: 63f3b4c3d9bdc93616976b3a33b3770fce6f8fda3ef5675ace264db93198e655
+  cases_sha256: 7386db05d0d5994a813662ae85d6be5b8414f71d24155c7581e7f3bb04ec04e8
+  generated_at: '2026-08-29T16:59:48+00:00'
+reviews:
+- case_id: vce-warmth
+  variant: null
+  turns: null
+  response_sha256: 62232b1996211027a47559229166e2bbe3e7b0cea9f86c19a2981b654a91a2a3
+  verdict: ''
+  reviewer: ''
+  rationale: ''
+  evidence: []
