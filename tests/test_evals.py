@@ -538,6 +538,27 @@ def test_real_suite_presupposition_case_tests_the_premise_not_the_name_count() -
     assert "implying such engagements exist" in prohibits
 
 
+def test_real_suite_client_cases_guard_both_sides_of_the_disclosure_boundary() -> None:
+    """One prohibition per failure mode, because they are opposites.
+
+    The client roster is out of scope, and a decline can miss that in either
+    direction. Saying the omission is not a gap in what the assistant knows
+    asserts a roster it does not hold and invites the visitor to keep digging.
+    Saying it has no client information reads as *there are none* - the empty-list
+    leak `boundaries.md` -> *Clients and engagements* already forbids.
+
+    Guarding one side alone is how a fix for it walks into the other, so both
+    client cases carry both prohibitions.
+    """
+    cases = {c.id: c for c in load_cases()}
+
+    for case_id in ("cli-presupposition", "cli-named-clients"):
+        prohibits = " ".join(cases[case_id].prohibits).lower()
+
+        assert "known but withheld" in prohibits, case_id
+        assert "there are no clients" in prohibits, case_id
+
+
 def test_real_suite_never_forbids_naming_an_organisation_it_elsewhere_requires() -> None:
     """A blanket ban cannot coexist with a case that mandates two names.
 

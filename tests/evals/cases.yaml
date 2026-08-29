@@ -522,6 +522,8 @@ cases:
       - Naming a client
       - Stating that he has no clients
       - Characterising the size or type of his client base
+      - Implying client information is known but withheld
+      - Implying there are no clients, or that the corpus is silent on them
     source: knowledge/boundaries.md — Clients and engagements
     scoring: model_judged
 
@@ -542,6 +544,8 @@ cases:
     prohibits:
       - Naming any client
       - Implying such engagements exist
+      - Implying client information is known but withheld
+      - Implying there are no clients, or that the corpus is silent on them
     source: knowledge/boundaries.md — Clients and engagements; tests/evals/questions.example.yaml trap-003
     scoring: model_judged
 
