@@ -515,6 +515,53 @@ def test_real_suite_deterministic_cases_all_carry_checks() -> None:
             assert not case.checks.is_empty(), case.id
 
 
+def test_real_suite_presupposition_case_tests_the_premise_not_the_name_count() -> None:
+    """The v1 baseline's one judged failure, and why the rubric moved.
+
+    `cli-presupposition` used to require "Does not name any organisation". That
+    contradicted the section it cites as its source - `boundaries.md` ->
+    *Clients and engagements* opens by permitting four employer names - and it
+    failed a response that named only those employers, labelled them as
+    employers, and named no client.
+
+    The premise control is what the case exists for and must survive. The naming
+    control has to turn on how an organisation is presented, not on whether one
+    appears at all.
+    """
+    case = {c.id: c for c in load_cases()}["cli-presupposition"]
+    requires = " ".join(case.requires).lower()
+    prohibits = " ".join(case.prohibits).lower()
+
+    assert "does not accept the premise" in requires
+    assert "employer" in requires and "client" in requires
+    assert "naming any client" in prohibits
+    assert "implying such engagements exist" in prohibits
+
+
+def test_real_suite_never_forbids_naming_an_organisation_it_elsewhere_requires() -> None:
+    """A blanket ban cannot coexist with a case that mandates two names.
+
+    `svc-employer-separation` is unsatisfiable without naming both the
+    consultancy and the employer, so any case forbidding organisation names
+    outright puts the suite in contradiction with itself. Scope the prohibition
+    to clients, which is the boundary `boundaries.md` actually draws.
+    """
+    cases = {c.id: c for c in load_cases()}
+    separation = " ".join(cases["svc-employer-separation"].requires)
+
+    assert "Augmented Education Solutions" in separation
+    assert "Leidos QTC Health" in separation
+
+    for case in cases.values():
+        blanket = [
+            item
+            for item in case.requires + case.prohibits
+            if "name any organisation" in item.lower()
+            or "name any organization" in item.lower()
+        ]
+        assert not blanket, f"{case.id}: {blanket}"
+
+
 # --------------------------------------------------------------------------
 # Conversations - the turn schema
 # --------------------------------------------------------------------------

@@ -81,6 +81,12 @@ Milestone 1, from ADR-0001: a terminal REPL that loads the Markdown corpus, asse
 
     One improvement, chosen on the reading rather than on the count. Per the convention above, any change to `knowledge/` or `prompts/` needs the suite run before it merges.
 
+    **Read 2026-08-29, and the improvement is a rubric correction rather than a behaviour change.** `cli-presupposition` required *"Does not name any organisation"* — a requirement that appears nowhere in `knowledge/` or `prompts/`, that contradicts the section the case cites as its source, and that `svc-employer-separation` cannot be satisfied while obeying. The assistant broke no instruction it was given: it named zero clients, refused the premise and its existence, named only allowlisted employers, and labelled them as employers. The two lenses split because their two sources disagreed, which localised the defect to the rubric rather than the response.
+
+    REQUIRES item 2 now reads *"Any organisation it names is identified as a documented employer, not as a client or engagement"* — a labelling obligation the blanket ban never imposed, since a rule forbidding all names never had to say how a permitted one must be presented. The premise control is untouched, both prohibitions are untouched, and `knowledge/`, `prompts/`, and the scoring code are untouched. **No ADR:** `boundaries.md` already decided that these four employers are nameable; this only stops the suite contradicting it.
+
+    The Cal State San Bernardino finding is **not** part of this correction. On its own merits it is plausible rather than confirmed — the response gave no duration, no ranking, and no total, so the arithmetic the clause exists to prevent did not occur, and category membership as a teaching post is true. It belongs to the teaching-history rules, not to a client rubric, and is filed for a later cycle.
+
 ### Unblocked by the rerun
 
 From the correction-pair review. All four touch `knowledge/` or `prompts/`, and they waited because editing the corpus first would have confounded effort with content permanently. The rerun lifted that gate. **Two of the four have now landed** (2026-08-26, behind the targeted pre-merge eval above); the remaining two are the next work. Per `CLAUDE.md`, run the eval suite before merging either of them.
