@@ -111,11 +111,17 @@ A silently dropped case is a behaviour nobody is measuring while the summary sti
 
 **The sheet is bound to the exact text reviewed.** `binding.responses_sha256` plus a per-response digest means editing the responses file after generating the sheet makes `review-record` refuse it outright, rather than attaching a verdict to text nobody read.
 
+## The v1 baseline
+
+Every scoring path exists — deterministic, judged, human, single-turn and conversational — and as of 2026-08-29 **every one of the 40 cases carries a final outcome**. The checkpoint is [`v1-baseline-review.md`](v1-baseline-review.md): what was measured, how the judge record was verified, and the two-case failure map.
+
+Read that document before comparing any later run against "the baseline", because it also records what the baseline cannot support.
+
 ## Still missing
 
-Every scoring path now exists — deterministic, judged, human, single-turn and conversational. What is missing is coverage and calibration.
+Coverage is closed. Calibration and trend are not.
 
-- **Coverage.** 37 of 40 cases have never been sent; three have been judged
-- **Conversation coverage.** Both `multi_turn` cases now have scripted turns and a runner, but **neither has been sent.** The run prices at **$0.4540** for 8 turns
-- **Human verdicts.** The workflow exists; the 3 `human_review` cases are still `unreviewed`, which is the honest status and not a pass
-- **A false-positive and false-negative rate for the panel.** It has caught the one defect it was pointed at. That is not a detection rate — see the review's *What this does not establish*
+- **Trend.** Each of the 40 cases has been scored exactly once, and one run is the thing this directory exists to say almost nothing about
+- **A false-positive and false-negative rate for the panel.** It has found the defects it was pointed at, across a calibration probe and one baseline case. That is still not a detection rate — see the review's *What this does not establish*
+- **Independent attestation for single-lens findings.** `cli-presupposition`'s second finding was raised by one lens, in a response that already carried another defect — exactly the contamination condition described above, and unresolved
+- **An isolated effort variable.** The baseline elicited at `low` effort and judged at `high`. No run separates the two
