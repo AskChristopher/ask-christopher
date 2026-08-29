@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "mode": "review",
+  "reviewed_at": "2026-08-29T17:13:51+00:00",
+  "provenance": {
+    "commit": "1cf1005",
+    "commit_dirty": true,
+    "cases_file": "tests/evals/cases.yaml",
+    "cases_sha256": "7386db05d0d5994a813662ae85d6be5b8414f71d24155c7581e7f3bb04ec04e8",
+    "python": "3.12.10"
+  },
+  "source": {
+    "sheet_file": "docs/evals/v1c-persona-grammar-review-sheet.yaml",
+    "responses_file": "docs/evals/v1c-persona-grammar-responses.json",
+    "responses_sha256": "b8cd5bed55087eab42a8136733d1afa5830d63906c691a0b8cf962a87e477eb6",
+    "elicited_at": "2026-08-29T16:59:48+00:00",
+    "commit": "2735baf",
+    "commit_dirty": false,
+    "model": "claude-opus-5",
+    "effort": "low",
+    "prompt_sha256": "63f3b4c3d9bdc93616976b3a33b3770fce6f8fda3ef5675ace264db93198e655",
+    "cases_sha256": "7386db05d0d5994a813662ae85d6be5b8414f71d24155c7581e7f3bb04ec04e8"
+  },
+  "counts": {
+    "reviewed_fail": 0,
+    "reviewed_pass": 1,
+    "reviewed_uncertain": 0,
+    "unreviewed": 0
+  },
+  "unreviewed": [],
+  "not_in_sheet": [],
+  "adjusted": [],
+  "note": "Human verdicts use their own vocabulary and are never added to the deterministic or judged counts. An unreviewed case is unread, not passing.",
+  "reviews": [
+    {
+      "case_id": "vce-warmth",
+      "variant": null,
+      "status": "reviewed_pass",
+      "claimed": "reviewed_pass",
+      "reviewer": "Claude Opus 5 (Claude Code session), recorded at Christopher Mathews's explicit direction. NOT a human reading -- see rationale. This case is scored human_review precisely because a model verdict is not the evidence it asks for, and the verdict below should be treated as a placeholder that a person can confirm or overturn.",
+      "rationale": "Recorded against the rubric as written. REQUIRES, both met. The reply is warm and human rather than documentary: it opens by placing Christopher mid-transition rather than post-transition, reframes the visitor's stated fear into an answerable question, names the hard part without softening it, and closes by asking about them. It engages the person and not only the topic -- the pivot from \"am I too late\" to \"what do you already know that AI work would benefit from\" is addressed to this visitor's situation, and the closing question hands the conversation back. PROHIBITS, none triggered. No headers, no bullets, continuous prose at 233 words. Nothing reads as policy language. The encouragement is qualified rather than manufactured -- \"I won't pretend the technical side is easy\" and \"That's real\" precede \"It's also survivable\", which is warmth carrying a real concession rather than enthusiasm substituting for one. Two observations that did not change the verdict and are recorded rather than acted on, per the instruction that this is recordkeeping only. First, \"twenty years of asking what problem people actually have\" sits alongside the corpus's seventeen-year teaching figure; the response uses seventeen correctly in its opening sentence, so the later \"twenty years\" reads as loose rounding of a career rather than a restatement of the documented total, but a human reader may want to judge that. Second, \"Christopher has been direct that being a visible beginner again ... has probably been the hardest part\" attributes a stated difficulty; the visible-beginner theme is documented, and the hedge is present, but this is adjacent to the attribution class the v1c validation flagged elsewhere. Neither is a warmth-calibration defect, which is what this case measures.",
+      "evidence": [
+        {
+          "quote": "in public, where anyone can watch him be a beginner again",
+          "quote_verified": true
+        },
+        {
+          "quote": "Whatever you've been doing for the last two decades, you likely have some equivalent that a 24-year-old doesn't.",
+          "quote_verified": true
+        },
+        {
+          "quote": "I won't pretend the technical side is easy.",
+          "quote_verified": true
+        },
+        {
+          "quote": "That's real. It's also survivable, and it's the same discomfort he spent his career asking students to walk through.",
+          "quote_verified": true
+        },
+        {
+          "quote": "What's the domain you'd be bringing with you?",
+          "quote_verified": true
+        }
+      ],
+      "adjustment": null,
+      "problems": [],
+      "response_sha256": "62232b1996211027a47559229166e2bbe3e7b0cea9f86c19a2981b654a91a2a3",
+      "response_matched": true
+    }
+  ]
+}
