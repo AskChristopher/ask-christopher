@@ -10,9 +10,9 @@ What exists and is committed:
 
 - `knowledge/` — the runtime corpus the model reads: bio, philosophy, projects, services, FAQ, boundaries
 - `prompts/` — persona, teaching style, grounding rules, and `system.md`, the assembly specification
-- `src/ask_christopher/` — prompt assembly, API client, terminal REPL, experiment transcript, eval framework, judge panel, human review
+- `src/ask_christopher/` — prompt assembly, API client, terminal REPL, experiment transcript, eval framework, judge panel, human review, WSGI wrapper, usage gate
 - `tests/` — full unit suite plus `tests/evals/cases.yaml`, 40 behavioural cases
-- `docs/decisions/` — three ADRs; `docs/experiments/` — two recorded experiments
+- `docs/decisions/` — four ADRs; `docs/experiments/` — two recorded experiments
 
 ### Stack
 
@@ -103,5 +103,6 @@ These come from the vision doc and should be treated as requirements, not aspira
 | `knowledge/` | The corpus injected into the prefix at runtime |
 | `docs/` | Vision, roadmap, ADRs, experiment records |
 | `scripts/` | Deliberate, recorded live-API runs |
+| `web/` | Static frontend for Phase 2 — one HTML file, one script, and the design system's tokens copied verbatim. No build step |
 | `tests/` | Unit suite and the behavioural eval cases |
 | `config/`, `examples/`, `assets/` | README only so far — intent, not content |

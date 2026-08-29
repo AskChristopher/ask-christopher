@@ -1,0 +1,40 @@
+:root{
+  /* ---- Foundation: ink ---- */
+  --ink-950:#0A0906; --ink-900:#141310; --ink-800:#22201B; --ink-700:#38352F;
+  /* ---- Foundation: paper ---- */
+  --paper-000:#FFFFFF; --paper-050:#FAF8F3; --paper-100:#F2EEE5; --paper-200:#E6E1D6;
+  /* ---- Foundation: gray (warm neutral) ---- */
+  --gray-300:#CFC9BC; --gray-400:#A8A296; --gray-500:#7C776D; --gray-600:#57534B;
+  /* ---- Signal: the single high-energy accent. Used like an editorial annotation mark. ---- */
+  --signal-050:#FFF0EB; --signal-100:#FFDBCF; --signal-300:#FF7E56;
+  --signal-500:#F03D14; --signal-600:#C82E0B; --signal-700:#8F2008;
+  /* ---- System colors: data, status, diagrams. Never identity colors. ---- */
+  --data-blue:#2C4DA7; --data-teal:#157F6B; --data-amber:#C98A00; --data-clay:#8A4B2A; --data-slate:#5A6472;
+  --status-success:#157F6B; --status-warning:#C98A00; --status-danger:#B3261E; --status-info:#2C4DA7;
+
+  /* ---- Semantic aliases ---- */
+  --text-primary:var(--ink-900);
+  --text-secondary:var(--gray-600);
+  --text-muted:var(--gray-500);
+  --text-inverse:var(--paper-050);
+  --text-signal:var(--signal-600);
+  --text-link:var(--signal-600);
+  --text-link-hover:var(--signal-700);
+
+  --surface-page:var(--paper-050);
+  --surface-card:var(--paper-000);
+  --surface-sunken:var(--paper-100);
+  --surface-ink:var(--ink-900);
+  --surface-signal:var(--signal-500);
+  --surface-hover:var(--paper-100);
+  --surface-selected:var(--signal-050);
+
+  --border-hairline:var(--paper-200);
+  --border-default:var(--gray-300);
+  --border-strong:var(--ink-900);
+  --border-signal:var(--signal-500);
+
+  --focus-ring:var(--signal-500);
+  --overlay-scrim:rgba(10,9,6,0.55);
+  --grid-line:rgba(20,19,16,0.08);
+}

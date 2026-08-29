@@ -1,0 +1,42 @@
+/* Three brand modes. Same families, palette and spacing logic — different volume.
+   Apply on any wrapper: <div data-mode="aes"> ... </div> */
+[data-mode="christopher"]{
+  --mode-expressiveness:high; /* @kind other */
+  --mode-display-size:var(--size-6xl);
+  --mode-section-gap:var(--space-10);
+  --mode-surface:var(--paper-050);
+  --mode-accent:var(--signal-500);
+  --mode-grid-margin:32px;
+}
+[data-mode="ask"]{
+  --mode-expressiveness:medium; /* @kind other */
+  --mode-display-size:var(--size-3xl);
+  --mode-section-gap:var(--space-8);
+  --mode-surface:var(--paper-000);
+  --mode-accent:var(--data-blue);
+  --mode-grid-margin:64px;
+}
+[data-mode="aes"]{
+  --mode-expressiveness:controlled; /* @kind other */
+  --mode-display-size:var(--size-4xl);
+  --mode-section-gap:var(--space-9);
+  --mode-surface:var(--paper-050);
+  --mode-accent:var(--signal-500);
+  --mode-grid-margin:48px;
+}
+/* Ink section: an inverted band used for statements and proof blocks. */
+[data-surface="ink"]{
+  --text-primary:var(--paper-050);
+  --text-secondary:var(--gray-400);
+  --text-muted:var(--gray-500);
+  --surface-page:var(--ink-900);
+  --surface-card:var(--ink-800);
+  --surface-sunken:var(--ink-950);
+  --surface-hover:var(--ink-800);
+  --border-hairline:rgba(247,244,237,0.14);
+  --border-default:rgba(247,244,237,0.24);
+  --border-strong:var(--paper-050);
+  --shadow-focus:0 0 0 2px var(--ink-900),0 0 0 4px var(--focus-ring);
+  background:var(--surface-page);
+  color:var(--text-primary);
+}

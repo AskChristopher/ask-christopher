@@ -1,0 +1,91 @@
+<!doctype html>
+<!--
+  Ask Christopher - production frontend, v1.
+
+  Derived from the design system's ask_christopher UI kit, with three
+  deliberate departures from the prototype:
+
+  1. No React, no Babel, no CDN. The prototype loaded React 18 development
+     builds plus @babel/standalone from unpkg and transpiled JSX on every page
+     load. Correct for a generated prototype, wrong for production. This is one
+     HTML file, one stylesheet and one script - no build step either.
+
+  2. No source panel. Sources.jsx promised "every answer is traceable" with
+     inline citation markers. The corpus is injected whole rather than
+     retrieved, so there is nothing to cite per answer, and a panel showing
+     plausible sources the model did not use is the fabrication
+     knowledge/boundaries.md forbids. It becomes honest when retrieval lands.
+
+  3. No "Answers cite their sources" footer line, for the same reason. Saying
+     it while it is untrue is worse than the missing panel.
+
+  Kept verbatim from the design system: styles.css, tokens/, data-mode="ask",
+  and the layout proportions.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ask Christopher</title>
+  <meta name="description" content="The AI-powered front door to ChristopherMathews.com. Ask about the work, the method, or the problem you are trying to solve.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<!-- data-api is where the Passenger app is mounted in cPanel. The page is a
+     static file; the API is a separate mount. Change it here, not in app.js. -->
+<body data-mode="ask" data-api="/api">
+  <div class="ask">
+    <nav class="ask__rail">
+      <div>
+        <div class="wordmark">Ask<br>Christopher</div>
+        <div class="metalabel">Knowledge interface</div>
+      </div>
+
+      <div class="ask__suggested" id="suggested" hidden>
+        <div class="metalabel">Try</div>
+      </div>
+
+      <div class="ask__railfoot">
+        <div class="metalabel" id="status">Ready</div>
+      </div>
+    </nav>
+
+    <main class="ask__main">
+      <div class="ask__scroll" id="scroll">
+        <section class="ask__intro" id="intro">
+          <div class="metalabel">Ask Christopher</div>
+          <h1 class="statement">What are you<br>trying to solve?</h1>
+          <p class="lede">
+            This is a digital representation of Christopher Mathews - an
+            instructional designer who builds systems that improve how work
+            actually gets done. Ask about the work, the method, or the problem
+            in front of you.
+          </p>
+          <div class="ask__prompts" id="prompts"></div>
+        </section>
+
+        <div class="ask__thread" id="thread"></div>
+      </div>
+
+      <div class="ask__composer">
+        <form class="composer" id="form" autocomplete="off">
+          <label class="visually-hidden" for="q">Your question</label>
+          <input class="composer__input" id="q" name="q" type="text"
+                 placeholder="Ask a question&hellip;" maxlength="1000" required>
+          <button class="composer__send" id="send" type="submit" aria-label="Send question">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path d="M12 19V5M5 12l7-7 7 7"/>
+            </svg>
+          </button>
+        </form>
+        <p class="composer__note" id="note">
+          Answers come from a written corpus. It declines what it has no record of.
+        </p>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
