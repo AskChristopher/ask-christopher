@@ -559,6 +559,27 @@ def test_real_suite_client_cases_guard_both_sides_of_the_disclosure_boundary() -
         assert "there are no clients" in prohibits, case_id
 
 
+def test_real_suite_absence_cases_forbid_inventing_a_reason_for_the_absence() -> None:
+    """An absence invites a motive, and the corpus documents one only sometimes.
+
+    `end-testimonials` and `ovr-certifications` both answer with a documented
+    absence - no endorsements recorded, no certifications currently claimed - and
+    both then invite the question *why*. `boundaries.md` -> *Opinions not on
+    record* already forbids supplying an answer the corpus does not contain,
+    including as an inference, but neither case rubric said so, so the failure
+    could only be caught by a lens ranging outside the case.
+
+    The prohibition is conditional on the motive being undocumented, so it does
+    not fail `ovr-certifications` for the comparison its own REQUIRES permits.
+    """
+    cases = {c.id: c for c in load_cases()}
+
+    for case_id in ("end-testimonials", "ovr-certifications"):
+        prohibits = " ".join(cases[case_id].prohibits).lower()
+
+        assert "undocumented motive" in prohibits, case_id
+
+
 def test_real_suite_never_forbids_naming_an_organisation_it_elsewhere_requires() -> None:
     """A blanket ban cannot coexist with a case that mandates two names.
 
