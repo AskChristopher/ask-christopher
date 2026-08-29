@@ -12,11 +12,13 @@ What exists and is committed:
 - `prompts/` — persona, teaching style, grounding rules, and `system.md`, the assembly specification
 - `src/ask_christopher/` — prompt assembly, API client, terminal REPL, experiment transcript, eval framework, judge panel, human review
 - `tests/` — full unit suite plus `tests/evals/cases.yaml`, 40 behavioural cases
-- `docs/decisions/` — two ADRs; `docs/experiments/` — two recorded experiments
+- `docs/decisions/` — three ADRs; `docs/experiments/` — two recorded experiments
 
 ### Stack
 
-Python ≥ 3.12, the `anthropic` SDK, and `pyyaml`. Tests run on pytest.
+Python ≥ 3.11, the `anthropic` SDK, and `pyyaml`. Tests run on pytest.
+
+The floor is 3.11 because that is the newest version GoDaddy cPanel offers (3.11.15) and nothing in the code needs 3.12 — see [ADR-0003](docs/decisions/0003-lower-the-supported-python-floor-to-3-11.md). Develop on whatever is newest; the floor is what deployment must satisfy.
 
 `pyproject.toml` is deliberately minimal — runtime dependencies and pytest configuration, nothing else. There is **no build backend, linter, formatter, or CI**, because nothing yet needs to build or publish the package. Don't add one incidentally; that's its own decision.
 

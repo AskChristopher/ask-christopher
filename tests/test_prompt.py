@@ -65,8 +65,51 @@ def _write_tree(base: Path, *, newline: str = "\n", omit: str | None = None) -> 
 # --------------------------------------------------------------------------
 
 
+#: The Phase 1 prefix, as measured at commit ``f0a7840`` and recorded in
+#: ``docs/evals/v1c-persona-grammar-review-sheet.yaml`` -> ``binding.prompt_sha256``.
+#: Every judged and reviewed verdict in ``docs/evals/`` describes *these* bytes.
+PHASE_1_PROMPT_SHA256 = "63f3b4c3d9bdc93616976b3a33b3770fce6f8fda3ef5675ace264db93198e655"
+PHASE_1_PROMPT_BYTES = 134403
+
+
 def test_build_is_byte_stable_within_a_process() -> None:
     assert build_system_prompt().to_bytes() == build_system_prompt().to_bytes()
+
+
+def test_assembled_prefix_matches_the_phase_1_fingerprint() -> None:
+    """Pin the exact bytes, because the other tests here cannot catch two things.
+
+    The byte-stability tests compare two runs against *each other*. They prove
+    the assembly is deterministic within one interpreter; they say nothing about
+    whether a different interpreter produces the same bytes. ADR-0003 lowered the
+    deployment floor to Python 3.11 while development continues on newer versions,
+    so "same bytes on 3.11 and 3.12" became a claim worth testing rather than
+    reasoning about.
+
+    They also cannot notice an *accidental* prefix change. A stray edit to
+    ``prompts/`` or ``knowledge/`` keeps every other test green while silently
+    invalidating the cached prefix and every recorded verdict bound to
+    ``prompt_sha256``.
+
+    **This test is meant to fail when the corpus changes on purpose.** When it
+    does, re-measure and update both constants in the same commit as the corpus
+    edit - the point is that the prefix cannot move without someone deciding it
+    should, and noticing that the ``docs/evals/`` bindings now describe older
+    bytes.
+    """
+    assembled = build_system_prompt().to_bytes()
+
+    assert len(assembled) == PHASE_1_PROMPT_BYTES, (
+        f"prefix is {len(assembled)} bytes, expected {PHASE_1_PROMPT_BYTES}. "
+        "If prompts/ or knowledge/ changed deliberately, update "
+        "PHASE_1_PROMPT_BYTES and PHASE_1_PROMPT_SHA256 in this file."
+    )
+    assert hashlib.sha256(assembled).hexdigest() == PHASE_1_PROMPT_SHA256, (
+        "prefix bytes changed. Same length, different content means an edit that "
+        "swapped characters rather than adding them - or an interpreter whose "
+        "text handling differs. Diff prompts/ and knowledge/ before updating "
+        "the constant."
+    )
 
 
 def test_build_is_byte_stable_across_processes() -> None:
