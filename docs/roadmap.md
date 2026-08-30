@@ -21,6 +21,8 @@
 
 **Phase 2 is LIVE.** `christophermathews.com` has served the new interface since 2026-08-29, from commit `f3e1037`, with the assistant behind `/api` and WordPress removed. The deployed prefix fingerprint matches the Phase 1 measured corpus exactly, so the 40 recorded case outcomes describe the live service. ADR-0001 was reopened in [ADR-0004](decisions/0004-serve-phase-2-from-a-bare-wsgi-wrapper-on-cpanel.md) and Python retained; the predicted FastAPI shape was not what shipped. **The public endpoint is capped at 10 questions a day** because a new visitor's first question costs roughly $0.27 — see *Phase 2* below for the verified state and what remains open.
 
+**Re-verified 2026-08-30 at 14:46Z.** Every check still holds, and the deployed frontend is now known to be byte-identical to the committed `web/` tree rather than merely present. One new finding, non-blocking: **the site and the API also answer over plaintext HTTP**, with no redirect to HTTPS and no HSTS header.
+
 ---
 
 ## Phase 1 — Grounded persona
@@ -193,9 +195,27 @@ Confirmed by reading the live endpoints rather than by report — every check be
 
 The `.htaccess` exclusion predicted in the deployment plan was needed: `RewriteRule ^api($|/) - [L]` sits above the `# BEGIN WordPress` block, keeping WordPress's catch-all from swallowing `/api`.
 
+### Re-verified 2026-08-30
+
+Read from the live endpoints again at **14:46Z**, roughly eleven hours after the record above, at HEAD `fec4bef` with a clean working tree. All `GET`s again; nothing called the model and nothing was spent. **Every check in the table still holds.** Three things are now established that were not, and one new finding came out of it.
+
+**The deployed frontend is byte-identical to the committed `web/` tree** — all thirteen files, not the four the table spot-checked for a `200`: `index.html`, `app.js`, `app.css`, `styles.css`, and every one of the eight `tokens/*.css`. Each was fetched and compared by sha256 against the file at HEAD, and none needed line-ending normalisation to match, so the bytes in cPanel are the bytes in the repository. The `200`s above proved that *something* was served; this proves it is **this commit's** frontend, which is the same class of claim the prefix fingerprint makes about the backend. `styles.css` is 274 bytes of `@import`, so checking it alone would have said nothing about the tokens it pulls in — that is why all eight are enumerated rather than sampled.
+
+**Provenance corroborated from the server rather than from the deploy.** The served `index.html` reports `Last-Modified: 2026-08-30T03:32:46Z`, thirteen minutes before `fec4bef` was authored, and `X-Powered-By: Phusion Passenger(R) 6.1.8` names what is answering.
+
+**Nothing has moved, and nothing has arrived.** `prefix_sha256` is still `63f3b4c3…`, and the gate still reports `used: 2, limit: 10, remaining: 8`. Both readings fall inside UTC day 2026-08-30, so an unchanged counter means **no `/api/ask` request in those eleven hours** — the two consumed slots are the same two, not two more. It says nothing about UTC 2026-08-29: the health endpoint reports only the current day's row, and yesterday's is not readable from outside.
+
+`/ask` is still a `404`, and `GET /api/bogus` and `GET /api/ask` still return our `{"error": "not_found"}` and `{"error": "method_not_allowed"}` rather than anything WordPress-shaped.
+
 ### Open, and none of it blocking
 
-- [ ] **`/ask` returns 404.** The plan put the interface at `/ask` and the API at `/api`; what shipped puts the interface at the document root. It works — `data-api` is absolute — but nothing serves `/ask`, so any link to it breaks. Either alias it or stop referring to it. **ADR-0004's Decision line still says the interface is mounted at `/ask`** and is now wrong in two ways; correct it when this is settled.
+- [ ] **The site answers over plaintext HTTP, and so does the API.** Found 2026-08-30. `http://christophermathews.com/` returns `200` with no `Location` and no redirect; `http://christophermathews.com/api/health` returns `200` the same way; and the HTTPS response carries no `Strict-Transport-Security` header. So a visitor's question can be `POST`ed in the clear, and nothing tells the browser to prefer TLS on the next visit. `www.` and the apex both serve, over both schemes, with no canonical redirect between them — four working origins for one site.
+
+  **Not a blocker, and worth being exact about why.** There is no login, no cookie, no session, and no stored visitor data, so the exposure is the question text and the answer *in transit* — not an account and not a credential. What makes it worth fixing before the site is promoted anywhere is that the assistant's whole proposition is that a visitor can ask a real question, and a question is the kind of thing people expect not to be readable on the wire. The fix is a rewrite in `.htaccess` plus one header, not an architecture change. `X-Powered-By: Phusion Passenger(R) 6.1.8` is disclosed on every API response too; that is informational rather than a vulnerability, and belongs in the same edit.
+
+  **This was not a regression** — nothing in the deployment ever configured it. The 2026-08-29 record checked what the endpoints *returned* and did not check what scheme they would answer on, which is why it took a second reading to surface.
+
+- [ ] **`/ask` returns 404.** Re-confirmed 2026-08-30. The plan put the interface at `/ask` and the API at `/api`; what shipped puts the interface at the document root. It works — `data-api` is absolute — but nothing serves `/ask`, so any link to it breaks. Either alias it or stop referring to it. **ADR-0004's Decision line still says the interface is mounted at `/ask`** and is now wrong in two ways; correct it when this is settled.
 - [ ] **The per-visitor cost is unsolved, and the gate is a ceiling rather than a fix.** A new visitor's first question is roughly **$0.27** — a cold cache write on the ~41,800-token prefix; a follow-up inside the 5-minute TTL is about $0.03. At `ASK_DAILY_LIMIT=10` the exposure is bounded near $3/day, which is why ten was chosen while nothing is measured. Raising it without shrinking the prefix raises the bill linearly. [ADR-0002](decisions/0002-full-corpus-injection-is-a-baseline-not-the-architecture.md) already names retrieval an active requirement; this is the evidence it was waiting for.
 - [ ] **No source panel.** `Sources.jsx` promises that every answer is traceable. The corpus is injected whole, so there is nothing to cite per answer, and a panel of plausible-but-unused sources would be the fabrication `boundaries.md` forbids. It becomes honest when retrieval lands, not before.
 - [ ] **The two Phase 1 backlog findings are now live on a public site.** `end-testimonials` overstates the public portfolio — *"projects are documented publicly on GitHub, including… what he learned"* is true of two repositories and false of five. That was already filed as *fix before meaningful public traffic*; the site being live is that traffic.
