@@ -17,7 +17,9 @@
 
 **Open, and explicitly not blocking:** two findings from the second cycle's validation, both single sentences in pivot material, both recorded below under *Phase 1 open findings*. Neither is a fabricated fact, a disclosure, or a refusal failure.
 
-**In flight:** nothing. Phase 1 work is closed. Per ADR-0001, the Python decision is scoped to Milestone 1 and **reopens at the start of Phase 2**.
+**In flight:** nothing. Phase 1 work is closed.
+
+**Phase 2 is LIVE.** `christophermathews.com` has served the new interface since 2026-08-29, from commit `f3e1037`, with the assistant behind `/api` and WordPress removed. The deployed prefix fingerprint matches the Phase 1 measured corpus exactly, so the 40 recorded case outcomes describe the live service. ADR-0001 was reopened in [ADR-0004](decisions/0004-serve-phase-2-from-a-bare-wsgi-wrapper-on-cpanel.md) and Python retained; the predicted FastAPI shape was not what shipped. **The public endpoint is capped at 10 questions a day** because a new visitor's first question costs roughly $0.27 — see *Phase 2* below for the verified state and what remains open.
 
 ---
 
@@ -161,9 +163,45 @@ ADR-0001 deferred retrieval to Phase 4. **ADR-0002 amends that** — the corpus 
 
 ## Phase 2 — Web interface
 
-Browser-based chat embedded in ChristopherMathews.com. The likely shape is a small FastAPI service in front of the existing package, with a separate frontend.
+**LIVE in production as of 2026-08-29, serving `christophermathews.com` from commit `f3e1037`.** WordPress has been replaced. [ADR-0004](decisions/0004-serve-phase-2-from-a-bare-wsgi-wrapper-on-cpanel.md) records the architecture; ADR-0001 was reopened there and Python retained.
 
-**Reopen ADR-0001 at the start of this phase.** The Python decision is scoped to Milestone 1 and explicitly does not commit the web interface.
+The shape this section predicted — *"a small FastAPI service in front of the existing package"* — is not what shipped. Passenger is WSGI and FastAPI is ASGI, so FastAPI would have needed `a2wsgi` or a separate uvicorn process; and for two routes a framework would have added six packages to replace about eighty lines. What shipped is a bare WSGI callable with **no new dependency at all**.
+
+- [x] **Backend.** `src/ask_christopher/web.py` — `GET /health`, `POST /ask`. Delegates to `repl.py`'s `Session`, which was already transport-only with the client injected and the prefix assembled once, so no Phase 1 behaviour was reimplemented.
+- [x] **Usage gate.** `src/ask_christopher/usage.py` — a fail-closed daily ceiling on SQLite, keyed by UTC date so the day rolls over with no cron. Chosen over a JSON counter because Passenger runs several workers and a read-modify-written file loses updates; a gate that silently undercounts is worse than none.
+- [x] **Frontend.** `web/` — one HTML file, one script, one stylesheet, plus the design system's `styles.css` and `tokens/` copied verbatim. No React, no Babel, no build step. The `ask_christopher` UI kit it derives from loaded React *development* builds from a CDN and transpiled JSX on every page load.
+- [x] **Deployed to cPanel** on Python 3.11.15, app root `~/apps/ask-api`, WSGI mounted at `/api`.
+- [x] **WordPress removed** from the web path.
+
+### Verified deployment state
+
+Confirmed by reading the live endpoints rather than by report — every check below is a `GET`, and none of them calls the model or costs anything.
+
+| Check | Result |
+|---|---|
+| `GET /api/health` | `200`, `application/json` |
+| **Deployed prefix fingerprint** | **`63f3b4c3…`** — identical to the Phase 1 measured corpus, so every Phase 1 result describes the live service |
+| Usage gate | `limit: 10`, reporting correctly, so `ASK_DAILY_LIMIT` reached the process |
+| `GET /api/bogus` | our `{"error":"not_found"}` — Passenger is answering, not WordPress |
+| `GET /api/ask` | our `{"error":"method_not_allowed"}` |
+| Response headers | `Cache-Control: no-store`, `X-Content-Type-Options: nosniff` |
+| Document root `/` | our `index.html` — `data-api="/api"`, `data-mode="ask"`, all element ids present |
+| `/app.js`, `/app.css`, `/styles.css`, `/tokens/colors.css` | all `200` |
+| WordPress | `/wp-login.php`, `/wp-admin/`, `/index.php` all `404` |
+
+**`/api/ask` works in production.** The gate showed two requests already consumed, which settles the last unknown carried out of ADR-0003: a fresh install resolves `anthropic` to **1.2.0**, a major version above the **0.120.0** Phase 1 was measured on, and the offline suite could not exercise it because no test makes a network call. It works. Pinning the dependency is still a separate, unmade decision.
+
+The `.htaccess` exclusion predicted in the deployment plan was needed: `RewriteRule ^api($|/) - [L]` sits above the `# BEGIN WordPress` block, keeping WordPress's catch-all from swallowing `/api`.
+
+### Open, and none of it blocking
+
+- [ ] **`/ask` returns 404.** The plan put the interface at `/ask` and the API at `/api`; what shipped puts the interface at the document root. It works — `data-api` is absolute — but nothing serves `/ask`, so any link to it breaks. Either alias it or stop referring to it. **ADR-0004's Decision line still says the interface is mounted at `/ask`** and is now wrong in two ways; correct it when this is settled.
+- [ ] **The per-visitor cost is unsolved, and the gate is a ceiling rather than a fix.** A new visitor's first question is roughly **$0.27** — a cold cache write on the ~41,800-token prefix; a follow-up inside the 5-minute TTL is about $0.03. At `ASK_DAILY_LIMIT=10` the exposure is bounded near $3/day, which is why ten was chosen while nothing is measured. Raising it without shrinking the prefix raises the bill linearly. [ADR-0002](decisions/0002-full-corpus-injection-is-a-baseline-not-the-architecture.md) already names retrieval an active requirement; this is the evidence it was waiting for.
+- [ ] **No source panel.** `Sources.jsx` promises that every answer is traceable. The corpus is injected whole, so there is nothing to cite per answer, and a panel of plausible-but-unused sources would be the fabrication `boundaries.md` forbids. It becomes honest when retrieval lands, not before.
+- [ ] **The two Phase 1 backlog findings are now live on a public site.** `end-testimonials` overstates the public portfolio — *"projects are documented publicly on GitHub, including… what he learned"* is true of two repositories and false of five. That was already filed as *fix before meaningful public traffic*; the site being live is that traffic.
+- [ ] **No streaming.** Passenger commonly buffers `text/event-stream` on shared hosting. The frontend shows a wait indicator instead.
+- [ ] **The frontend duplicates the design system.** Tokens are copied, not imported, so a change in `christopher-mathews-design-system` does not reach `web/`. Named debt in ADR-0004.
+- [ ] **Verify the WordPress backup is intact and retained.** The files are gone from the web path; the archive is the only copy.
 
 ## Phase 3 — Portfolio knowledge
 
