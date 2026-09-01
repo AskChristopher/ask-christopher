@@ -78,7 +78,7 @@ Newest first. A batch is listed once verified, with the commit that recorded it.
 
 | Date | Batch | Files | State |
 |---|---|---|---|
-| 2026-09-01 | Frontend v2 — three-column shell, arrival, thread | `web/index.html`, `web/app.css`, `web/app.js` | **Prepared, awaiting upload** |
+| 2026-09-01 | Frontend v2 — three-column shell, arrival, thread | `web/index.html`, `web/app.css`, `web/app.js` | Live, verified `45ac256` |
 | 2026-08-30 | Canonical origin — force HTTPS, www to apex | `deploy/htaccess` | **Prepared, awaiting upload** |
 | 2026-08-29 | Phase 2 cutover | `web/` (12), `passenger_wsgi.py`, `src/ask_christopher/`, `.htaccess` | Live, verified `fec4bef` and re-verified `4f15d58` |
 
@@ -116,3 +116,35 @@ Do **not** verify with `POST /api/ask`. This batch changes no backend
 behaviour, and a `POST` costs a gate slot and roughly $0.27 on a cold cache
 write. The frontend's own request path is unchanged from v1: same endpoint,
 same `{messages}` body, same `{reply, usage}` handling.
+
+#### Verified live, 2026-09-01 at 14:46Z
+
+Uploaded by Christopher; read back from the public endpoints, every check a
+`GET`. **No `POST /api/ask` was made, so the deployment cost nothing** and
+consumed no gate slot.
+
+| Check | Result |
+|---|---|
+| `/index.html`, `/app.css`, `/app.js` | `200`, and **sha256 equal to the table above** — 8,502 / 24,076 / 19,916 bytes |
+| `Last-Modified` | 14:28:49Z to 14:29:03Z, consistent with one upload operation |
+| `GET /` | Same sha256 as `/index.html`; `data-api="/api"`, `data-mode="ask"`, `id="showcase-cards"`, `id="askbar-locked"` all present in the served bytes |
+| `GET /api/health` | `prefix_sha256` still `63f3b4c3...`, gate `used: 0, limit: 10` |
+| The nine files **not** uploaded | `styles.css` and all eight `tokens/*.css` re-fetched and sha256-compared against the repo: **all nine identical** |
+| Routing | `/api/bogus` → our `not_found`, `/api/ask` → our `method_not_allowed`, `/wp-login.php` and `/wp-admin/` still `404` |
+| Headers | `Cache-Control: no-store`, `X-Content-Type-Options: nosniff` |
+
+Re-fetching the nine untouched files is what makes this a verification of the
+*batch* rather than of the three files. A `200` on the three proves they
+arrived; proving the other nine are unchanged is what establishes the upload
+hit exactly three files and nothing else.
+
+**Not established:** no question has travelled through the new `app.js` to the
+model and back in production. The gate read `used: 0` before and after, which
+is the evidence that nothing was spent — and equally the evidence that the
+end-to-end path is verified only against a stubbed `fetch`. The request shape
+is unchanged from v1, so there is no new reason to expect a failure; that is an
+argument from unchanged code, not a measurement.
+
+**Unchanged and still open:** `/ask` returns `404`, and no
+`Strict-Transport-Security` header is sent. The pending `deploy/htaccess` batch
+is what addresses the second. Neither is a regression from this batch.

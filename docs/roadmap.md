@@ -23,6 +23,8 @@
 
 **Re-verified 2026-08-30 at 14:46Z.** Every check still holds, and the deployed frontend is now known to be byte-identical to the committed `web/` tree rather than merely present. One new finding, non-blocking: **the site and the API also answer over plaintext HTTP**, with no redirect to HTTPS and no HSTS header.
 
+**Frontend v2 live 2026-09-01, verified at 14:46Z, from commit `45ac256`.** The root site now serves the three-column Ask Christopher shell — session rail, conversation, showcase rail — built from `design_handoff_ask_christopher/`. Three files changed and nothing else: **the backend, the API contract and the Phase 1 prefix fingerprint are all unchanged**, so every Phase 1 measurement still describes the live service. Verification was `GET`-only and **no live end-to-end `POST` was made**, which also means the production request path is still exercised only against a stubbed `fetch`. Two of the handoff's five views are built; the opened-piece view, All the Work, Start a project and all contextual showcase behaviour are **not** — see *Frontend v2* under Phase 2 for what is absent and why.
+
 ---
 
 ## Phase 1 — Grounded persona
@@ -206,6 +208,94 @@ Read from the live endpoints again at **14:46Z**, roughly eleven hours after the
 **Nothing has moved, and nothing has arrived.** `prefix_sha256` is still `63f3b4c3…`, and the gate still reports `used: 2, limit: 10, remaining: 8`. Both readings fall inside UTC day 2026-08-30, so an unchanged counter means **no `/api/ask` request in those eleven hours** — the two consumed slots are the same two, not two more. It says nothing about UTC 2026-08-29: the health endpoint reports only the current day's row, and yesterday's is not readable from outside.
 
 `/ask` is still a `404`, and `GET /api/bogus` and `GET /api/ask` still return our `{"error": "not_found"}` and `{"error": "method_not_allowed"}` rather than anything WordPress-shaped.
+
+### Frontend v2 — the three-column shell, live 2026-09-01
+
+**Live at the root site since 2026-09-01, from commit `45ac256`, verified at 14:46Z.**
+The interface is now the persistent three-column shell from
+`design_handoff_ask_christopher/` — left session rail, centre conversation
+column, right showcase rail — replacing the two-column thread that shipped in
+the 2026-08-29 cutover. Three files changed: `web/index.html`, `web/app.css`,
+`web/app.js`.
+
+**Verified from the endpoints, not from the deploy.** All three served files
+were fetched and compared by **sha256 against the committed bytes** — equal, at
+8,502 / 24,076 / 19,916 bytes. `GET /` returns the same hash as
+`/index.html`. The nine files *not* uploaded — `styles.css` and all eight
+`tokens/*.css` — were also re-fetched and compared, and all nine are identical
+to the repository. That last check is what makes this a verification of the
+batch rather than of three files: a `200` proves the three arrived, and the
+other nine being unchanged is what establishes the upload touched exactly three.
+
+**Backend and API behaviour unchanged.** No edit to `src/`, `passenger_wsgi.py`,
+`prompts/`, `knowledge/`, `pyproject.toml`, `.htaccess`, or any environment
+variable. `POST /api/ask` still takes `{messages}` and returns `{reply, usage}`;
+the frontend's request path is byte-for-byte the same contract as v1.
+
+**The Phase 1 prefix fingerprint did not move** — `GET /api/health` still
+reports `63f3b4c3...`, matching `PHASE_1_PROMPT_SHA256` in
+`tests/test_prompt.py` and the corpus every Phase 1 measurement was taken
+against. So the 40 recorded case outcomes still describe the live service, and
+this batch cannot have altered behaviour. Offline suite at the commit: **448
+passed.**
+
+**No paid or live end-to-end `POST` was made during verification.** Every check
+was a `GET`. The gate read `used: 0, limit: 10` both before and after, which is
+simultaneously the evidence that the deployment cost nothing and the evidence
+that **the end-to-end path is verified only against a stubbed `fetch`** — no
+question has yet travelled through the new `app.js` to the model and back in
+production. The request shape is unchanged from v1, so there is no new reason to
+expect a failure, but that is an argument from unchanged code rather than a
+measurement, and it should not be read as one.
+
+**What was verified locally**, in a headless browser against the committed
+files, since the frontend has no automated test coverage at all: arrival, a
+three-turn thread with `01/02/03` numbering, session-row navigation, `New
+question` reset, the loading state, the `502` error state, the `429` daily-cap
+state, and zero horizontal overflow at every viewport from 485 to 1424px with
+the three-column grid collapsing to one at exactly ≤900px. One real defect was
+found this way and only this way: every element the page toggles carries a class
+that sets `display`, which beats the `[hidden]` attribute on specificity, so the
+locked ask bar, the rail's question list and the showcase empty state all
+rendered at once. Reading the diff would not have surfaced it.
+
+#### Not built, and deliberately absent rather than pending
+
+The handoff specifies five views. Two are live. The rest were not started, and
+nothing in the shipped interface links to them — there are no dead links and no
+placeholder destinations.
+
+- [ ] **Opened-piece view** (`view: artifact`) — the SHOW → DISCUSS hinge: sticky
+  header, typed hero media, the seven-part documentary body or a plate gallery,
+  and the *questions while you're here* band.
+- [ ] **All the Work** (`view: index`) — the browse route, filter row, curatorial
+  line per filter, and feature promotion at 3+ items.
+- [ ] **Start a project** (`view: start`) — the carried-session brief and the
+  contact form. Its *"Reply within two working days"* promise needs confirming
+  before it ships.
+- [ ] **Populated and contextual showcase behaviour.** The rail is live but
+  structurally empty: it renders from a `WORKS` registry that is `{}`, so it has
+  never displayed a card. Everything that makes it *contextual* is therefore
+  also absent — offers that add pieces, `justAdded` highlighting, newest-group
+  ordering, and pieces landing there when opened. This is content-blocked, not
+  code-blocked: every one of the prototype's 16 works is placeholder written by
+  the designer, and `knowledge/projects.md` documents seven pieces with no
+  imagery and no figure carrying a method.
+- [ ] **The AES voice-shift banner**, which the handoff calls a real behaviour.
+  Nothing in `prompts/` instructs a first-person-to-*we* shift, so the banner
+  would assert a voice change that does not happen. Either the corpus gains the
+  instruction or the banner stays out; it is not a frontend decision.
+- [ ] **Structured answer fields** — `stats` with their required method,
+  `records`, `offer`, `facets`, `followups`. These need fields the backend does
+  not produce. Populating them from the frontend would mean inventing them; asking
+  the model for them means editing `prompts/`, which moves the prefix fingerprint
+  and invalidates the claim above. **Worth an ADR before either.**
+- [ ] **Mobile is usable, not designed.** Below 900px the columns stack in place
+  with no new components — no drawer, no accordion, nothing the handoff has not
+  approved, because it declares `<900px` out of scope. One known consequence: the
+  ask bar is sticky within the centre column, so it detaches once the visitor
+  scrolls past it. Barely visible while the showcase is empty; it needs the
+  approved mobile design to fix properly.
 
 ### Open, and none of it blocking
 
