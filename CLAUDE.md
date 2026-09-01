@@ -94,6 +94,22 @@ These come from the vision doc and should be treated as requirements, not aspira
 - **`docs/` is for humans; `knowledge/` is for the model.** Mixing them means the assistant either misses documentation it needs or quotes internal design notes at visitors.
 - Commit directly to `main` — no feature branches in this repo. Commit, don't push, unless asked.
 
+## Deployment
+
+**Production is deployed by hand, through cPanel's File Manager. There is no other way in.** No SSH, no FTP, no git on the server, no shell, no CI. Never write a command, script, or plan that assumes otherwise.
+
+`deploy/README.md` is authoritative for the path map and the batch log. The sequence is fixed and does not vary:
+
+1. Prepare the exact production files locally, byte-for-byte final.
+2. State the precise server path for each one.
+3. **Stop.** Uploading is Christopher's step.
+4. On his confirmation, verify against the live public site with `GET`/`HEAD` only.
+5. Only then start the next batch.
+
+**GitHub is the source of truth; the server is a copy.** Never edit a file on the server — that change exists nowhere else and dies at the next upload. **Every batch must be reproducible from the committed files**, which is why `.htaccess` is tracked at `deploy/htaccess` rather than living only in the document root.
+
+**Verify with `GET /api/health`, never with `POST /api/ask`.** The health endpoint reports the prefix fingerprint and the gate state for free. A `POST` calls the model and consumes a gate slot — roughly $0.27 on a cold cache write. Frontend files are verified by sha256 against the committed bytes, because a `200` proves something is served, not that it is the right thing.
+
 ## Directory intent
 
 | Path | Contents |
@@ -105,4 +121,5 @@ These come from the vision doc and should be treated as requirements, not aspira
 | `scripts/` | Deliberate, recorded live-API runs |
 | `web/` | Static frontend for Phase 2 — one HTML file, one script, and the design system's tokens copied verbatim. No build step |
 | `tests/` | Unit suite and the behavioural eval cases |
+| `deploy/` | Production files and the repo-path-to-server-path map. Read `deploy/README.md` before deploying anything |
 | `config/`, `examples/`, `assets/` | README only so far — intent, not content |

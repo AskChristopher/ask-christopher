@@ -1,21 +1,37 @@
-/* Ask Christopher - layout and the few component styles this page needs.
+/* Ask Christopher - layout and components, v2.
  *
- * Every value here is a design-system token. The prototype expressed all of
- * this as React inline styles; the shapes are the same, moved into CSS so the
- * page needs no JavaScript to render its own layout.
+ * Transcribed from design_handoff_ask_christopher/ChristopherMathews.dc.html,
+ * which expresses every value as an inline style against a CSS variable. The
+ * values here are the handoff's values; only the delivery mechanism changed,
+ * so the page renders its own layout with no JavaScript.
  *
- * The source panel is gone, so the prototype's three-column grid
- * (240px / 1fr / 340px) becomes two columns.
+ * Every colour, radius, shadow and duration is a design-system token. No
+ * hard-coded hexes except #fff on the signal button, which the handoff
+ * specifies literally.
+ *
+ * Two structural rules from the handoff are load-bearing rather than
+ * decorative, and both are marked where they appear:
+ *   - container-type on .centre, because all display type is sized in cqi
+ *     against that column rather than the viewport
+ *   - flex-shrink: 0 on any child of an overflow-hidden flex column
  */
+
+/* ------------------------------------------------------------------ reset */
 
 * { box-sizing: border-box; }
 
 html, body {
   margin: 0;
-  height: 100%;
   background: var(--paper-000);
   color: var(--text-primary);
 }
+
+/* Every element this page toggles carries a class that sets `display`, and a
+ * class beats the [hidden] attribute on specificity - so without this rule
+ * `hidden` silently does nothing and the locked ask bar, the rail's question
+ * list and the showcase empty state all render at once. Found by rendering
+ * the page, not by reading it. */
+[hidden] { display: none !important; }
 
 .visually-hidden {
   position: absolute;
@@ -25,230 +41,706 @@ html, body {
   white-space: nowrap; border: 0;
 }
 
-/* ---------------------------------------------------------------- shell */
+/* ----------------------------------------------------------------- motion */
 
-.ask {
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: .25; }
+  50%      { opacity: 1; }
+}
+
+.rise { animation: rise 190ms cubic-bezier(.16, 1, .3, 1) both; }
+
+/* Scrollbars, kept quiet. WebKit only; other engines get their default. */
+.scrolls::-webkit-scrollbar { width: 8px; }
+.scrolls::-webkit-scrollbar-thumb { background: var(--border-default); }
+
+/* ------------------------------------------------------------------ shell */
+
+.shell {
   display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
+  grid-template-columns: clamp(180px, 18vw, 264px) minmax(0, 1fr) clamp(236px, 24vw, 348px);
   height: 100vh;
-}
-
-.ask__rail {
-  border-right: var(--border-width-hairline) solid var(--border-hairline);
-  padding: 20px 18px;
-  background: var(--paper-050);
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-}
-
-.ask__railfoot { margin-top: auto; }
-
-.ask__main {
-  display: flex;
-  flex-direction: column;
+  height: 100dvh;   /* dvh second, so old engines keep the vh value */
   overflow: hidden;
+  background: var(--paper-000);
 }
 
-.ask__scroll {
-  flex: 1;
+/* ------------------------------------------------------- left column: rail */
+
+.rail {
+  border-right: var(--border-width-hairline) solid var(--border-hairline);
+  background: var(--paper-050);
+  padding: 22px 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
   overflow: auto;
-  padding: 40px 56px 0;
 }
 
-/* ------------------------------------------------------------ type roles */
+.wordmark { text-decoration: none; color: inherit; display: block; }
+.wordmark:hover { text-decoration: none; }
 
-.wordmark {
+.wordmark__name {
+  display: block;
   font-family: var(--font-display);
   font-weight: var(--weight-black);
   text-transform: uppercase;
-  font-size: 17px;
-  letter-spacing: -0.02em;
-  line-height: 1.05;
+  font-size: 18px;
+  letter-spacing: -.02em;
+  line-height: 1.02;
+  color: var(--text-primary);
+}
+
+.wordmark__sub {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: var(--tracking-mono-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 7px;
+}
+
+.rail__block { display: flex; flex-direction: column; gap: 9px; }
+
+.rail__empty {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  border-left: var(--border-width-hairline) solid var(--border-hairline);
+  padding-left: 10px;
+}
+
+.rail__foot { margin-top: auto; }
+
+.rail__note {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  border-top: var(--border-width-hairline) solid var(--border-hairline);
+  padding-top: 12px;
+}
+
+/* Session list. Rows are the navigation: one per answered question, plus the
+ * one in flight. The handoff nests opened pieces beneath their question; that
+ * nesting arrives with the artifact view, not in this batch. */
+
+.sessionlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+
+.sessionlist__row {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-left: var(--border-width-strong) solid var(--border-hairline);
+  border-radius: 0;
+  padding: 0 0 0 10px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-ui);
+}
+.sessionlist__row:hover { color: var(--text-primary); }
+.sessionlist__row--current { border-left-color: var(--signal-500); color: var(--text-primary); }
+.sessionlist__row--pending { color: var(--text-muted); border-left-color: var(--signal-500); }
+
+.raillist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+
+.raillist__row {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-bottom: var(--border-width-hairline) solid var(--border-default);
+  border-radius: 0;
+  padding: 0 0 7px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: var(--transition-ui);
+}
+.raillist__row:hover { color: var(--text-link); border-bottom-color: var(--border-signal); }
+
+/* ---------------------------------------------------------------- buttons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--tracking-mono-label);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 130ms cubic-bezier(.2, 0, 0, 1), color 130ms cubic-bezier(.2, 0, 0, 1);
+}
+.btn:active { transform: translateY(1px); }
+.btn--full { width: 100%; }
+.btn__icon { flex-shrink: 0; }
+
+.btn--outline {
+  background: transparent;
+  border: var(--border-width-hairline) solid var(--border-default);
+  color: var(--text-primary);
+}
+.btn--outline:hover { background: var(--paper-100); }
+
+/* ------------------------------------------------------- centre column ---- */
+
+.centre {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--paper-000);
+  min-width: 0;
+  /* LOAD-BEARING. Every cqi length below resolves against this column, which
+   * is why display type tracks the column and not the viewport. Removing this
+   * silently reverts the whole type scale to its clamp minimum. */
+  container-type: inline-size;
+}
+
+.centre__scroll { flex: 1; overflow: auto; }
+
+/* ------------------------------------------------------------ view: arrival */
+
+.arrival {
+  padding: clamp(28px, 4vw, 64px) clamp(24px, 4vw, 64px) 24px;
+  max-width: 780px;
 }
 
 .metalabel {
   font-family: var(--font-mono);
-  font-size: var(--size-2xs);
+  font-size: 10px;
   letter-spacing: var(--tracking-mono-label);
   text-transform: uppercase;
   color: var(--text-muted);
+  margin: 0;
 }
 
-.statement {
+/* The MetaLabel device: optional number, label, then a hairline taking the
+ * remaining width. The most-used element in the design. */
+.metalabel--ruled { display: flex; align-items: center; gap: 10px; }
+.metalabel--ruled::after {
+  content: "";
+  flex: 1;
+  height: var(--border-width-hairline);
+  background: var(--border-hairline);
+}
+.metalabel__n { color: var(--text-primary); }
+.metalabel--signal .metalabel__t,
+.metalabel--signal .metalabel__n { color: var(--text-signal); }
+
+.provocation {
   font-family: var(--font-display);
   font-weight: var(--weight-black);
   text-transform: uppercase;
-  font-size: var(--mode-display-size);
-  letter-spacing: var(--tracking-display);
-  line-height: var(--leading-tight);
-  margin: 16px 0 14px;
+  font-size: clamp(34px, 9.8cqi, 76px);
+  line-height: .9;
+  letter-spacing: -.035em;
+  overflow-wrap: break-word;
+  margin: 18px 0 0 -4px;   /* optical hang */
 }
+.provocation__signal { color: var(--signal-500); }
 
-.lede {
+.standfirst {
   font-family: var(--font-body);
-  font-size: var(--size-md);
-  line-height: var(--leading-body);
+  font-size: 20px;
+  line-height: 1.6;
   color: var(--text-secondary);
-  margin: 0 0 28px;
-  max-width: var(--measure-body);
+  max-width: 54ch;
+  margin: 26px 0 30px;
 }
 
-/* ------------------------------------------------------------ intro pane */
+.suggested { display: flex; flex-direction: column; gap: 8px; max-width: 620px; }
 
-.ask__intro {
-  max-width: 640px;
-  margin: 40px auto 0;
-}
-
-.ask__prompts {
+.suggested__item {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.prompt {
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
   text-align: left;
   cursor: pointer;
   background: var(--paper-050);
   border: var(--border-width-hairline) solid var(--border-hairline);
   border-radius: var(--radius-sm);
-  padding: 12px 14px;
+  padding: 13px 15px;
   font-family: var(--font-ui);
-  font-size: var(--size-sm);
+  font-size: 15px;
   color: var(--text-primary);
-  transition: var(--transition-ui);
+  transition: background 130ms cubic-bezier(.2, 0, 0, 1);
+}
+.suggested__item:hover { background: var(--paper-100); }
+
+.suggested__kind {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: var(--tracking-mono-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 
-.prompt:hover { background: var(--surface-hover); border-color: var(--border-default); }
+.arrival__foot {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 40px;
+  margin-top: 44px;
+  padding-top: 28px;
+  border-top: var(--border-width-hairline) solid var(--border-hairline);
+  align-items: start;
+}
 
-.ask__suggested { display: flex; flex-direction: column; gap: 10px; }
+.arrival__facts {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  line-height: 1.9;
+  margin: 0;
+}
 
-.ask__suggested a {
-  font-family: var(--font-ui);
-  font-size: 13px;
+.annotation {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
   color: var(--text-secondary);
-  text-decoration: none;
-  line-height: 1.35;
-  border-left: var(--border-width-hairline) solid var(--border-hairline);
-  padding-left: 10px;
+}
+.annotation__marker {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--text-signal);
+  margin-bottom: 7px;
 }
 
-.ask__suggested a:hover { color: var(--text-link); border-color: var(--border-signal); }
+/* ------------------------------------------------------------- view: thread */
 
-/* --------------------------------------------------------------- thread */
+.thread { padding: 40px clamp(24px, 4vw, 64px) 8px; max-width: 780px; }
+.thread:empty { display: none; }
 
-.ask__thread { max-width: 680px; margin: 0 auto; padding-bottom: 24px; }
+.turn { margin-bottom: 44px; }
+.turn:last-child { margin-bottom: 16px; }
 
-.turn { margin-bottom: 34px; }
-
+/* Question restated, with the mono index. */
+.turn__ask {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  border-left: var(--border-width-rule) solid var(--ink-900);
+  padding-left: 16px;
+  margin-bottom: 22px;
+}
+.turn__num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: var(--tracking-mono-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding-top: 5px;
+  white-space: nowrap;
+}
 .turn__q {
   font-family: var(--font-display);
   font-weight: var(--weight-bold);
   text-transform: uppercase;
-  font-size: var(--size-lg);
-  letter-spacing: var(--tracking-heading);
-  line-height: var(--leading-heading);
-  margin: 0 0 12px;
-}
-
-.turn__a {
-  font-family: var(--font-body);
-  font-size: var(--size-base);
-  line-height: var(--leading-body);
-  color: var(--text-primary);
-  white-space: pre-wrap;
+  font-size: clamp(19px, 3.5cqi, 27px);
+  letter-spacing: -.025em;
+  line-height: 1.08;
+  overflow-wrap: break-word;
   margin: 0;
 }
 
-.turn__a--error {
-  font-family: var(--font-ui);
-  font-size: var(--size-sm);
-  color: var(--status-danger);
-  border-left: var(--border-width-rule) solid var(--status-danger);
-  padding-left: 12px;
-  white-space: normal;
-}
+/* In flight: the rule turns signal and the heading goes muted, so a pending
+ * question is visibly a question rather than an answer. */
+.turn--pending .turn__ask { border-left-color: var(--signal-500); }
+.turn--pending .turn__q { color: var(--text-muted); }
 
-/* A three-dot wait, not a fake token stream. The response is not streamed, so
- * pretending otherwise would misrepresent what is happening. */
-.turn__a--pending::after {
-  content: "\2026";
-  font-family: var(--font-mono);
-  color: var(--text-muted);
-}
+.turn__body { font-family: var(--font-body); font-size: 19px; line-height: 1.6; color: var(--text-primary); }
+.turn__body p { margin: 0 0 16px; max-width: 62ch; }
+.turn__body p:last-child { margin-bottom: 0; }
 
-/* ------------------------------------------------------------- composer */
+/* ------------------------------------------------------------ loading state
+ *
+ * The handoff tuned this for a 950ms prototype delay. Real latency is
+ * multi-second and unstreamed - Passenger buffers text/event-stream on shared
+ * hosting - so three pulsing dots alone would read as a hang. The label
+ * advances through named stages and starts reporting elapsed seconds once the
+ * wait is long enough to need evidence of progress. app.js drives the text;
+ * the dots are only a liveness cue. */
 
-.ask__composer {
-  border-top: var(--border-width-hairline) solid var(--border-hairline);
-  padding: 16px 56px 24px;
-  background: var(--paper-000);
-}
-
-.composer {
-  max-width: 680px;
-  margin: 0 auto;
-  display: flex;
-  border: var(--border-width-strong) solid var(--ink-900);
-}
-
-.composer__input {
-  flex: 1;
-  border: none;
-  outline: none;
-  background: transparent;
-  padding: 14px 16px;
-  font-family: var(--font-ui);
-  font-size: var(--size-base);
-  color: var(--text-primary);
-  min-width: 0;
-}
-
-.composer__input:disabled { color: var(--text-muted); }
-
-.composer__send {
-  border: none;
-  background: var(--signal-500);
-  color: #fff;
-  padding: 0 18px;
-  cursor: pointer;
+.wait {
   display: flex;
   align-items: center;
-  transition: var(--transition-ui);
-}
-
-.composer__send:hover:not(:disabled) { background: var(--signal-600); }
-.composer__send:disabled { opacity: 0.4; cursor: not-allowed; }
-
-.composer:focus-within { box-shadow: var(--shadow-focus); }
-
-.composer__note {
-  max-width: 680px;
-  margin: 10px auto 0;
+  gap: 8px;
   font-family: var(--font-mono);
-  font-size: var(--size-2xs);
+  font-size: 11px;
   letter-spacing: var(--tracking-mono-label);
   text-transform: uppercase;
   color: var(--text-muted);
+  min-height: 16px;
+}
+.wait__dot { animation: pulse 900ms linear infinite; }
+.wait__dot:nth-of-type(2) { animation-delay: 150ms; }
+.wait__dot:nth-of-type(3) { animation-delay: 300ms; }
+
+.skeleton { display: grid; gap: 10px; margin-top: 20px; max-width: 62ch; }
+.skeleton span { height: 13px; background: var(--paper-100); border-radius: var(--radius-sm); display: block; }
+.skeleton span:nth-child(2) { width: 92%; }
+.skeleton span:nth-child(3) { width: 64%; }
+
+/* -------------------------------------------------------------- callouts */
+
+.callout {
+  border: var(--border-width-hairline) solid var(--border-default);
+  border-left: var(--border-width-rule) solid var(--status-danger);
+  border-radius: var(--radius-sm);
+  background: var(--paper-050);
+  padding: 18px 20px;
+  max-width: 640px;
+}
+.callout__title {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  font-size: 17px;
+  letter-spacing: -.02em;
+  line-height: 1.15;
+  margin: 0 0 8px;
+}
+.callout__body { font-family: var(--font-body); font-size: 17px; line-height: 1.55; color: var(--text-secondary); margin: 0; }
+.callout__actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+
+/* The daily-cap panel. Deliberately carries no count: the gate is a ceiling
+ * for the whole site per UTC day, so "20 of 20" would be wrong twice. */
+.limit {
+  border: var(--border-width-hairline) solid var(--border-default);
+  border-top: var(--border-width-rule) solid var(--signal-500);
+  border-radius: var(--radius-sm);
+  padding: 24px;
+  max-width: 640px;
+}
+.limit__title {
+  font-family: var(--font-display);
+  font-weight: var(--weight-black);
+  text-transform: uppercase;
+  font-size: clamp(21px, 3.9cqi, 30px);
+  letter-spacing: -.03em;
+  line-height: 1.05;
+  margin: 12px 0;
+}
+.limit__body { font-family: var(--font-body); font-size: 17px; line-height: 1.6; color: var(--text-secondary); margin: 0; max-width: 52ch; }
+
+/* -------------------------------------------------------------- ask bar --
+ * Sibling of the scroll region, so it never scrolls away. */
+
+.askbar {
+  border-top: var(--border-width-hairline) solid var(--border-hairline);
+  padding: 14px clamp(24px, 4vw, 64px) 20px;
+  background: var(--paper-000);
+  flex-shrink: 0;
 }
 
-.composer__note--warn { color: var(--status-warning); }
+.askbar__inner { max-width: 780px; }
 
-/* ---------------------------------------------------------------- narrow */
+.askform {
+  display: flex;
+  border: var(--border-width-strong) solid var(--ink-900);
+  border-radius: var(--radius-sm);
+  background: var(--paper-000);
+}
+.askform:focus-within { box-shadow: var(--shadow-focus); }
 
-@media (max-width: 860px) {
-  .ask { grid-template-columns: 1fr; height: auto; min-height: 100vh; }
-  .ask__rail {
+.askform__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 15px 16px;
+  font-family: var(--font-ui);
+  font-size: 16px;
+  color: var(--text-primary);
+}
+.askform__input::placeholder { color: var(--text-muted); }
+.askform__input:disabled { color: var(--text-muted); }
+
+.askform__send {
+  flex-shrink: 0;
+  border: none;
+  background: var(--signal-500);
+  color: #fff;
+  padding: 0 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--tracking-mono-label);
+  text-transform: uppercase;
+  transition: background 130ms cubic-bezier(.2, 0, 0, 1);
+}
+.askform__send:hover:not(:disabled) { background: var(--signal-600); }
+.askform__send:disabled { opacity: .45; cursor: not-allowed; }
+
+.askbar__hint {
+  margin: 9px 0 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.askbar__hint--warn { color: var(--status-warning); }
+
+.askbar__locked {
+  max-width: 780px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  border: var(--border-width-hairline) solid var(--border-default);
+  border-left: var(--border-width-rule) solid var(--signal-500);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  background: var(--paper-050);
+}
+.askbar__lockedtext { font-family: var(--font-ui); font-size: 14px; color: var(--text-secondary); }
+
+/* ------------------------------------------------- right column: showcase */
+
+.showcase {
+  border-left: var(--border-width-hairline) solid var(--border-hairline);
+  background: var(--paper-050);
+  padding: 22px 20px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.showcase__head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-shrink: 0; }
+.showcase__head .metalabel--ruled { flex: 1; }
+
+.showcase__count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.showcase__sub {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin: -8px 0 0;
+  flex-shrink: 0;
+}
+
+.showcase__cards { display: flex; flex-direction: column; gap: 16px; }
+.showcase__cards:empty { display: none; }
+
+/* The empty state. An invitation and a one-line "what is in here" - never
+ * statistics, per the handoff's explicit correction.
+ *
+ * Not pinned to the bottom with margin-top:auto. The handoff pins the rail's
+ * *footer note*, which sits below a column of cards; pinning the empty state
+ * instead leaves a tall gap that reads as a failed load rather than an empty
+ * rail. It sits under the sub-line, where a first card would go. */
+.showcase__idle {
+  border-top: var(--border-width-hairline) solid var(--border-hairline);
+  padding-top: 14px;
+  flex-shrink: 0;
+}
+.showcase__idle p {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.showcase__idle p + p { margin-top: 10px; }
+
+/* Card styling for the rail. Unexercised until the first work record exists -
+ * kept here so adding a record is a data change, not a layout change.
+ * FLEX-SHRINK IS LOAD-BEARING: without it the rail's flex column crushes
+ * cards to a few pixels. The handoff reports this as an observed bug. */
+.showcard {
+  text-align: left;
+  cursor: pointer;
+  background: var(--paper-000);
+  border: var(--border-width-hairline) solid var(--border-default);
+  border-top: var(--border-width-rule) solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 0;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: box-shadow 130ms cubic-bezier(.2, 0, 0, 1), transform 130ms cubic-bezier(.2, 0, 0, 1);
+}
+.showcard:hover { box-shadow: var(--shadow-lift); transform: translateY(-2px); }
+.showcard--live { border-color: var(--signal-500); }
+
+.showcard__media { display: block; position: relative; background: var(--paper-100); border-bottom: var(--border-width-hairline) solid var(--border-hairline); }
+.showcard__slot { display: block; position: relative; }
+.showcard__n {
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  font-family: var(--font-display);
+  font-weight: var(--weight-black);
+  font-size: 30px;
+  letter-spacing: -.03em;
+  line-height: .85;
+  color: var(--ink-700);
+  pointer-events: none;
+}
+.showcard__body { display: block; padding: 13px; }
+.showcard__meta { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.showcard__cat { font-family: var(--font-mono); font-size: 10px; letter-spacing: var(--tracking-mono-label); text-transform: uppercase; color: var(--text-signal); }
+.showcard__ref { font-family: var(--font-mono); font-size: 9px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); }
+.showcard__title {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  font-size: 15px;
+  letter-spacing: -.02em;
+  line-height: 1.15;
+  color: var(--text-primary);
+  margin-top: 8px;
+}
+.showcard__blurb { display: block; font-family: var(--font-body); font-size: 14px; line-height: 1.5; color: var(--text-secondary); margin-top: 6px; }
+.showcard__foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  border-top: var(--border-width-hairline) solid var(--border-hairline);
+  margin-top: 10px;
+  padding-top: 8px;
+}
+.showcard__result { font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-signal); }
+.showcard__open { font-family: var(--font-mono); font-size: 9px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted); }
+
+/* =========================================================================
+   Responsive
+   =========================================================================
+   Desktop is the designed target and the only state the handoff approves.
+   Below 900px it declares mobile undesigned and out of scope - but the site
+   is live and the frontend it replaces collapsed to one column at 860px, so
+   shipping a desktop-only shell would be a regression on real traffic.
+   What follows keeps the page usable below 900px without inventing the
+   mobile design: same content, same order, no new components, no drawer and
+   no accordion. Get mobile signed off before building those.            */
+
+/* 900-1080px: still three columns. The clamps narrow the rails and the cqi
+   type follows the centre column, exactly as the handoff describes. No rule
+   needed - it is recorded here so the absence reads as deliberate. */
+
+@media (max-width: 900px) {
+  /* Out of the viewport-height grid and into normal document flow, so the
+     three columns stack and the page scrolls as one. */
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .rail {
     border-right: none;
     border-bottom: var(--border-width-hairline) solid var(--border-hairline);
     flex-direction: row;
-    align-items: baseline;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 20px;
+    padding: 16px 20px;
+    overflow: visible;
   }
-  .ask__suggested { display: none; }
-  .ask__railfoot { margin-top: 0; }
-  .ask__scroll { padding: 24px 20px 0; }
-  .ask__composer { padding: 12px 20px 20px; }
-  .ask__intro { margin-top: 8px; }
+  .wordmark { flex: 1 1 auto; }
+  .btn--full { width: auto; }
+  .rail__foot { margin-top: 0; flex: 1 1 100%; }
+  .rail__note { border-top: none; padding-top: 0; }
+
+  /* Stacked, a long session list would push the provocation below the fold.
+     Bounding its height keeps it usable and keeps the hero visible. Capped
+     rather than collapsed on purpose: a drawer is the handoff's unapproved
+     mobile design, and a details element is a component nobody signed off. */
+  .rail__block { flex: 1 1 100%; }
+  .sessionlist, .raillist { max-height: 132px; overflow: auto; }
+
+  .centre { overflow: visible; }
+  .centre__scroll { overflow: visible; flex: none; }
+
+  /* Docked rather than pinned to the column: the ask bar stays reachable
+     while the page scrolls, which is the one behaviour the handoff's mobile
+     notes call non-negotiable. */
+  .askbar {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    box-shadow: 0 -8px 20px -18px rgba(20, 19, 16, .42);
+  }
+
+  .showcase {
+    border-left: none;
+    border-top: var(--border-width-hairline) solid var(--border-hairline);
+    overflow: visible;
+  }
+  .showcase__idle { margin-top: 0; }
+
+  /* 48px minimum hit targets, from the handoff's mobile rules. */
+  .btn, .askform__send, .suggested__item { min-height: 48px; }
+  .sessionlist__row, .raillist__row { min-height: 44px; display: flex; align-items: center; }
+}
+
+@media (max-width: 620px) {
+  .arrival { padding: 24px 20px 20px; }
+  .thread  { padding: 28px 20px 8px; }
+  .askbar  { padding: 12px 20px 16px; }
+  .standfirst { font-size: 18px; }
+  .turn__body { font-size: 18px; }
+  .turn__body p { max-width: none; }
+  /* One column of margin left, so the annotation stops being marginalia and
+     becomes a note. Dropping it entirely loses real brand voice. */
+  .arrival__foot { gap: 24px; margin-top: 32px; }
+  .askform { flex-wrap: wrap; }
+  .askform__input { flex: 1 1 100%; }
+  .askform__send { flex: 1 1 100%; justify-content: center; padding: 14px 20px; }
+}
+
+/* ------------------------------------------------------- reduced motion --
+ * Zeroes every animation, per the handoff. The wait label still advances,
+ * because it is text rather than animation - which is the point: progress
+ * stays legible without movement. */
+
+@media (prefers-reduced-motion: reduce) {
+  .rise, .wait__dot { animation: none; }
+  .showcard, .btn, .suggested__item, .askform__send { transition: none; }
+  .showcard:hover { transform: none; }
+  .btn:active { transform: none; }
 }

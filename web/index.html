@@ -1,89 +1,194 @@
 <!doctype html>
 <!--
-  Ask Christopher - production frontend, v1.
+  Ask Christopher - production frontend, v2.
 
-  Derived from the design system's ask_christopher UI kit, with three
-  deliberate departures from the prototype:
+  v2 rebuilds the page against design_handoff_ask_christopher/, which specifies
+  a persistent three-column shell wrapping five views. This batch builds the
+  shell plus two of those views - arrival and the conversation thread - and
+  stops there. "All the work", the opened-piece artifact view and "Start a
+  project" are deliberately absent, so nothing in this file links to them.
 
-  1. No React, no Babel, no CDN. The prototype loaded React 18 development
-     builds plus @babel/standalone from unpkg and transpiled JSX on every page
-     load. Correct for a generated prototype, wrong for production. This is one
-     HTML file, one stylesheet and one script - no build step either.
+  Six deliberate departures from the handoff, each because shipping the design
+  as drawn would state something untrue:
 
-  2. No source panel. Sources.jsx promised "every answer is traceable" with
-     inline citation markers. The corpus is injected whole rather than
-     retrieved, so there is nothing to cite per answer, and a panel showing
-     plausible sources the model did not use is the fabrication
-     knowledge/boundaries.md forbids. It becomes honest when retrieval lands.
+  1. No portfolio content. Every one of the prototype's 16 works, every metric
+     and every case-study body is placeholder written by the designer, and
+     knowledge/projects.md documents seven pieces with no imagery and no
+     figures carrying a method. The showcase rail therefore ships structurally
+     complete and factually empty. See the handoff README, "Content status".
 
-  3. No "Answers cite their sources" footer line, for the same reason. Saying
-     it while it is untrue is worse than the missing panel.
+  2. No AES voice-shift banner. The design calls it "a real behaviour", but
+     nothing in prompts/ instructs a first-person-to-we shift, so the banner
+     would assert a voice change that does not happen.
 
-  Kept verbatim from the design system: styles.css, tokens/, data-mode="ask",
-  and the layout proportions.
+  3. No stats row, records table, offer panel, facet chips or follow-ups.
+     POST /api/ask returns {reply: string}. Those blocks need structured
+     fields the backend does not produce, and populating them here would mean
+     inventing them. The backend contract is untouched by this batch.
+
+  4. No source or provenance claim. Carried forward from v1: the corpus is
+     injected whole rather than retrieved, so there is nothing to cite per
+     answer.
+
+  5. The usage-limit copy does not say "session limit - 20 of 20". The real
+     gate (src/ask_christopher/usage.py) is a ceiling for the whole site per
+     UTC day, not an allowance per visitor. Telling a visitor they used their
+     twenty would be false in both the number and the subject.
+
+  6. "Or just read" is replaced by "Or ask". The design's block links to
+     About Christopher, AES services and All the work - three destinations
+     this batch does not build. Rather than link to 404s or fake the views,
+     the slot holds the suggested questions.
+
+  Kept verbatim from the design system: styles.css, tokens/, data-mode="ask".
+  Kept from the handoff: the shell proportions, the provocation, the
+  Annotation, the cqi type scale, the motion durations, radius 2px.
+
+  Pure ASCII by choice. Typography uses HTML entities so the bytes survive a
+  cPanel File Manager upload unchanged and sha256 verification is meaningful.
 -->
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Ask Christopher</title>
-  <meta name="description" content="The AI-powered front door to ChristopherMathews.com. Ask about the work, the method, or the problem you are trying to solve.">
+  <title>Ask Christopher &mdash; Christopher Mathews</title>
+  <meta name="description" content="Don't read my website. Ask it. A conversational front door to Christopher Mathews' work, answering from his own writing.">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="app.css">
 </head>
-<!-- data-api is where the Passenger app is mounted in cPanel. The page is a
+<!-- data-api is where the Passenger app is mounted in cPanel. This page is a
      static file; the API is a separate mount. Change it here, not in app.js. -->
 <body data-mode="ask" data-api="/api">
-  <div class="ask">
-    <nav class="ask__rail">
-      <div>
-        <div class="wordmark">Ask<br>Christopher</div>
-        <div class="metalabel">Knowledge interface</div>
-      </div>
 
-      <div class="ask__suggested" id="suggested" hidden>
-        <div class="metalabel">Try</div>
-      </div>
+  <div class="shell">
 
-      <div class="ask__railfoot">
-        <div class="metalabel" id="status">Ready</div>
+    <!-- ============================================ left column: session -->
+    <nav class="rail" aria-label="Session and navigation">
+
+      <a class="wordmark" href="#" id="reset">
+        <span class="wordmark__name">Christopher<br>Mathews</span>
+        <span class="wordmark__sub">Ask Christopher &mdash; the site</span>
+      </a>
+
+      <button class="btn btn--outline btn--full" id="newq" type="button">
+        <svg class="btn__icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        New question
+      </button>
+
+      <section class="rail__block">
+        <p class="metalabel">This session</p>
+        <p class="rail__empty" id="session-empty">Nothing asked yet. Your questions become the navigation.</p>
+        <ol class="sessionlist" id="sessionlist"></ol>
+      </section>
+
+      <!-- Stands in for the handoff's "Or just read" block until the artifact
+           and index views exist. Same slot, same weight, no dead links. -->
+      <section class="rail__block" id="railsuggested" hidden>
+        <p class="metalabel">Or ask</p>
+        <ul class="raillist" id="raillist"></ul>
+      </section>
+
+      <div class="rail__foot">
+        <p class="rail__note">Bring the problem you arrived with. I&rsquo;ll tell you what I&rsquo;d build.</p>
       </div>
     </nav>
 
-    <main class="ask__main">
-      <div class="ask__scroll" id="scroll">
-        <section class="ask__intro" id="intro">
-          <div class="metalabel">Ask Christopher</div>
-          <h1 class="statement">What are you<br>trying to solve?</h1>
-          <p class="lede">
-            This is a digital representation of Christopher Mathews - an
-            instructional designer who builds systems that improve how work
-            actually gets done. Ask about the work, the method, or the problem
-            in front of you.
+    <!-- =========================================== centre column: primary -->
+    <main class="centre">
+
+      <div class="centre__scroll" id="scroll">
+
+        <!-- ------------------------------------------------- view: arrival -->
+        <section class="arrival rise" id="arrival">
+          <p class="metalabel metalabel--ruled">
+            <span class="metalabel__n">01</span>
+            <span class="metalabel__t">Knowledge interface</span>
           </p>
-          <div class="ask__prompts" id="prompts"></div>
+
+          <h1 class="provocation">
+            Don&rsquo;t read<br>my website.<br><span class="provocation__signal">Ask it.</span>
+          </h1>
+
+          <p class="standfirst">
+            There is no tour and no brochure. Ask about the work, the thinking,
+            or the problem you arrived with, and the answer comes back from
+            Christopher&rsquo;s own writing &mdash; including when the answer is
+            that there is no record of it.
+          </p>
+
+          <div class="suggested" id="suggested"></div>
+
+          <div class="arrival__foot">
+            <p class="arrival__facts">
+              Answers are generated live, from written material.<br>
+              It declines what it has no record of.
+            </p>
+            <aside class="annotation">
+              <span class="annotation__marker">&uarr; Note</span>
+              This is one of the systems I build. You are evaluating the work by
+              using it.
+            </aside>
+          </div>
         </section>
 
-        <div class="ask__thread" id="thread"></div>
+        <!-- -------------------------------------------------- view: thread -->
+        <div class="thread" id="thread"></div>
       </div>
 
-      <div class="ask__composer">
-        <form class="composer" id="form" autocomplete="off">
-          <label class="visually-hidden" for="q">Your question</label>
-          <input class="composer__input" id="q" name="q" type="text"
-                 placeholder="Ask a question&hellip;" maxlength="1000" required>
-          <button class="composer__send" id="send" type="submit" aria-label="Send question">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-              <path d="M12 19V5M5 12l7-7 7 7"/>
-            </svg>
-          </button>
-        </form>
-        <p class="composer__note" id="note">
-          Answers come from a written corpus. It declines what it has no record of.
-        </p>
+      <!-- Sibling of the scroll region, never inside it, so it never scrolls
+           away. Handoff, "Layout - the three-column shell". -->
+      <div class="askbar">
+        <div class="askbar__inner" id="askbar-live">
+          <form class="askform" id="form" autocomplete="off">
+            <label class="visually-hidden" for="q">Your question</label>
+            <input class="askform__input" id="q" name="q" type="text"
+                   placeholder="What are you trying to solve?"
+                   maxlength="1000" required>
+            <button class="askform__send" id="send" type="submit">
+              Ask <span aria-hidden="true">&rarr;</span>
+            </button>
+          </form>
+          <p class="askbar__hint" id="hint">
+            Grounded in Christopher&rsquo;s own writing. It will tell you when it
+            does not know.
+          </p>
+        </div>
+
+        <!-- Swapped in when the site's daily cap is reached. No numbers: the
+             cap is site-wide and per UTC day, not a per-visitor allowance. -->
+        <div class="askbar__locked" id="askbar-locked" hidden>
+          <span class="askbar__lockedtext">
+            Asking is paused for today. It opens again tomorrow.
+          </span>
+        </div>
       </div>
     </main>
+
+    <!-- ========================================= right column: showcase -->
+    <aside class="showcase" aria-label="Showcase">
+      <div class="showcase__head">
+        <p class="metalabel metalabel--ruled">
+          <span class="metalabel__t">Showcase</span>
+        </p>
+        <span class="showcase__count" id="showcase-count"></span>
+      </div>
+
+      <p class="showcase__sub" id="showcase-sub">Nothing in here yet.</p>
+
+      <!-- Cards render here once work records exist. Empty by design in this
+           batch - see departure 1 in the head comment. -->
+      <div class="showcase__cards" id="showcase-cards"></div>
+
+      <div class="showcase__idle" id="showcase-idle">
+        <p>Ask a question and the answer comes back in the conversation.</p>
+        <p>As the work gets written up, the pieces a question touches will
+           surface here.</p>
+      </div>
+    </aside>
+
   </div>
 
   <script src="app.js"></script>

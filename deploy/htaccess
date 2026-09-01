@@ -1,0 +1,69 @@
+# Canonical origin: https://christophermathews.com
+#
+# One site, one origin. Four origins used to answer - apex and www, each over
+# http and https - so this collapses them to one with a permanent redirect.
+#
+# ORDER IS LOAD-BEARING: this block must stay above the /api exclusion below.
+# That rule ends in [L], so if it ran first a plaintext request to /api would be
+# handed straight to Passenger and answered over cleartext, which is the whole
+# thing being fixed here. Sitting above it, http://.../api/health redirects to
+# https first and reaches Passenger only on the second, encrypted request.
+#
+# Both rules name the apex literally rather than rewriting the host, so each of
+# the three non-canonical origins arrives in a single hop rather than chaining
+# http://www -> https://www -> https://apex.
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+
+# 1. Not on TLS -> canonical https. Requiring BOTH signals to disagree is
+#    deliberate. A single-signal rule redirects an https request to itself
+#    forever if %{HTTPS} is ever unavailable on this host; demanding that the
+#    port disagree as well means a missing signal declines to redirect instead
+#    of looping. Failing open to no-redirect is recoverable; a loop is not.
+RewriteCond %{HTTPS} !=on
+RewriteCond %{SERVER_PORT} !=443
+RewriteRule ^ https://christophermathews.com%{REQUEST_URI} [R=301,L]
+
+# 2. Already on TLS but on www -> canonical apex.
+RewriteCond %{HTTP_HOST} ^www\. [NC]
+RewriteRule ^ https://christophermathews.com%{REQUEST_URI} [R=301,L]
+</IfModule>
+
+# Block the include-only files.
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+RewriteRule ^wp-admin/includes/ - [F,L]
+RewriteRule !^wp-includes/ - [S=3]
+RewriteRule ^wp-includes/[^/]+\.php$ - [F,L]
+RewriteRule ^wp-includes/js/tinymce/langs/.+\.php - [F,L]
+RewriteRule ^wp-includes/theme-compat/ - [F,L]
+</IfModule>
+<Files wp-config.php>
+<IfModule !mod_authz_core.c>
+order allow,deny
+deny from all
+</IfModule>
+<IfModule mod_authz_core.c>
+require all denied
+</IfModule>
+</Files>
+
+RewriteRule ^api($|/) - [L]
+
+# BEGIN WordPress
+# The directives (lines) between "BEGIN WordPress" and "END WordPress" are
+# dynamically generated, and should only be modified via WordPress filters.
+# Any changes to the directives between these markers will be overwritten.
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+
+# END WordPress
