@@ -25,6 +25,8 @@
 
 **Frontend v2 live 2026-09-01, verified at 14:46Z, from commit `45ac256`.** The root site now serves the three-column Ask Christopher shell — session rail, conversation, showcase rail — built from `design_handoff_ask_christopher/`. Three files changed and nothing else: **the backend, the API contract and the Phase 1 prefix fingerprint are all unchanged**, so every Phase 1 measurement still describes the live service. Verification was `GET`-only and **no live end-to-end `POST` was made**, which also means the production request path is still exercised only against a stubbed `fetch`. Two of the handoff's five views are built; the opened-piece view, All the Work, Start a project and all contextual showcase behaviour are **not** — see *Frontend v2* under Phase 2 for what is absent and why.
 
+**Frontend v3 live 2026-09-02, verified at 21:46Z, from commit `a7b7543`.** Driven by the first live production conversation. Adds a Markdown subset renderer for what the model actually emits, two substantiated showcase records with deterministic promotion, six structural fixes to submission, and the frontend's first automated coverage — 473 tests. Verified byte-for-byte against the commit, with the prefix fingerprint still `63f3b4c3`, the nine untouched CSS and token files confirmed unchanged, and the v3 logic confirmed present in the served JavaScript. **Still `GET`-only: no question has been submitted through v3 to the model, so Markdown rendering, showcase promotion and submission behaviour are verified locally and headlessly but never against a live answer.** See *Frontend v3* under Phase 2.
+
 ---
 
 ## Phase 1 — Grounded persona
@@ -258,6 +260,99 @@ found this way and only this way: every element the page toggles carries a class
 that sets `display`, which beats the `[hidden]` attribute on specificity, so the
 locked ask bar, the rail's question list and the showcase empty state all
 rendered at once. Reading the diff would not have surfaced it.
+
+#### Frontend v3 — answer formatting and a populated showcase, live 2026-09-02
+
+**Live from commit `a7b7543`, verified at 21:46Z.** The batch was driven by the
+first live production conversation, which surfaced three defects the local
+suite could not have found because none of them exist until a real model
+response and a real visitor arrive.
+
+**Verified byte-for-byte.** All three served files match the committed bytes at
+`a7b7543` by sha256 — 8,987 / 26,036 / 31,251 bytes — with an identical
+`Last-Modified` of `2026-09-02 02:13:14Z` on all three, so there was no
+mixed-version window. **The prefix fingerprint did not move**: `GET /api/health`
+still reports `63f3b4c3...`, matching the pin in `tests/test_prompt.py`, so
+every Phase 1 measurement still describes the live service. **The nine files not
+uploaded are unchanged** — `styles.css` and all eight `tokens/*.css` re-fetched
+and compared, all nine identical, which is what establishes the upload touched
+exactly three files. **The v3 logic is present in production**, not merely the
+right byte count: the served `app.js` contains `renderRich`, `safeUrl`,
+`clearFailed`, `requestId`, both work-record ids and both repository URLs, and
+contains none of `.innerHTML =`, `.outerHTML =` or `insertAdjacentHTML(` — the
+security invariant holds on the bytes the public is served.
+
+What shipped:
+
+- **A Markdown subset renderer.** The model emits lightweight Markdown and v2
+  displayed the characters. The subset is specified by `prompts/persona.md` →
+  *Formatting* rather than guessed: paragraphs, bold, italics, both list kinds,
+  safe links. Headings strip their markers and render as plain paragraphs, so a
+  visitor never sees raw syntax and no unapproved hierarchy is invented. **No
+  library**: `marked` plus `DOMPurify` is ~50KB and two vendored files in a repo
+  with no build step, and both exist to make an HTML *string* safe. Building
+  nodes with `createElement`/`createTextNode` means there is no string to make
+  safe, which is why the guarantee is structural rather than filtered. Links go
+  through a scheme allowlist; `mailto:` is refused deliberately, because
+  `services.md` keeps the address out of the corpus.
+- **Two showcase records**, both `Status: Active` / `Evidence: Public
+  repository` — the only two a visitor can independently verify, since
+  `projects.md` records that the other five repositories contain nothing but a
+  copy of the profile README. No metrics, screenshots, case studies or clients;
+  `ref` is the evidence label rather than a date, because inventing one from "a
+  90-day challenge" is inference. The cards carry **no media area** — two grey
+  drop targets would trade one unfinished signal for another — and link to the
+  repositories, since the opened-piece view does not exist. Promotion is
+  deterministic string matching over the question and the answer, so `/api/ask`
+  is untouched; it reorders and highlights existing records and can never create
+  one. Only a match in the *answer* earns `Mentioned in that answer.`, because a
+  match in the question alone would make that sentence false.
+- **Six structural fixes to submission.** One reproducible duplicate path
+  existed: a failed attempt was committed as a turn *and* its text restored to
+  the input, so pressing Enter again appended a second identical entry while the
+  `Ask again` button cleaned up after itself. The lock is now claimed before any
+  DOM work; a failure is not a turn; any new submission clears an outstanding
+  failure however it was triggered; there is exactly one commit point, so a
+  throw in the success handler can no longer push the same question twice; a
+  request token discards superseded replies; and `New question` works mid-flight
+  instead of being silently dead behind the busy guard. That last also fixed a
+  leaked one-second interval. **A duplicate was never reproduced from a single
+  successful submission** — the fixes close the observed path and make the
+  unobserved one structurally impossible, which is not the same as knowing what
+  happened.
+- **The frontend's first automated coverage.** `tests/test_web_frontend.py`, 25
+  static checks in the existing pytest suite — no JavaScript runner and no new
+  dependency, because `pyproject.toml` is minimal on purpose. It pins the
+  invariants whose violation is silent: no markup-from-string sink, the link
+  guard present *and used by* `anchor()`, no dangerous scheme in any string
+  literal, pure ASCII and LF so the deployment hashes mean something, the
+  frontend's history and character ceilings equal the server's constants rather
+  than a comment claiming they do, every `getElementById` resolving against
+  `index.html`, the `[hidden]` rule v2 shipped without, and no percentage in a
+  work record. **All twelve guards were mutation-tested against a deliberately
+  broken copy and all twelve failed as intended** — the same standard the eval
+  suite holds itself to, since a guard that has never failed is an unvalidated
+  detector. Suite total: **473 passed.**
+
+**The limitation, which is the part of this entry to read.** The deployment is
+verified; the behaviour it deploys is not verified in production. **No question
+has been submitted through v3 to the model.** The gate read `used: 0` both
+before and after verification — simultaneously the proof that nothing was spent
+and the proof that all three of the batch's headline changes are tested only
+locally, in a headless browser against a stubbed `fetch`:
+
+- **Markdown rendering** was exercised against a synthetic reply containing
+  every supported construct plus hostile input. It is not known which constructs
+  a real answer actually emits.
+- **Showcase promotion** was exercised against a synthetic reply written to
+  contain both record names. Whether a real answer names them is unobserved.
+- **Submission behaviour** was exercised by dispatching synthetic events across
+  six paths, not by a person typing into the live site.
+
+A real answer differs from the synthetic one in exactly the way that matters:
+its Markdown is whatever the model chose. **The first production question
+through v3 is an unrun test and should be treated as one**, not as a formality
+left over from a verified deployment.
 
 #### Not built, and deliberately absent rather than pending
 

@@ -78,12 +78,12 @@ Newest first. A batch is listed once verified, with the commit that recorded it.
 
 | Date | Batch | Files | State |
 |---|---|---|---|
-| 2026-09-01 | Frontend v3 — answer formatting, showcase, duplicate-submit fix | `web/index.html`, `web/app.css`, `web/app.js` | **Prepared, awaiting upload** |
+| 2026-09-02 | Frontend v3 — answer formatting, showcase, duplicate-submit fix | `web/index.html`, `web/app.css`, `web/app.js` | Live, verified `a7b7543` |
 | 2026-09-01 | Frontend v2 — three-column shell, arrival, thread | `web/index.html`, `web/app.css`, `web/app.js` | Live, verified `45ac256` |
 | 2026-08-30 | Canonical origin — force HTTPS, www to apex | `deploy/htaccess` | **Prepared, awaiting upload** |
 | 2026-08-29 | Phase 2 cutover | `web/` (12), `passenger_wsgi.py`, `src/ask_christopher/`, `.htaccess` | Live, verified `fec4bef` and re-verified `4f15d58` |
 
-### Batch 2026-09-01 (b) — frontend v3
+### Batch 2026-09-02 — frontend v3
 
 Evidence from the first live production conversation. Same three files, same
 paths, all replacements. Backend, prompts, corpus and environment untouched;
@@ -108,7 +108,61 @@ old `app.js` and look exactly like a failed upload.
 Verification is the same three free `GET`s as the v2 batch, plus re-fetching
 the nine untouched files to prove the upload hit exactly three.
 
-### Batch 2026-09-01 (a) — frontend v2
+#### Verified live, 2026-09-02 at 21:46Z
+
+Uploaded by Christopher; read back from the public endpoints. Every check a
+`GET`. **No `POST /api/ask` was made, so the deployment cost nothing** and
+consumed no gate slot.
+
+| Check | Result |
+|---|---|
+| `/index.html`, `/app.css`, `/app.js` | `200`, and **sha256 equal to the table above** — 8,987 / 26,036 / 31,251 bytes, byte-for-byte the committed bytes at `a7b7543` |
+| `Last-Modified` | `2026-09-02 02:13:14Z` on **all three, identical** — one upload operation, so there was no mixed-version window |
+| `GET /` | Same sha256 as `/index.html` |
+| `GET /api/health` | `prefix_sha256` still `63f3b4c3...`, matching the pin in `tests/test_prompt.py`; gate `used: 0, limit: 10` |
+| The nine files **not** uploaded | `styles.css` and all eight `tokens/*.css` re-fetched and sha256-compared against the repository: **all nine identical** |
+| Routing | `/api/bogus` → our `not_found`, `/api/ask` → our `method_not_allowed`, `/wp-login.php` still `404` |
+
+**The v3 logic is present in the served JavaScript, not merely the right byte
+count.** The fetched `app.js` was searched for `renderRich`, `safeUrl`,
+`clearFailed`, `requestId`, `FIX 1` through `FIX 6`, both work-record ids, both
+repository URLs, `Featured work.`, `Mentioned in that answer` and
+`View on GitHub` — all present. The markup-from-string sinks are **absent** from
+the same served file: no `.innerHTML =`, no `.outerHTML =`, no
+`insertAdjacentHTML(`. So the security invariant holds on the bytes the public
+is served, not only on the bytes in the repository. A rendered screenshot of the
+live URL confirms the showcase rail carries both cards, the count and
+`Featured work.`
+
+Two lines of the verification probe reported a miss and **both were faults in
+the probe rather than in the deployment**: one searched for an id that does not
+exist (`ask-systems`), and one searched for a blurb phrase that spans a string
+concatenation in the source and therefore only exists once assembled at
+runtime. Recorded because a reader comparing probe output to this table would
+otherwise see two unexplained misses.
+
+**Not established, and the limitation is the important part of this record.**
+The deployment is verified; the *behaviour* it deploys is not verified in
+production. **No question has been submitted through v3 to the model.** The gate
+read `used: 0` before and after, which is simultaneously the proof that nothing
+was spent and the proof that the following are tested only locally, in a
+headless browser against a stubbed `fetch`:
+
+- **Markdown rendering** — bold, italics, both list kinds, safe links, heading
+  markers stripped, and hostile input (`<script>`, `<b>`, `javascript:`,
+  `mailto:`) refused. Verified against a synthetic reply, not a real one.
+- **Showcase promotion** — matching, reordering, the signal highlight and the
+  `Mentioned in that answer.` sub-line. Verified against a synthetic reply whose
+  text was written to contain both record names.
+- **Submission behaviour** — the six duplicate-submit fixes, across six paths.
+  Verified by dispatching synthetic events, not by a person typing.
+
+A real answer differs from the synthetic one in the way that matters here: its
+Markdown is whatever the model chose to emit, and only a live question shows
+which constructs actually appear. The first production question through v3 is
+therefore still an unrun test, and should be treated as one.
+
+### Batch 2026-09-01 — frontend v2
 
 Three files, all replacements of files already at the document root. Nothing
 new, nothing renamed, nothing deleted.
