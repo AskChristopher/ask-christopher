@@ -374,9 +374,46 @@ html, body {
 .turn--pending .turn__ask { border-left-color: var(--signal-500); }
 .turn--pending .turn__q { color: var(--text-muted); }
 
+/* A failed attempt is shown but is not a turn: it takes no turn number, no
+ * session row, and the next question removes it. The muted rule says so
+ * visually - this block is not part of the conversation's record. */
+.turn--failed .turn__ask { border-left-color: var(--border-default); }
+.turn--failed .turn__q { color: var(--text-muted); }
+
 .turn__body { font-family: var(--font-body); font-size: 19px; line-height: 1.6; color: var(--text-primary); }
-.turn__body p { margin: 0 0 16px; max-width: 62ch; }
-.turn__body p:last-child { margin-bottom: 0; }
+.turn__body p { margin: 0 0 18px; max-width: 62ch; }
+.turn__body > :last-child { margin-bottom: 0; }
+
+/* Rendered Markdown subset. Nothing here changes the model's words - only the
+ * rhythm they are read at. Paragraph spacing went 16 -> 18px so a long answer
+ * has somewhere for the eye to rest; measure and size are unchanged. No drop
+ * caps, no rules between paragraphs, no emphasis on the opening line: those
+ * move where attention lands, which is close enough to editing the answer. */
+
+/* Newsreader is loaded 300-700 with a real italic axis, so both of these are
+ * genuine faces rather than synthesised by the browser. */
+.turn__body strong { font-weight: var(--weight-semibold); }
+.turn__body em { font-style: italic; }
+
+.turn__body ul,
+.turn__body ol {
+  margin: 0 0 18px;
+  padding-left: 1.15em;
+  max-width: 62ch;
+}
+.turn__body li { line-height: 1.55; }
+.turn__body li + li { margin-top: 8px; }
+.turn__body li::marker { color: var(--text-muted); }
+
+/* A list directly under its lead-in sentence reads as one thought, so the gap
+ * above it is tighter than the gap between paragraphs. */
+.turn__body p + ul,
+.turn__body p + ol { margin-top: -6px; }
+
+/* Links inherit the design system's signal colour and underline from base.css.
+ * Only the wrap behaviour is added, because a long URL as link text would
+ * otherwise push past the measure. */
+.turn__body a { overflow-wrap: anywhere; }
 
 /* ------------------------------------------------------------ loading state
  *
@@ -582,10 +619,19 @@ html, body {
 }
 .showcase__idle p + p { margin-top: 10px; }
 
-/* Card styling for the rail. Unexercised until the first work record exists -
- * kept here so adding a record is a data change, not a layout change.
- * FLEX-SHRINK IS LOAD-BEARING: without it the rail's flex column crushes
- * cards to a few pixels. The handoff reports this as an observed bug. */
+/* Card styling for the rail.
+ *
+ * The handoff's card leads with a media frame. Neither record has imagery, and
+ * two grey drop targets would trade one unfinished signal for another - so the
+ * media area is absent rather than empty, and the card is type only. The frame,
+ * its aspect ratio and the project numeral come back as a data change when
+ * screenshots exist; they are deliberately not carried here as dead rules.
+ *
+ * It is an <a> to a real repository, so the browser supplies middle-click,
+ * open-in-new-tab and a status-bar preview for free.
+ *
+ * FLEX-SHRINK IS LOAD-BEARING: without it the rail's flex column crushes cards
+ * to a few pixels. The handoff reports this as an observed bug. */
 .showcard {
   text-align: left;
   cursor: pointer;
@@ -598,25 +644,23 @@ html, body {
   width: 100%;
   overflow: hidden;
   flex-shrink: 0;
-  transition: box-shadow 130ms cubic-bezier(.2, 0, 0, 1), transform 130ms cubic-bezier(.2, 0, 0, 1);
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 130ms cubic-bezier(.2, 0, 0, 1), transform 130ms cubic-bezier(.2, 0, 0, 1),
+              border-color 130ms cubic-bezier(.2, 0, 0, 1);
 }
-.showcard:hover { box-shadow: var(--shadow-lift); transform: translateY(-2px); }
+.showcard:hover {
+  box-shadow: var(--shadow-lift);
+  transform: translateY(-2px);
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Promoted because the visitor's question or the answer named it. The signal
+ * rule is the same device the design uses for the current turn - it marks
+ * relevance, and claims nothing about the answer having cited it. */
 .showcard--live { border-color: var(--signal-500); }
 
-.showcard__media { display: block; position: relative; background: var(--paper-100); border-bottom: var(--border-width-hairline) solid var(--border-hairline); }
-.showcard__slot { display: block; position: relative; }
-.showcard__n {
-  position: absolute;
-  left: 10px;
-  bottom: 8px;
-  font-family: var(--font-display);
-  font-weight: var(--weight-black);
-  font-size: 30px;
-  letter-spacing: -.03em;
-  line-height: .85;
-  color: var(--ink-700);
-  pointer-events: none;
-}
 .showcard__body { display: block; padding: 13px; }
 .showcard__meta { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 .showcard__cat { font-family: var(--font-mono); font-size: 10px; letter-spacing: var(--tracking-mono-label); text-transform: uppercase; color: var(--text-signal); }

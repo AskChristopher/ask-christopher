@@ -11,11 +11,14 @@
   Six deliberate departures from the handoff, each because shipping the design
   as drawn would state something untrue:
 
-  1. No portfolio content. Every one of the prototype's 16 works, every metric
-     and every case-study body is placeholder written by the designer, and
-     knowledge/projects.md documents seven pieces with no imagery and no
-     figures carrying a method. The showcase rail therefore ships structurally
-     complete and factually empty. See the handoff README, "Content status".
+  1. Almost no portfolio content. Every one of the prototype's 16 works, every
+     metric and every case-study body is placeholder written by the designer.
+     As of v3 the showcase holds the two pieces knowledge/projects.md records
+     as Status: Active with Evidence: Public repository - the only two a
+     visitor can independently verify, since projects.md also records that the
+     other five repositories contain nothing but a copy of the profile README.
+     The records live in app.js; the cards carry no media, because there is no
+     imagery. See the handoff README, "Content status".
 
   2. No AES voice-shift banner. The design calls it "a real behaviour", but
      nothing in prompts/ instructs a first-person-to-we shift, so the banner
@@ -25,6 +28,11 @@
      POST /api/ask returns {reply: string}. Those blocks need structured
      fields the backend does not produce, and populating them here would mean
      inventing them. The backend contract is untouched by this batch.
+
+     The showcase is promoted by deterministic string matching in app.js
+     against the question and the answer - not by structured model output, and
+     not by inferring records from prose. It reorders and highlights existing
+     records; it never creates one.
 
   4. No source or provenance claim. Carried forward from v1: the corpus is
      injected whole rather than retrieved, so there is nothing to cite per

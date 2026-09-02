@@ -1,22 +1,32 @@
-/* Ask Christopher - frontend logic, v2. No framework, no build step.
+/* Ask Christopher - frontend logic, v3. No framework, no build step.
  *
- * v1 was a single-column thread. v2 drives the handoff's three-column shell:
- * arrival, conversation thread, a working session rail, and a showcase rail
- * that renders from a work-record registry. The registry is empty, because
- * every portfolio item in the design prototype is placeholder content and
- * knowledge/projects.md carries no imagery and no figures with a method.
- * Adding real work later is a change to WORKS, not to layout or to this file's
- * rendering path - which is the content-model requirement the handoff sets.
+ * v3 follows the first live production conversation. Three things came out of
+ * it, and this file is the whole of the response to all three:
  *
- * The backend contract is untouched: POST /api/ask takes {messages} and
- * returns {reply, usage}. Nothing here asks the model for structured fields,
- * so prompts/, knowledge/ and the validated Phase 1 prefix are unaffected and
- * the 40 recorded eval outcomes still describe the live service.
+ * 1. The model emits lightweight Markdown - bold at least - and v2 rendered the
+ *    characters literally. renderRich() below is a small tokenizer for exactly
+ *    the subset prompts/persona.md permits: paragraphs, bold, italics,
+ *    unordered and ordered lists, and safe links.
  *
- * The conversation lives here, in the browser. The server is stateless because
- * Passenger recycles workers without warning, so a server-side session would
- * vanish mid-conversation. History is sent with each request and trimmed to
- * the server's ceiling before sending.
+ * 2. An empty showcase rail made a working site look unfinished. WORKS now
+ *    holds two records, both substantiated by knowledge/projects.md, and the
+ *    rail promotes them by deterministic string matching against the question
+ *    and the answer. No API change, no structured model output.
+ *
+ * 3. A submission could produce two identical turns. Six changes, each marked
+ *    FIX n below, make one submission produce exactly one turn structurally
+ *    rather than by timing luck.
+ *
+ * The backend contract is untouched: POST /api/ask takes {messages} and returns
+ * {reply, usage}. prompts/, knowledge/ and the validated Phase 1 prefix are
+ * unaffected.
+ *
+ * SECURITY INVARIANT: this file never assigns innerHTML, outerHTML or
+ * insertAdjacentHTML, and never calls eval or document.write. Every node is
+ * built with createElement/createTextNode. That is what makes "never render
+ * arbitrary model HTML" structural rather than filtered - if the model emits
+ * <script>, it renders as visible text, because textContent is the only path
+ * text ever takes. tests/test_web_frontend.py enforces this.
  *
  * Pure ASCII source. Typographic characters use \u escapes.
  */
@@ -28,24 +38,26 @@
    * separate Passenger mount. Change it in index.html, not here. */
   var API = (document.body.getAttribute("data-api") || "/api").replace(/\/$/, "") + "/ask";
 
-  /* Mirrors MAX_HISTORY_MESSAGES and MAX_QUESTION_CHARS in web.py. Kept in
-   * sync by hand; the server is authoritative and refuses anything longer. */
+  /* Mirrors MAX_HISTORY_MESSAGES and MAX_QUESTION_CHARS in web.py. The server
+   * is authoritative and refuses anything longer; tests/test_web_frontend.py
+   * asserts these two numbers still equal the server's, so the "kept in sync by
+   * hand" note v2 carried is now an enforced invariant rather than a hope. */
   var MAX_HISTORY = 8;
   var MAX_CHARS = 1000;
 
-  /* Show the remaining-questions warning only when it is nearly out. The
-   * count is site-wide per UTC day, so the copy says so - it is not a
-   * per-visitor allowance and must not read like one. */
+  /* Show the remaining-questions warning only when it is nearly out. The count
+   * is site-wide per UTC day, so the copy says so - it is not a per-visitor
+   * allowance and must not read like one. */
   var WARN_AT = 3;
 
   var DASH = "\u2014";   /* em dash */
   var ARROW = "\u2192";  /* rightwards arrow */
   var DOT = "\u25cf";    /* black circle, the pulsing wait dot */
 
-  /* The handoff's suggested questions are real brand voice and ship as-is,
-   * but its kind labels quote placeholder counts ("3 case studies"). These
-   * labels name the kind of question instead, which needs no data to be true.
-   * Every one of these is answerable from the committed corpus. */
+  /* The handoff's suggested questions are real brand voice and ship as-is, but
+   * its kind labels quote placeholder counts ("3 case studies"). These labels
+   * name the kind of question instead, which needs no data to be true. Every
+   * one is answerable from the committed corpus. */
   var SUGGESTED = [
     { q: "What does Christopher build?", kind: "The work" },
     { q: "What AI systems has he actually built?", kind: "Projects" },
@@ -54,17 +66,54 @@
     { q: "What could he build for my organization?", kind: "Services" }
   ];
 
-  /* Work records. Empty, deliberately.
+  /* ------------------------------------------------------------- works ---
    *
-   * The shape is CONTENT-MODEL.md's Work type, reduced to the fields the
-   * showcase rail reads. Fill this in only from material that actually
-   * exists: a headline of "In build" is a valid value and is the right answer
-   * for unfinished work - borrowing a number is not. A figure without its
-   * method does not ship.
+   * Two records, and only two. Both are Status: Active with Evidence: Public
+   * repository in knowledge/projects.md, which also records that the other five
+   * repositories contain nothing but a copy of the profile README - so these
+   * are the only two pieces a visitor can independently verify today.
    *
-   * FEATURED lists the ids the rail holds before any question is asked. */
-  var WORKS = {};
-  var FEATURED = [];
+   * No metrics, no screenshots, no case studies, no clients. `ref` is the
+   * evidence label rather than a date, because projects.md gives "as of July
+   * 2026, Milestone 1" for one and an undated "90-day challenge" for the other,
+   * and a date on a card would be inference.
+   *
+   * `match` is deliberately narrow. Bare "sprint" is excluded because it would
+   * fire on "a sprint of work"; "this site" is excluded because it would fire on
+   * almost any answer and make the promotion meaningless.
+   *
+   * `n` is unused while the cards carry no media. It is kept because
+   * CONTENT-MODEL.md defines it and the numeral returns with the imagery. */
+  var WORKS = {
+    "ask-christopher": {
+      n: "01",
+      cat: "AI",
+      ref: "Public repo",
+      title: "Ask Christopher",
+      blurb: "The AI-powered front door to this site " + DASH + " a conversational " +
+             "portfolio grounded in Christopher's own work, experience, projects, " +
+             "and thinking.",
+      headline: "Live " + DASH + " you are using it",
+      href: "https://github.com/AskChristopher/ask-christopher",
+      match: ["ask christopher", "askchristopher"]
+    },
+    "ai-systems-builder-sprint": {
+      n: "02",
+      cat: "AI",
+      ref: "Public repo",
+      title: "AI Systems Builder Sprint",
+      blurb: "A public learning laboratory for applied AI " + DASH + " working " +
+             "implementations of RAG, agents, MCP, tool calling, embeddings, " +
+             "evaluation, guardrails, and more.",
+      headline: "In build",
+      href: "https://github.com/AskChristopher/ai-systems-builder-sprint",
+      match: ["ai systems builder", "builder sprint", "learning laboratory"]
+    }
+  };
+
+  /* What the rail holds before anything is asked. Never added to and never
+   * removed from - matching reorders and highlights, nothing more. */
+  var FEATURED = ["ask-christopher", "ai-systems-builder-sprint"];
 
   var els = {
     reset: document.getElementById("reset"),
@@ -94,12 +143,17 @@
   /* ------------------------------------------------------------- state --- */
 
   var state = {
-    turns: [],        // [{ q, node }] one per asked question, answered or not
-    history: [],      // [{role, content}] exactly what POST /ask expects
-    pending: null,    // question in flight
+    turns: [],            // [{q, node}] answered turns only - never failures
+    history: [],          // [{role, content}] exactly what POST /ask expects
+    pending: null,        // question in flight
     busy: false,
-    locked: false,    // the site's daily cap is reached
-    showcase: FEATURED.slice()
+    locked: false,        // the site's daily cap is reached
+    requestId: 0,         // FIX 5: monotonic; a stale reply is discarded
+    stopWait: null,       // teardown for the active wait ticker
+    failedNode: null,     // FIX 2/3: the one transient error node, if any
+    showcase: FEATURED.slice(),
+    highlighted: [],      // ids matched by the last answer
+    matchedInAnswer: false
   };
 
   /* --------------------------------------------------------------- dom --- */
@@ -117,6 +171,169 @@
 
   function pad(n) {
     return (n < 10 ? "0" : "") + n;
+  }
+
+  /* ==================================================== markdown subset ===
+   *
+   * The subset is not a guess. prompts/persona.md -> Formatting permits
+   * structure only for comparisons, checklists, step-by-step instructions,
+   * summaries and genuinely long explanations, and -> Conversational defaults
+   * requires plain prose with no headers or bullets on simple questions. So
+   * bold, italics and lists are expected output; headings are discouraged but
+   * possible on a long answer.
+   *
+   * Not in the subset, and rendered as literal text: code spans and fences,
+   * blockquotes, tables, images, and backslash escapes. Those are limits by
+   * decision, revisitable if the model actually produces them.
+   *
+   * Parsing is line-based rather than blank-line-based on purpose: the model
+   * routinely writes a lead-in sentence immediately above a list with no blank
+   * line between, and a blank-line-only split would fold the bullets into the
+   * paragraph. */
+
+  var RE_HEADING = /^\s*#{1,6}\s+(.*)$/;
+  var RE_BULLET = /^\s*[-*+]\s+(.*)$/;
+  /* One or two digits only. "2026. That year..." is prose, not a list item. */
+  var RE_ORDERED = /^\s*\d{1,2}[.)]\s+(.*)$/;
+
+  /* The URL part tolerates one level of balanced parentheses. Without it a
+   * link whose target contains them - a Wikipedia article, most obviously -
+   * ends at the first ")" and leaves the second one stranded as visible text. */
+  var RE_LINK = /\[([^\]\n]+)\]\(((?:[^()\s]|\([^()\s]*\))+)\)/;
+  var RE_STRONG = /\*\*([^*]+)\*\*|__([^_]+)__/;
+  var RE_EM = /\*([^*\n]+)\*|_([^_\n]+)_/;
+
+  function renderRich(text) {
+    var frag = document.createDocumentFragment();
+    var lines = String(text).replace(/\r\n/g, "\n").split("\n");
+    var para = [];
+    var items = [];
+    var listTag = null;
+
+    function flushPara() {
+      if (!para.length) return;
+      var p = document.createElement("p");
+      inline(para.join(" ").replace(/\s+/g, " ").trim(), p);
+      frag.appendChild(p);
+      para = [];
+    }
+
+    function flushList() {
+      if (!items.length) { listTag = null; return; }
+      var list = document.createElement(listTag);
+      items.forEach(function (t) {
+        var li = document.createElement("li");
+        inline(t, li);
+        list.appendChild(li);
+      });
+      frag.appendChild(list);
+      items = [];
+      listTag = null;
+    }
+
+    function flush() { flushPara(); flushList(); }
+
+    lines.forEach(function (raw) {
+      var line = raw.replace(/\s+$/, "");
+      if (!line.trim()) { flush(); return; }
+
+      var m = RE_HEADING.exec(line);
+      if (m) {
+        /* A heading becomes a plain paragraph. Never show raw syntax to a
+         * visitor, and never invent a hierarchy the design did not approve. */
+        flush();
+        para.push(m[1]);
+        flushPara();
+        return;
+      }
+
+      m = RE_BULLET.exec(line);
+      if (m) {
+        flushPara();
+        if (listTag && listTag !== "ul") flushList();
+        listTag = "ul";
+        items.push(m[1]);
+        return;
+      }
+
+      m = RE_ORDERED.exec(line);
+      if (m) {
+        flushPara();
+        if (listTag && listTag !== "ol") flushList();
+        listTag = "ol";
+        items.push(m[1]);
+        return;
+      }
+
+      flushList();
+      para.push(line);
+    });
+
+    flush();
+    return frag;
+  }
+
+  /* Inline pass. Finds the earliest of link / strong / em, emits the text
+   * before it as a text node, emits the element, and continues on the
+   * remainder. Link is tested first and strong before em, so on a tie at the
+   * same index the longer marker wins and "**bold**" is not read as italics. */
+  function inline(text, parent) {
+    var order = [["link", RE_LINK], ["strong", RE_STRONG], ["em", RE_EM]];
+
+    while (text.length) {
+      var best = null;
+      for (var i = 0; i < order.length; i++) {
+        var m = order[i][1].exec(text);
+        if (m && (best === null || m.index < best.m.index)) {
+          best = { kind: order[i][0], m: m };
+        }
+      }
+
+      if (best === null) {
+        parent.appendChild(document.createTextNode(text));
+        return;
+      }
+
+      if (best.m.index > 0) {
+        parent.appendChild(document.createTextNode(text.slice(0, best.m.index)));
+      }
+
+      if (best.kind === "link") {
+        parent.appendChild(anchor(best.m[1], best.m[2]));
+      } else {
+        var node = document.createElement(best.kind === "strong" ? "strong" : "em");
+        /* Recurse so bold inside italics, and vice versa, both work. */
+        inline(best.m[1] !== undefined ? best.m[1] : best.m[2], node);
+        parent.appendChild(node);
+      }
+
+      text = text.slice(best.m.index + best.m[0].length);
+    }
+  }
+
+  /* Only absolute http(s). Everything else - javascript:, data:, relative
+   * paths, protocol-relative - is refused rather than guessed at. mailto: is
+   * excluded deliberately: services.md keeps Christopher's address out of the
+   * corpus, and auto-linking mail would reopen that decision by accident. */
+  function safeUrl(raw) {
+    var s = String(raw).trim();
+    if (!/^https?:\/\//i.test(s)) return null;
+    if (/[\s<>"'`\\]/.test(s)) return null;
+    return s;
+  }
+
+  function anchor(label, href) {
+    var url = safeUrl(href);
+    if (!url) {
+      /* Refused. Show what the visitor was meant to read; emit no link. */
+      return document.createTextNode(label);
+    }
+    var a = document.createElement("a");
+    a.setAttribute("href", url);
+    a.setAttribute("target", "_blank");
+    a.setAttribute("rel", "noopener noreferrer");
+    a.appendChild(document.createTextNode(label));
+    return a;
   }
 
   /* ------------------------------------------------------------ arrival --- */
@@ -168,60 +385,93 @@
     });
   }
 
+  /* Resolve through state.turns rather than through thread child index. A
+   * transient failure node can sit in the thread without being a turn, so the
+   * two are no longer the same list. */
   function goToTurn(i) {
-    var node = els.thread.children[i];
-    if (node) node.scrollIntoView({ block: "start", behavior: "smooth" });
+    var entry = state.turns[i];
+    if (entry && entry.node) entry.node.scrollIntoView({ block: "start", behavior: "smooth" });
   }
 
   /* ---------------------------------------------------------- showcase ---
    *
-   * Renders from WORKS. With no records it renders zero cards and shows the
-   * idle state - the same code path that will render cards, running with an
-   * empty registry rather than being switched off. Never reports a count of
-   * zero: the handoff bans statistics in this rail, and "0 pieces" is the
-   * worst kind. */
+   * Reorders and highlights. It never adds a record, never removes one, and
+   * never claims the answer cited anything - the rail is a showcase, not a
+   * citation panel, and the backend supplies no per-answer provenance. */
+
+  function matchWorks(question, reply) {
+    var q = String(question || "").toLowerCase();
+    var a = String(reply || "").toLowerCase();
+    var inAnswer = [];
+    var inQuestion = [];
+
+    Object.keys(WORKS).forEach(function (id) {
+      var keys = WORKS[id].match;
+      if (keys.some(function (k) { return a.indexOf(k) >= 0; })) {
+        inAnswer.push(id);
+        return;
+      }
+      if (keys.some(function (k) { return q.indexOf(k) >= 0; })) {
+        inQuestion.push(id);
+      }
+    });
+
+    return { inAnswer: inAnswer, inQuestion: inQuestion };
+  }
+
+  function promoteShowcase(question, reply) {
+    var m = matchWorks(question, reply);
+    state.highlighted = m.inAnswer.concat(m.inQuestion);
+    /* Only the answer earns the stronger sub-line. If the match came from the
+     * question alone, "Mentioned in that answer" would be false. */
+    state.matchedInAnswer = m.inAnswer.length > 0;
+    renderShowcase();
+  }
 
   function renderShowcase() {
     clear(els.showcaseCards);
 
     var ids = state.showcase.filter(function (id) { return WORKS[id]; });
+    var hot = ids.filter(function (id) { return state.highlighted.indexOf(id) >= 0; });
+    var rest = ids.filter(function (id) { return state.highlighted.indexOf(id) < 0; });
+    var ordered = hot.concat(rest);
 
-    ids.forEach(function (id) {
-      els.showcaseCards.appendChild(showcard(WORKS[id]));
+    ordered.forEach(function (id) {
+      els.showcaseCards.appendChild(showcard(WORKS[id], hot.indexOf(id) >= 0));
     });
 
-    var n = ids.length;
+    var n = ordered.length;
     els.showcaseCount.textContent = n ? n + (n === 1 ? " piece" : " pieces") : "";
     els.showcaseIdle.hidden = n > 0;
     els.showcaseSub.textContent = n
-      ? "A few pieces to start with."
+      ? (state.matchedInAnswer ? "Mentioned in that answer." : "Featured work.")
       : "Nothing in here yet.";
   }
 
-  function showcard(w) {
-    var card = el("button", "showcard");
-    card.type = "button";
-    card.disabled = true;   // nothing to open until the artifact view exists
-    card.title = "Opening a piece arrives with the next batch";
-
-    var media = el("span", "showcard__media");
-    var slot = el("span", "showcard__slot");
-    slot.style.aspectRatio = w.ratio || "16 / 10";
-    slot.appendChild(el("span", "showcard__n", w.n || ""));
-    media.appendChild(slot);
-    card.appendChild(media);
+  /* An anchor rather than a button: the destination is a real repository, so
+   * the visitor gets middle-click, open-in-new-tab and a status-bar preview.
+   * No media area - there is no imagery for either piece, and two grey drop
+   * targets would trade one unfinished signal for another. The media frame and
+   * the project numeral return as a data change when screenshots exist. */
+  function showcard(w, isHot) {
+    var card = el("a", "showcard" + (isHot ? " showcard--live" : ""));
+    card.setAttribute("href", w.href);
+    card.setAttribute("target", "_blank");
+    card.setAttribute("rel", "noopener noreferrer");
 
     var body = el("span", "showcard__body");
+
     var meta = el("span", "showcard__meta");
-    meta.appendChild(el("span", "showcard__cat", w.cat || ""));
-    meta.appendChild(el("span", "showcard__ref", w.ref || ""));
+    meta.appendChild(el("span", "showcard__cat", w.cat));
+    meta.appendChild(el("span", "showcard__ref", w.ref));
     body.appendChild(meta);
-    body.appendChild(el("span", "showcard__title", w.title || ""));
-    body.appendChild(el("span", "showcard__blurb", w.blurb || ""));
+
+    body.appendChild(el("span", "showcard__title", w.title));
+    body.appendChild(el("span", "showcard__blurb", w.blurb));
 
     var foot = el("span", "showcard__foot");
-    foot.appendChild(el("span", "showcard__result", w.headline || ""));
-    foot.appendChild(el("span", "showcard__open", "Open " + ARROW));
+    foot.appendChild(el("span", "showcard__result", w.headline));
+    foot.appendChild(el("span", "showcard__open", "View on GitHub " + ARROW));
     body.appendChild(foot);
 
     card.appendChild(body);
@@ -238,8 +488,7 @@
 
     var ask = el("div", "turn__ask");
     ask.appendChild(el("span", "turn__num", pad(state.turns.length + 1) + " " + DASH + " ASKED"));
-    var h = el("h2", "turn__q", question);
-    ask.appendChild(h);
+    ask.appendChild(el("h2", "turn__q", question));
     turn.appendChild(ask);
 
     var slot = el("div", "turn__slot");
@@ -253,16 +502,16 @@
   /* --------------------------------------------------------- wait state ---
    *
    * The handoff tuned its loading state for a 950ms fake. Real answers take
-   * seconds and do not stream, so a static label plus three dots would read
-   * as a hang. The label advances through named stages and starts reporting
+   * seconds and do not stream, so a static label plus three dots would read as
+   * a hang. The label advances through named stages and starts reporting
    * elapsed seconds once the wait is long enough that the visitor needs
-   * evidence rather than reassurance. No progress bar: there is no progress
-   * to report, and a bar that is not measuring anything is a lie. */
+   * evidence rather than reassurance. No progress bar: there is no progress to
+   * report, and a bar that measures nothing is a lie. */
 
   var STAGES = [
-    { at: 0,  label: "Thinking" },
-    { at: 3,  label: "Working through it" },
-    { at: 8,  label: "Still writing", elapsed: true },
+    { at: 0, label: "Thinking" },
+    { at: 3, label: "Working through it" },
+    { at: 8, label: "Still writing", elapsed: true },
     { at: 16, label: "This one is taking a while", elapsed: true }
   ];
 
@@ -296,34 +545,27 @@
     return function stop() { clearInterval(timer); };
   }
 
+  /* Tear the ticker down through state, not through a closure a handler might
+   * skip. Without this a superseded request leaves a 1s interval running for
+   * the life of the page. */
+  function stopActiveWait() {
+    if (!state.stopWait) return;
+    state.stopWait();
+    state.stopWait = null;
+  }
+
   /* --------------------------------------------------------- settling ----- */
 
   function settleAnswer(ctx, reply) {
     ctx.turn.className = "turn rise";
     clear(ctx.slot);
-
     var body = el("div", "turn__body");
-    paragraphs(reply).forEach(function (p) {
-      body.appendChild(el("p", null, p));
-    });
+    body.appendChild(renderRich(reply));
     ctx.slot.appendChild(body);
   }
 
-  /* Blank-line separated blocks become paragraphs; a single newline inside a
-   * block is a soft wrap and is collapsed. The model writes prose, so this is
-   * the whole of the formatting contract - no Markdown parsing, because
-   * nothing instructs the model to emit Markdown and half-rendering it would
-   * be worse than not rendering it. */
-  function paragraphs(text) {
-    return String(text)
-      .replace(/\r\n/g, "\n")
-      .split(/\n\s*\n/)
-      .map(function (p) { return p.replace(/\s*\n\s*/g, " ").trim(); })
-      .filter(function (p) { return p.length > 0; });
-  }
-
   function settleError(ctx, title, message, retryQuestion) {
-    ctx.turn.className = "turn rise";
+    ctx.turn.className = "turn turn--failed rise";
     clear(ctx.slot);
 
     var callout = el("div", "callout");
@@ -334,12 +576,10 @@
       var actions = el("div", "callout__actions");
       var again = el("button", "btn btn--outline", "Ask again");
       again.type = "button";
-      again.addEventListener("click", function () {
-        ctx.turn.parentNode.removeChild(ctx.turn);
-        state.turns = state.turns.filter(function (t) { return t.node !== ctx.turn; });
-        renderSession();
-        submit(retryQuestion);
-      });
+      /* No cleanup here. submit() clears the outstanding failed node itself, so
+       * this path and a manual re-send behave identically - which is the whole
+       * point of FIX 3. */
+      again.addEventListener("click", function () { submit(retryQuestion); });
       actions.appendChild(again);
       callout.appendChild(actions);
     }
@@ -382,6 +622,16 @@
     state.locked = true;
     els.askLive.hidden = true;
     els.askLocked.hidden = false;
+  }
+
+  /* FIX 2/3: a failed attempt is transient. It renders so the visitor sees what
+   * happened, but it is not a turn, and the next question removes it. */
+  function clearFailed() {
+    if (!state.failedNode) return;
+    if (state.failedNode.parentNode) {
+      state.failedNode.parentNode.removeChild(state.failedNode);
+    }
+    state.failedNode = null;
   }
 
   function updatePlaceholder() {
@@ -447,13 +697,26 @@
     if (!question) return;
     if (question.length > MAX_CHARS) question = question.slice(0, MAX_CHARS);
 
+    /* FIX 1: claim the lock before any DOM work. v2 called setBusy after
+     * addTurn, which was safe only because nothing yielded in between - an
+     * invariant held by accident rather than by design. */
+    setBusy(true);
+
+    /* FIX 3: a new question supersedes any outstanding failure, however it was
+     * triggered - Ask again, Enter on the restored text, or a suggested
+     * question. This is the path that produced two identical turns. */
+    clearFailed();
+
+    /* FIX 5: one token per submission. Every handler below no-ops unless it is
+     * still the current one, so a superseded reply cannot settle into state. */
+    var id = ++state.requestId;
+
     els.input.value = "";
     state.pending = question;
 
     var ctx = addTurn(question);
-    var stopWait = startWait(ctx.slot);
+    state.stopWait = startWait(ctx.slot);
     renderSession();
-    setBusy(true);
 
     /* Trim oldest exchanges first, leaving room for the question being asked.
      * The server would refuse an over-long history; shaping it correctly here
@@ -473,33 +736,46 @@
         return { status: res.status, ok: false, payload: null };
       });
     }).then(function (r) {
-      stopWait();
+      if (id !== state.requestId) return null;
+      stopActiveWait();
 
       if (r.ok && r.payload && typeof r.payload.reply === "string") {
         settleAnswer(ctx, r.payload.reply);
-        /* Commit to history only on success, mirroring Session.send: a failed
-         * turn must not leave a question in the record that was never
-         * answered. */
-        state.history = sending.concat([{ role: "assistant", content: r.payload.reply }]);
-        state.turns.push({ q: question, node: ctx.turn });
-        showUsage(r.payload.usage);
-      } else if (r.status === 429) {
-        settleLimit(ctx);
-        state.turns.push({ q: question, node: ctx.turn });
-      } else {
-        var m = messageFor(r.status, r.payload);
-        settleError(ctx, m.title, m.body, m.retry ? question : null);
-        state.turns.push({ q: question, node: ctx.turn });
-        /* Preserve the question either way. On a retryable failure it backs
-         * the Ask again button; on a length failure it is what needs editing. */
-        els.input.value = question;
+        return { kind: "answer", reply: r.payload.reply, usage: r.payload.usage };
       }
+      if (r.status === 429) {
+        settleLimit(ctx);
+        return { kind: "limit" };
+      }
+      var m = messageFor(r.status, r.payload);
+      settleError(ctx, m.title, m.body, m.retry ? question : null);
+      return { kind: "error" };
     }).catch(function () {
-      stopWait();
+      if (id !== state.requestId) return null;
+      stopActiveWait();
       var m = messageFor(0, null);
       settleError(ctx, m.title, m.body, question);
-      state.turns.push({ q: question, node: ctx.turn });
-    }).then(function () {
+      return { kind: "error" };
+    }).then(function (outcome) {
+      if (id !== state.requestId) return;
+
+      /* FIX 4: exactly one commit point. v2 pushed to state.turns in three
+       * branches and again in .catch, so a throw inside the success handler
+       * committed the same question twice. One push, driven by outcome. */
+      if (outcome && outcome.kind === "answer") {
+        state.history = sending.concat([{ role: "assistant", content: outcome.reply }]);
+        state.turns.push({ q: question, node: ctx.turn });
+        promoteShowcase(question, outcome.reply);
+        showUsage(outcome.usage);
+      } else if (outcome && outcome.kind === "limit") {
+        state.turns.push({ q: question, node: ctx.turn });
+      } else if (outcome && outcome.kind === "error") {
+        /* FIX 2: not a turn. It takes no turn number and no session row, which
+         * mirrors Session.send refusing to record an unanswered question. */
+        state.failedNode = ctx.turn;
+        els.input.value = question;
+      }
+
       state.pending = null;
       renderSession();
       updatePlaceholder();
@@ -511,11 +787,20 @@
 
   function reset(e) {
     if (e) e.preventDefault();
-    if (state.busy) return;
+
+    /* FIX 6: works while a request is in flight. v2 early-returned on busy, so
+     * the button was silently dead during the multi-second wait - exactly when
+     * someone is most likely to press it. Bumping the token (FIX 5) is what
+     * makes this safe: the orphaned reply is discarded when it lands. */
+    state.requestId++;
+    stopActiveWait();
 
     state.turns = [];
     state.history = [];
     state.pending = null;
+    state.failedNode = null;
+    state.highlighted = [];
+    state.matchedInAnswer = false;
     state.showcase = FEATURED.slice();
 
     clear(els.thread);
@@ -525,10 +810,10 @@
     els.hint.className = "askbar__hint";
     els.hint.textContent = HINT_DEFAULT;
 
+    setBusy(false);
     renderSession();
     renderShowcase();
     updatePlaceholder();
-    if (!state.locked) els.input.focus();
     els.arrival.scrollIntoView({ block: "start" });
   }
 

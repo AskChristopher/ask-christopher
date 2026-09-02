@@ -78,11 +78,37 @@ Newest first. A batch is listed once verified, with the commit that recorded it.
 
 | Date | Batch | Files | State |
 |---|---|---|---|
+| 2026-09-01 | Frontend v3 — answer formatting, showcase, duplicate-submit fix | `web/index.html`, `web/app.css`, `web/app.js` | **Prepared, awaiting upload** |
 | 2026-09-01 | Frontend v2 — three-column shell, arrival, thread | `web/index.html`, `web/app.css`, `web/app.js` | Live, verified `45ac256` |
 | 2026-08-30 | Canonical origin — force HTTPS, www to apex | `deploy/htaccess` | **Prepared, awaiting upload** |
 | 2026-08-29 | Phase 2 cutover | `web/` (12), `passenger_wsgi.py`, `src/ask_christopher/`, `.htaccess` | Live, verified `fec4bef` and re-verified `4f15d58` |
 
-### Batch 2026-09-01 — frontend v2
+### Batch 2026-09-01 (b) — frontend v3
+
+Evidence from the first live production conversation. Same three files, same
+paths, all replacements. Backend, prompts, corpus and environment untouched;
+the prefix fingerprint must still read `63f3b4c3...` afterwards.
+
+| Upload this | To exactly this path | Bytes | sha256 |
+|---|---|---|---|
+| `web/index.html` | `/home/USER/public_html/index.html` | 8,987 | `1d4ee1c767957f51c7c9999ef1bf92c4326c73099358a14619d05b3b533f6bdf` |
+| `web/app.css` | `/home/USER/public_html/app.css` | 26,036 | `ae0a6f2cd209d03f8f6607dc332bf683be4af981343f7481fe11098a1aad83d2` |
+| `web/app.js` | `/home/USER/public_html/app.js` | 31,251 | `57c7dd24f4ce686e1082ddbf7e0849ed04d781e2d8ae905e979fc2b50dc300e6` |
+
+Again: **do not re-upload `styles.css` or `tokens/*.css`.** All nine were
+confirmed unchanged on the server during the v2 verification.
+
+Upload all three in one File Manager operation if possible — every partial
+state is broken, so the goal is to keep the window short rather than to
+sequence around it. One at a time, use `app.css` then `app.js` then
+`index.html`, so the moment the markup lands everything is consistent. Then
+hard-refresh: nothing here sets cache headers, so a normal reload can serve the
+old `app.js` and look exactly like a failed upload.
+
+Verification is the same three free `GET`s as the v2 batch, plus re-fetching
+the nine untouched files to prove the upload hit exactly three.
+
+### Batch 2026-09-01 (a) — frontend v2
 
 Three files, all replacements of files already at the document root. Nothing
 new, nothing renamed, nothing deleted.
