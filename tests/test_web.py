@@ -24,6 +24,7 @@ from ask_christopher.usage import UsageGate
 from ask_christopher.web import (
     MAX_HISTORY_MESSAGES,
     MAX_QUESTION_CHARS,
+    MAX_REPLY_CHARS,
     build_application,
 )
 
@@ -375,6 +376,244 @@ def test_an_over_long_question_is_refused(tmp_path: Path) -> None:
 
     assert status == 400
     assert payload["error"] == "question_too_long"
+
+
+# --------------------------------------------------------------------------
+# Message length is role-aware
+#
+# Regression cover for the turn-2 failure found in production on 2026-09-02.
+# ``MAX_QUESTION_CHARS`` was applied to every entry in the payload, so the
+# assistant's own previous answer was measured against the question limit. The
+# browser holds the conversation and replays it, so every second turn following
+# a reply over 1,000 characters was refused - reported as ``question_too_long``,
+# which told the visitor to trim a question that was never too long.
+#
+# The suite already covered both dimensions and never crossed them: the
+# multi-turn test used a 13-character assistant reply, and the over-long test
+# used ``role: "user"``. These tests cross them.
+# --------------------------------------------------------------------------
+
+
+def test_a_second_turn_survives_a_reply_over_the_question_limit(
+    tmp_path: Path,
+) -> None:
+    """The exact reported failure: a long first answer must not block turn 2.
+
+    Asserts the model receives all three messages, not merely that the request
+    is accepted - dropping the history to make validation pass would satisfy a
+    status check while silently ending the conversation.
+    """
+    long_reply = "x" * (MAX_QUESTION_CHARS + 1)
+    client = RecordingClient()
+    app = build_application(lambda: client, open_gate(tmp_path))
+
+    status, payload, _ = call(
+        app,
+        "POST",
+        "/ask",
+        {
+            "messages": [
+                {"role": "user", "content": "What does Christopher build?"},
+                {"role": "assistant", "content": long_reply},
+                {"role": "user", "content": "What could he build for my organization?"},
+            ]
+        },
+    )
+
+    assert status == 200, payload
+    sent = client.requests[0]["messages"]
+    assert [m["role"] for m in sent] == ["user", "assistant", "user"]
+    assert sent[1]["content"] == long_reply
+    assert sent[2]["content"] == "What could he build for my organization?"
+
+
+@pytest.mark.parametrize(
+    "length,expected_status,expected_error",
+    [
+        (MAX_QUESTION_CHARS, 200, None),
+        (MAX_QUESTION_CHARS + 1, 400, "question_too_long"),
+    ],
+)
+def test_the_user_limit_is_exact(
+    tmp_path: Path, length: int, expected_status: int, expected_error: str | None
+) -> None:
+    """The question bound is inclusive at 1000 and refuses at 1001."""
+    app = build_application(RecordingClient, open_gate(tmp_path))
+
+    status, payload, _ = call(
+        app, "POST", "/ask", {"messages": [{"role": "user", "content": "x" * length}]}
+    )
+
+    assert status == expected_status, payload
+    assert payload.get("error") == expected_error
+
+
+@pytest.mark.parametrize(
+    "length,expected_status,expected_error",
+    [
+        (MAX_REPLY_CHARS, 200, None),
+        (MAX_REPLY_CHARS + 1, 400, "history_entry_too_long"),
+    ],
+)
+def test_the_assistant_limit_is_exact_and_has_its_own_code(
+    tmp_path: Path, length: int, expected_status: int, expected_error: str | None
+) -> None:
+    """History has its own, larger ceiling and its own error code.
+
+    The code must not be ``question_too_long``. A visitor cannot fix their
+    history by editing the box, so sharing the code guarantees the wrong advice.
+    """
+    app = build_application(RecordingClient, open_gate(tmp_path))
+
+    status, payload, _ = call(
+        app,
+        "POST",
+        "/ask",
+        {
+            "messages": [
+                {"role": "user", "content": "First question."},
+                {"role": "assistant", "content": "x" * length},
+                {"role": "user", "content": "Second question."},
+            ]
+        },
+    )
+
+    assert status == expected_status, payload
+    assert payload.get("error") == expected_error
+
+
+def test_the_assistant_ceiling_is_larger_than_the_question_ceiling() -> None:
+    """Collapsing the two back into one limit reintroduces the defect."""
+    assert MAX_REPLY_CHARS > MAX_QUESTION_CHARS
+
+
+def test_the_assistant_ceiling_is_derived_from_the_model_ceiling() -> None:
+    """Raising ``max_tokens`` must raise the history ceiling with it.
+
+    A hard-coded number would drift the first time the model's output budget
+    changed, and the symptom would be this same bug at a different threshold.
+    """
+    from ask_christopher.client import DEFAULT_MAX_TOKENS
+
+    assert MAX_REPLY_CHARS >= DEFAULT_MAX_TOKENS, (
+        "a reply cannot exceed max_tokens, so the character ceiling must be at "
+        "least the token ceiling"
+    )
+    assert MAX_REPLY_CHARS % DEFAULT_MAX_TOKENS == 0, (
+        "MAX_REPLY_CHARS should be DEFAULT_MAX_TOKENS times a characters-per-"
+        "token factor, not an independent constant"
+    )
+
+
+# --------------------------------------------------------------------------
+# The committed transcripts are valid history
+# --------------------------------------------------------------------------
+
+TRANSCRIPTS = sorted(
+    (Path(__file__).resolve().parents[1] / "docs" / "experiments").rglob(
+        "transcript*.json"
+    )
+)
+
+
+def _recorded_replies() -> list[tuple[str, int, str]]:
+    """Every assistant reply this repository has actually recorded."""
+    found: list[tuple[str, int, str]] = []
+    for path in TRANSCRIPTS:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        for turn in data.get("turns", []):
+            reply = turn.get("response")
+            if isinstance(reply, str) and reply.strip():
+                found.append((path.name, turn.get("turn", -1), reply))
+    return found
+
+
+def test_the_transcripts_contain_a_reply_over_the_question_limit() -> None:
+    """The evidence that falsifies the old rule was already committed.
+
+    ``transcript.high-effort-2.json`` holds a 1,256-character reply, and
+    ``transcript.json`` peaks at 998 - two characters under the old threshold.
+    If this ever stops holding, the replay test below stops covering the bug and
+    should be given a synthetic fixture instead of quietly passing.
+    """
+    lengths = [len(reply) for _, _, reply in _recorded_replies()]
+    assert lengths, "no recorded replies found"
+    assert max(lengths) > MAX_QUESTION_CHARS, (
+        f"longest recorded reply is {max(lengths)} chars, no longer above "
+        f"MAX_QUESTION_CHARS ({MAX_QUESTION_CHARS})"
+    )
+
+
+@pytest.mark.parametrize(
+    "source,turn,reply",
+    _recorded_replies(),
+    ids=[f"{name}:turn{turn}" for name, turn, _ in _recorded_replies()],
+)
+def test_a_recorded_reply_is_accepted_as_history(
+    tmp_path: Path, source: str, turn: int, reply: str
+) -> None:
+    """Replay real answers as history. These are the bytes the model produced.
+
+    Synthetic ``"x" * n`` proves the arithmetic; this proves the limit is right
+    for the service's actual output, which is the claim that matters.
+    """
+    client = RecordingClient()
+    app = build_application(lambda: client, open_gate(tmp_path))
+
+    status, payload, _ = call(
+        app,
+        "POST",
+        "/ask",
+        {
+            "messages": [
+                {"role": "user", "content": "Earlier question."},
+                {"role": "assistant", "content": reply},
+                {"role": "user", "content": "Follow-up question."},
+            ]
+        },
+    )
+
+    assert status == 200, f"{source} turn {turn} ({len(reply)} chars) refused: {payload}"
+    assert client.requests[0]["messages"][1]["content"] == reply
+
+
+# --------------------------------------------------------------------------
+# The three limits stay coherent
+# --------------------------------------------------------------------------
+
+
+def test_a_maximum_conversation_fits_inside_the_body_cap() -> None:
+    """The three bounds must not contradict each other.
+
+    ``_read_json`` refuses a body over 64 KiB before validation runs, so if the
+    per-message ceilings allow a conversation the body cap rejects, a legitimate
+    visitor hits ``body_too_large`` - the same class of unfixable dead end this
+    patch exists to remove, one limit further out.
+
+    Worst legitimate case: ``MAX_HISTORY_MESSAGES - 1`` assistant entries at
+    their ceiling plus one question at its ceiling, which is more assistant
+    content than an alternating conversation can actually contain.
+
+    Heavily escaped content can still exceed the cap in bytes while fitting in
+    characters. That is correct and deliberate: ``body_too_large`` is checked
+    first and refuses it, and no real answer is dense with escapes.
+    """
+    body_cap = 64 * 1024
+
+    worst = {
+        "messages": [
+            {"role": "assistant", "content": "x" * MAX_REPLY_CHARS}
+            for _ in range(MAX_HISTORY_MESSAGES - 1)
+        ]
+        + [{"role": "user", "content": "x" * MAX_QUESTION_CHARS}]
+    }
+    encoded = len(json.dumps(worst).encode("utf-8"))
+
+    assert encoded < body_cap, (
+        f"a maximum conversation encodes to {encoded} bytes, over the "
+        f"{body_cap}-byte body cap. Lower MAX_REPLY_CHARS or raise the cap in "
+        "_read_json - they cannot both stay as they are."
+    )
 
 
 def test_an_over_long_history_is_refused(tmp_path: Path) -> None:

@@ -564,7 +564,7 @@
     ctx.slot.appendChild(body);
   }
 
-  function settleError(ctx, title, message, retryQuestion) {
+  function settleError(ctx, title, message, retryQuestion, offerReset) {
     ctx.turn.className = "turn turn--failed rise";
     clear(ctx.slot);
 
@@ -572,15 +572,28 @@
     callout.appendChild(el("p", "callout__title", title));
     callout.appendChild(el("p", "callout__body", message));
 
-    if (retryQuestion) {
+    if (retryQuestion || offerReset) {
       var actions = el("div", "callout__actions");
-      var again = el("button", "btn btn--outline", "Ask again");
-      again.type = "button";
-      /* No cleanup here. submit() clears the outstanding failed node itself, so
-       * this path and a manual re-send behave identically - which is the whole
-       * point of FIX 3. */
-      again.addEventListener("click", function () { submit(retryQuestion); });
-      actions.appendChild(again);
+
+      if (retryQuestion) {
+        var again = el("button", "btn btn--outline", "Ask again");
+        again.type = "button";
+        /* No cleanup here. submit() clears the outstanding failed node itself,
+         * so this path and a manual re-send behave identically - which is the
+         * whole point of FIX 3. */
+        again.addEventListener("click", function () { submit(retryQuestion); });
+        actions.appendChild(again);
+      }
+
+      /* Offered where retrying cannot work, so the recovery the visitor needs
+       * is one click away rather than a rail button they have to find. */
+      if (offerReset) {
+        var fresh = el("button", "btn btn--outline", "New question");
+        fresh.type = "button";
+        fresh.addEventListener("click", function () { reset(); });
+        actions.appendChild(fresh);
+      }
+
       callout.appendChild(actions);
     }
 
@@ -659,8 +672,23 @@
     if (code === "history_too_long") {
       return {
         title: "This conversation has reached its length limit.",
-        body: "Use New question to start a fresh one. Nothing you have read goes away.",
-        retry: false
+        body: "Start a fresh one and nothing you have already read goes away.",
+        retry: false,
+        reset: true
+      };
+    }
+    /* The conversation carries an entry too long to replay. Distinct from
+     * question_too_long on purpose: the visitor's question is fine, the history
+     * behind it is the problem, and trimming what they typed cannot help. Only
+     * a new conversation clears it, so that is the action offered. */
+    if (code === "history_entry_too_long") {
+      return {
+        title: "This conversation got too long to carry on.",
+        body: "Nothing is wrong with your question " + DASH + " an earlier answer in this " +
+              "conversation is too long to send back. Start a fresh one and ask it " +
+              "again; everything on the page stays where it is.",
+        retry: false,
+        reset: true
       };
     }
     if (status === 502) {
@@ -748,13 +776,13 @@
         return { kind: "limit" };
       }
       var m = messageFor(r.status, r.payload);
-      settleError(ctx, m.title, m.body, m.retry ? question : null);
+      settleError(ctx, m.title, m.body, m.retry ? question : null, !!m.reset);
       return { kind: "error" };
     }).catch(function () {
       if (id !== state.requestId) return null;
       stopActiveWait();
       var m = messageFor(0, null);
-      settleError(ctx, m.title, m.body, question);
+      settleError(ctx, m.title, m.body, question, false);
       return { kind: "error" };
     }).then(function (outcome) {
       if (id !== state.requestId) return;

@@ -39,19 +39,52 @@ import json
 from dataclasses import dataclass
 from typing import Any, Callable, Iterable
 
+from ask_christopher.client import DEFAULT_MAX_TOKENS
 from ask_christopher.prompt import AssembledPrompt, build_system_prompt
 from ask_christopher.usage import GateDecision, UsageGate
 
 __all__ = [
     "MAX_HISTORY_MESSAGES",
     "MAX_QUESTION_CHARS",
+    "MAX_REPLY_CHARS",
     "AppConfig",
     "build_application",
 ]
 
 #: A question longer than this is refused before anything is spent. Generous for
 #: a real question, tight enough that a paste-bomb cannot inflate input.
+#:
+#: **This bounds what a visitor types, and nothing else.** Applying it to every
+#: message in the payload is the defect fixed on 2026-09-02: the browser holds
+#: the conversation and replays it, so the assistant's own previous answer was
+#: being measured against the question limit. Every second turn following a
+#: reply over 1,000 characters failed with ``question_too_long`` - telling the
+#: visitor to trim a question that was never the problem, and which they could
+#: not have fixed by trimming.
 MAX_QUESTION_CHARS = 1000
+
+#: Characters per token, used only to turn a token ceiling into a character
+#: ceiling. English prose runs nearer four characters per token; over-estimating
+#: here widens a refusal threshold, while under-estimating rejects a legitimate
+#: conversation, so the generous direction is the safe one.
+_CHARS_PER_TOKEN = 4
+
+#: The ceiling for an ``assistant`` entry replayed as history.
+#:
+#: A separate bound from ``MAX_QUESTION_CHARS``, and the separation is the whole
+#: point. That constant bounds what a visitor may type; this one bounds what
+#: this service could physically have said. ``Session.max_tokens`` defaults to
+#: ``DEFAULT_MAX_TOKENS`` and that parameter caps thinking and response text
+#: together, so no reply can exceed it - anything longer did not come from here.
+#:
+#: Derived rather than chosen, so raising ``max_tokens`` raises this with it.
+#: ``test_web.py`` asserts the derivation still leaves a full conversation
+#: inside the 64 KiB body cap, which is the tripwire if that ever changes.
+#:
+#: Removing the bound instead of correcting it was the tempting fix and the
+#: wrong one: the client supplies the history, so an unbounded assistant field
+#: is an unbounded paste target that bills as uncached input.
+MAX_REPLY_CHARS = DEFAULT_MAX_TOKENS * _CHARS_PER_TOKEN
 
 #: Turns after the first re-send the whole history as uncached input, so this
 #: bounds the per-request cost as well as the conversation length. Eight
@@ -263,8 +296,15 @@ def _validate_messages(
             return [], "bad_role"
         if not isinstance(content, str) or not content.strip():
             return [], "empty_content"
-        if len(content) > MAX_QUESTION_CHARS:
-            return [], "question_too_long"
+        # Role-aware, with disjoint error codes on purpose. A visitor can act on
+        # question_too_long by editing the box. There is nothing they can do
+        # about an over-long entry in their own history except start a new
+        # conversation, so the two must not arrive under one message.
+        if role == "user":
+            if len(content) > MAX_QUESTION_CHARS:
+                return [], "question_too_long"
+        elif len(content) > MAX_REPLY_CHARS:
+            return [], "history_entry_too_long"
         messages.append({"role": role, "content": content})
 
     if messages[-1]["role"] != "user":
