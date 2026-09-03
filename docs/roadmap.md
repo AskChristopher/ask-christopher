@@ -25,6 +25,8 @@
 
 **Frontend v2 live 2026-09-01, verified at 14:46Z, from commit `45ac256`.** The root site now serves the three-column Ask Christopher shell — session rail, conversation, showcase rail — built from `design_handoff_ask_christopher/`. Three files changed and nothing else: **the backend, the API contract and the Phase 1 prefix fingerprint are all unchanged**, so every Phase 1 measurement still describes the live service. Verification was `GET`-only and **no live end-to-end `POST` was made**, which also means the production request path is still exercised only against a stubbed `fetch`. Two of the handoff's five views are built; the opened-piece view, All the Work, Start a project and all contextual showcase behaviour are **not** — see *Frontend v2* under Phase 2 for what is absent and why.
 
+**Multi-turn conversation was broken in production until 2026-09-03, and is now fixed and confirmed.** `_validate_messages` applied the 1,000-character *question* limit to every message in the payload, so the assistant's own previous answer was refused as an over-long question and every second turn after a long reply failed. Fixed role-aware in `e314f35`, live and verified 2026-09-03. **Claude ran the six-step server verification at zero cost; Christopher ran the real two-turn conversation in a browser** — see *The turn-2 failure* under Phase 2. It also produced two standing deployment rules: backend Python needs a Passenger restart, and a validation-failing `POST` is free and is the only way to tell old backend code from new from outside.
+
 **Frontend v3 live 2026-09-02, verified at 21:46Z, from commit `a7b7543`.** Driven by the first live production conversation. Adds a Markdown subset renderer for what the model actually emits, two substantiated showcase records with deterministic promotion, six structural fixes to submission, and the frontend's first automated coverage — 473 tests. Verified byte-for-byte against the commit, with the prefix fingerprint still `63f3b4c3`, the nine untouched CSS and token files confirmed unchanged, and the v3 logic confirmed present in the served JavaScript. **Still `GET`-only: no question has been submitted through v3 to the model, so Markdown rendering, showcase promotion and submission behaviour are verified locally and headlessly but never against a live answer.** See *Frontend v3* under Phase 2.
 
 ---
@@ -353,6 +355,91 @@ A real answer differs from the synthetic one in exactly the way that matters:
 its Markdown is whatever the model chose. **The first production question
 through v3 is an unrun test and should be treated as one**, not as a formality
 left over from a verified deployment.
+
+#### The turn-2 failure — found in production, fixed and confirmed 2026-09-03
+
+**Multi-turn conversation was broken in production from the 2026-08-29 cutover
+until 2026-09-03.** Found by Christopher, reproduced, traced to one line, fixed
+in [`e314f35`](../deploy/README.md), and confirmed end to end in a browser.
+
+**The defect.** `_validate_messages` applied `MAX_QUESTION_CHARS` to *every*
+entry in the payload. The browser holds the conversation and replays it, so the
+assistant's own previous answer was measured against the limit on a question —
+and refused under the question's error code, telling the visitor to trim
+something they had not typed and could not shorten. A 40-character question
+failed as turn 2 and succeeded as turn 1.
+
+**Why it survived to production.** The suite tested both dimensions and never
+crossed them: the multi-turn test used a 13-character assistant reply, and the
+over-long test used `role: "user"`. And the `converse` eval runner drives
+`Session` directly, never `web.py`, so the conversational path through the WSGI
+layer had never been exercised at all. The failure was also *intermittent by
+answer length* — a first answer under 1,000 characters lets turn 2 through — so
+the two single-turn production requests recorded before this never hit it.
+
+**The evidence was already committed.** `transcript.high-effort-2.json` holds a
+1,256-character reply, and `transcript.json` peaks at **998** — two characters
+under the old threshold. The transcripts are now replayed as history in the
+suite, so the limit is tested against bytes the model actually produced rather
+than against `"x" * n`. Restoring the old rule fails five tests, two of them on
+those recorded replies.
+
+**The fix.** Length validation is role-aware. `user` keeps `MAX_QUESTION_CHARS`
+at 1,000. `assistant` history gets `MAX_REPLY_CHARS`, **derived** as
+`DEFAULT_MAX_TOKENS x 4` rather than chosen, because `max_tokens` caps thinking
+and response text together and no reply can exceed it — so raising the model's
+output budget raises the ceiling with it instead of reintroducing the same bug
+at a new threshold. `history_entry_too_long` is a separate code from
+`question_too_long` because the two need opposite advice, and the frontend now
+says the question is fine, names the earlier answer as the cause, and offers
+`New question` — the only action that recovers.
+
+**Deleting the assistant bound was the tempting fix and the wrong one.** The
+client supplies the history, so an unbounded assistant field is an unbounded
+paste target billing as uncached input. A coherence test now asserts that a
+maximum conversation still encodes inside the 64 KiB body cap — 58,657 bytes,
+89.5% of it — so the three limits cannot drift into contradiction.
+
+Suite **496 passed**; prefix fingerprint unchanged at `63f3b4c3`. No change to
+`prompts/`, `knowledge/`, model settings or dependencies.
+
+**Who verified what, because the distinction matters here.**
+
+- **Claude ran the six-step server verification, at zero cost.** Correct bytes
+  on disk by sha256, the twelve untouched document-root files confirmed
+  unchanged, fingerprint held, routing intact — and critically, a `POST` with an
+  8,193-character assistant entry returning `history_entry_too_long`, a code
+  that does not exist in the previous `web.py`. That is the *running
+  interpreter* confirming the restart, which a file hash cannot do. The gate
+  counter was read either side and did not move, because `_ask` validates before
+  consulting the gate.
+- **Christopher ran the real two-turn conversation, in a browser.** Fresh
+  session, *"What does Christopher build?"*, waited for the full live response,
+  then clicked *"What could he build for my organization?"*. **The second turn
+  returned a normal model response and the false `question_too_long` failure did
+  not occur.** Corroborated afterwards by a free `GET /api/health`: the gate had
+  moved **0 to 2** in the same UTC day — exactly two model requests. **Claude
+  made no model request in this batch.**
+
+**Two things this batch taught that outlast it.**
+
+`e314f35` was the first change to a deployed backend file since the cutover, and
+**a Passenger restart is required for backend Python** — imported once per
+worker and cached, so a corrected `web.py` sits on disk while the old code keeps
+answering. The failure mode is the worst kind: upload succeeds, file is correct,
+every hash matches, bug still live. It is now a standing rule in
+`deploy/README.md`, written into the prepare/hand-off sequence and the path map,
+not just noted on one batch.
+
+And **a `POST` that cannot pass validation is free**, because validation precedes
+the gate. That is the only thing that distinguishes old backend code from new
+from outside the server, and it is now the documented way to verify a backend
+upload.
+
+**Filed, not fixed:** the client supplies the whole history, so a visitor can
+forge assistant turns and put words in the assistant's mouth as context.
+Pre-existing, not widened by this change, and a threat-model question rather
+than a length-validation one — **an ADR candidate.**
 
 #### Not built, and deliberately absent rather than pending
 

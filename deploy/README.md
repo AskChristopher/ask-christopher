@@ -103,7 +103,7 @@ Newest first. A batch is listed once verified, with the commit that recorded it.
 
 | Date | Batch | Files | State |
 |---|---|---|---|
-| 2026-09-02 | **Turn-2 fix** — role-aware message length | `src/ask_christopher/web.py`, `web/app.js` | **Prepared, awaiting upload. Needs a Passenger restart** |
+| 2026-09-03 | **Turn-2 fix** — role-aware message length | `src/ask_christopher/web.py`, `web/app.js` | Live, verified `e314f35`. First batch to need a Passenger restart |
 | 2026-09-02 | Frontend v3 — answer formatting, showcase, duplicate-submit fix | `web/index.html`, `web/app.css`, `web/app.js` | Live, verified `a7b7543` |
 | 2026-09-01 | Frontend v2 — three-column shell, arrival, thread | `web/index.html`, `web/app.css`, `web/app.js` | Live, verified `45ac256` |
 | 2026-08-30 | Canonical origin — force HTTPS, www to apex | `deploy/htaccess` | **Prepared, awaiting upload** |
@@ -171,6 +171,56 @@ conversation costs a gate slot and roughly $0.27 for the first question. The
 free check above proves the corrected validation is running; it does not prove a
 second turn now returns an answer, because proving that requires paying for one.
 That is a deliberate stopping point, not an oversight.
+
+#### Verified live, 2026-09-03 at 01:03Z
+
+Uploaded and the Python app restarted by Christopher. **The six-step server
+check below was run by Claude and cost nothing.** The real two-turn
+conversation, which is the only thing that can confirm the fix end to end, was
+run by Christopher in a browser — see the section after this one.
+
+| Step | Check | Result |
+|---|---|---|
+| 1 | `GET /api/health` — gate before | `200`, `used: 0, limit: 10` |
+| 2 | `POST /api/ask`, assistant entry 8,193 chars | **`400 {"error": "history_entry_too_long"}`** |
+| 3 | `GET /api/health` — gate after | `used: 0`, **unchanged**; step 2 was free |
+| 4 | `GET /app.js` | `200`, 32,482 B, **sha256 matches** `ba131636...f861a94c9d`. `Last-Modified: 2026-09-03 01:03:39Z` |
+| 5 | `prefix_sha256`, plus the twelve document-root files **not** in this batch | Pin `63f3b4c3...` unchanged; **all twelve unchanged** |
+| 6 | `GET /api/bogus`, `GET /api/ask` | `404 not_found`, `405 method_not_allowed` |
+
+**Step 2 is the load-bearing one, and it is not a hash comparison.**
+`history_entry_too_long` does not exist as a code in the previous `web.py`, so
+the running interpreter answering with it is the *restart* being confirmed
+rather than the bytes on disk. A file-hash check cannot make that claim, which
+is exactly why the restart rule above needed its own verification design.
+
+Step 3 is the proof that step 2 was free rather than an assurance that it was:
+an 8,342-byte body reached `/api/ask` and the counter did not move, because
+`_ask` validates before consulting the gate.
+
+Step 5 proves the upload touched **one** document-root file. `app.js` matching
+shows the right file arrived; the other twelve being byte-unchanged is what
+establishes nothing else did.
+
+#### End-to-end confirmation, by Christopher, in a browser
+
+**Run by Christopher, not by Claude.** Claude made no model request at any point
+in this batch.
+
+The original reproduction sequence, in a fresh session: asked *"What does
+Christopher build?"*, waited for the full live response, then clicked the
+suggested *"What could he build for my organization?"*. **The second turn
+returned a normal model response. The false `question_too_long` failure did not
+occur.**
+
+Corroborated from the server afterwards by a single free `GET /api/health`: the
+gate counter had moved **0 to 2** within the same UTC day, which is exactly two
+model requests and matches a two-turn conversation. That is independent evidence
+for the report without Claude having made either call.
+
+This is the check the hash-and-status verification structurally cannot perform,
+and the reason it was left to a person rather than automated: confirming the fix
+requires spending money, so it required a decision rather than a script.
 
 ### Batch 2026-09-02 — frontend v3
 
