@@ -1,0 +1,28 @@
+:root{
+  /* Families */
+  --font-display:"Archivo","Helvetica Neue",Arial,sans-serif;   /* provocations, headlines */
+  --font-body:"Newsreader",Georgia,"Times New Roman",serif;      /* essays, case studies */
+  --font-ui:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;   /* interfaces */
+  --font-mono:"IBM Plex Mono","SFMono-Regular",Menlo,monospace;  /* labels, metadata, code */
+
+  /* Weights */
+  --weight-regular:400; --weight-medium:500; --weight-semibold:600; --weight-bold:700; --weight-black:900;
+
+  /* Type scale — 1.25 minor third, tuned by hand at the display end */
+  --size-2xs:11px; --size-xs:12px; --size-sm:14px; --size-base:16px; --size-md:18px;
+  --size-lg:21px; --size-xl:26px; --size-2xl:33px; --size-3xl:44px; --size-4xl:58px;
+  --size-5xl:78px; --size-6xl:104px; --size-7xl:140px;
+
+  /* Line heights */
+  --leading-tight:0.92; --leading-snug:1.08; --leading-heading:1.16;
+  --leading-ui:1.45; --leading-body:1.6; --leading-loose:1.72;
+
+  /* Tracking */
+  --tracking-display:-0.03em; --tracking-heading:-0.015em; --tracking-normal:0em;
+  --tracking-label:0.14em; --tracking-mono-label:0.08em;
+
+  /* Composite roles */
+  --type-statement-size:var(--size-5xl);
+  --type-label-size:var(--size-2xs);
+  --measure-body:66ch; --measure-narrow:48ch;
+}

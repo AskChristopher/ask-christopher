@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/christopher-mathews-design-system-9733161a-0356-4ec3-a280-24dd5d349251/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/christopher-mathews-design-system-9733161a-0356-4ec3-a280-24dd5d349251/tokens/colors.css">
+<link rel="stylesheet" href="_ds/christopher-mathews-design-system-9733161a-0356-4ec3-a280-24dd5d349251/tokens/typography.css">
+<link rel="stylesheet" href="_ds/christopher-mathews-design-system-9733161a-0356-4ec3-a280-24dd5d349251/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/christopher-mathews-design-system-9733161a-0356-4ec3-a280-24dd5d349251/tokens/borders.css">
+<link rel="stylesheet" href="_ds/christopher-mathews-design-system-9733161a-0356-4ec3-a280-24dd5d349251/tokens/motion.css">
+<link rel="stylesheet" href="_ds/christopher-mathews-design-system-9733161a-0356-4ec3-a280-24dd5d349251/tokens/modes.css">
+<link rel="stylesheet" href="_ds/christopher-mathews-design-system-9733161a-0356-4ec3-a280-24dd5d349251/tokens/base.css">
+<link rel="stylesheet" href="_ds/christopher-mathews-design-system-9733161a-0356-4ec3-a280-24dd5d349251/styles.css">
+<script src="_ds/christopher-mathews-design-system-9733161a-0356-4ec3-a280-24dd5d349251/_ds_bundle.js"></script>
+<script src="./image-slot.js"></script>
+<style>
+  html, body { margin: 0; background: var(--paper-100); }
+  a { color: var(--text-signal); text-decoration: none; }
+  a:hover { text-decoration: underline; text-decoration-thickness: 2px; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes pulse { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+  .rise { animation: rise 190ms cubic-bezier(.16,1,.3,1) both; }
+  .dot { animation: pulse 900ms linear infinite; }
+  .dot:nth-child(2) { animation-delay: 150ms; }
+  .dot:nth-child(3) { animation-delay: 300ms; }
+  .col::-webkit-scrollbar { width: 8px; }
+  .col::-webkit-scrollbar-thumb { background: var(--border-default); }
+  @media (prefers-reduced-motion: reduce) { .rise, .dot { animation: none; } }
+</style>
+</helmet>
+
+<div data-mode="ask" style="background: var(--paper-000);">
+
+<sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+<div style="display: grid; grid-template-columns: clamp(180px,18vw,264px) minmax(0,1fr) clamp(236px,24vw,348px); height: 100vh; overflow: hidden; background: var(--paper-000);">
+
+  <nav class="col" style="border-right: 1px solid var(--border-hairline); background: var(--paper-050); padding: 22px 20px 18px; display: flex; flex-direction: column; gap: 24px; overflow: auto;">
+    <a href="#" onClick="{{ reset }}" style="text-decoration: none; color: inherit;">
+      <div style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: 18px; letter-spacing: -.02em; line-height: 1.02; color: var(--text-primary);">Christopher<br>Mathews</div>
+      <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); margin-top: 7px;">Ask Christopher — the site</div>
+    </a>
+
+    <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.Button" variant="outline" size="sm" icon="plus" full-width="{{ true }}" onClick="{{ reset }}" hint-size="100%,34px">New question</x-import>
+
+    <div style="display: flex; flex-direction: column; gap: 9px;">
+      <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.MetaLabel" hint-size="auto,16px">This session</x-import>
+      <sc-if value="{{ noHistory }}" hint-placeholder-val="{{ false }}">
+        <div style="font-family: var(--font-body); font-size: 14px; line-height: 1.5; color: var(--text-muted); border-left: 1px solid var(--border-hairline); padding-left: 10px;">Nothing asked yet. Your questions become the navigation.</div>
+      </sc-if>
+      <sc-for list="{{ history }}" as="h" hint-placeholder-count="0">
+        <a href="#" onClick="{{ h.onClick }}" style="font-family: {{ h.font }}; font-size: {{ h.size }}; letter-spacing: {{ h.tracking }}; text-transform: {{ h.casing }}; line-height: 1.35; color: {{ h.color }}; text-decoration: none; border-left: 2px solid {{ h.mark }}; padding: 0 0 0 {{ h.indent }}; display: block;" style-hover="color: var(--text-primary);">{{ h.label }}</a>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 9px;">
+      <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.MetaLabel" hint-size="auto,16px">Or just read</x-import>
+      <a href="#" onClick="{{ goAbout }}" style="font-family: var(--font-ui); font-size: 13px; color: var(--text-primary); text-decoration: none; border-bottom: 1px solid var(--border-default); padding-bottom: 7px; display: block;">About Christopher</a>
+      <a href="#" onClick="{{ goServices }}" style="font-family: var(--font-ui); font-size: 13px; color: var(--text-primary); text-decoration: none; border-bottom: 1px solid var(--border-default); padding-bottom: 7px; display: block;">AES services</a>
+      <a href="#" onClick="{{ goIndex }}" style="font-family: var(--font-ui); font-size: 13px; color: var(--text-primary); text-decoration: none; border-bottom: 1px solid var(--border-default); padding-bottom: 7px; display: flex; justify-content: space-between;">All the work<span style="font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);">{{ workCount }}</span></a>
+    </div>
+
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 12px;">
+      <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.Button" variant="primary" size="sm" icon-after="arrow-right" full-width="{{ true }}" onClick="{{ goStart }}" hint-size="100%,34px">Start a project</x-import>
+      <div style="font-family: var(--font-body); font-size: 14px; line-height: 1.5; color: var(--text-muted); border-top: 1px solid var(--border-hairline); padding-top: 12px;">Bring the problem you arrived with. I'll tell you what I'd build.</div>
+    </div>
+  </nav>
+
+  <main class="col" style="display: flex; flex-direction: column; overflow: hidden; background: var(--paper-000); container-type: inline-size; min-width: 0;">
+    <div class="col" style="flex: 1; overflow: auto;">
+
+      <sc-if value="{{ showArrival }}" hint-placeholder-val="{{ true }}">
+        <div class="rise" style="padding: clamp(28px,4vw,64px) clamp(24px,4vw,64px) 24px; max-width: 780px;">
+          <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.MetaLabel" number="01" rule="{{ true }}" hint-size="auto,18px">Knowledge interface</x-import>
+          <h1 style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(34px,9.8cqi,76px); line-height: .9; overflow-wrap: break-word; letter-spacing: -.035em; margin: 18px 0 0 -4px;">Don't read<br>my website.<br><span style="color: var(--signal-500);">Ask it.</span></h1>
+          <p style="font-family: var(--font-body); font-size: 20px; line-height: 1.6; color: var(--text-secondary); max-width: 54ch; margin: 26px 0 30px;">There is no tour and no brochure. Ask about the work, the thinking, a project, or the problem you arrived with. As the conversation moves, the relevant projects and case studies surface beside it — open any of them and keep talking.</p>
+          <div style="display: flex; flex-direction: column; gap: 8px; max-width: 620px;">
+            <sc-for list="{{ suggested }}" as="s" hint-placeholder-count="5">
+              <button onClick="{{ s.onClick }}" style="text-align: left; cursor: pointer; background: var(--paper-050); border: 1px solid var(--border-hairline); border-radius: 2px; padding: 13px 15px; font-family: var(--font-ui); font-size: 15px; color: var(--text-primary); display: flex; justify-content: space-between; align-items: center; gap: 16px; transition: background 130ms cubic-bezier(.2,0,0,1);" style-hover="background: var(--paper-100);">
+                <span>{{ s.q }}</span>
+                <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); white-space: nowrap;">{{ s.kind }} →</span>
+              </button>
+            </sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px,1fr)); gap: 40px; margin-top: 44px; padding-top: 28px; border-top: 1px solid var(--border-hairline); align-items: start;">
+            <p style="font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); line-height: 1.9; margin: 0;">Eighteen projects · nine written up<br>Twenty years · four production eras</p>
+            <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.Annotation" marker="↑ Note" hint-size="100%,auto">This is one of the systems I build. You are evaluating the work by using it.</x-import>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showThread }}" hint-placeholder-val="{{ false }}">
+        <div style="padding: 40px clamp(24px,4vw,64px) 8px; max-width: 780px;">
+          <sc-for list="{{ exchanges }}" as="x" hint-placeholder-count="1">
+            <div class="rise" style="margin-bottom: 44px;" id="{{ x.anchor }}">
+
+              <div style="display: flex; gap: 14px; align-items: baseline; border-left: 3px solid var(--ink-900); padding-left: 16px; margin-bottom: 22px;">
+                <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); padding-top: 5px;">{{ x.num }}</span>
+                <span style="font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: clamp(19px,3.5cqi,27px); letter-spacing: -.025em; line-height: 1.08; overflow-wrap: break-word;">{{ x.q }}</span>
+              </div>
+
+              <sc-if value="{{ x.isAes }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding: 9px 12px; background: var(--paper-050); border: 1px solid var(--border-hairline); border-left: 3px solid var(--signal-500); border-radius: 2px;">
+                  <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-signal);">Voice shift — I → we</span>
+                  <span style="font-family: var(--font-ui); font-size: 13px; color: var(--text-secondary);">This is a company question. Answering as Augmented Education Solutions.</span>
+                </div>
+              </sc-if>
+
+              <div style="font-family: var(--font-body); font-size: 19px; line-height: 1.6; color: var(--text-primary);">
+                <sc-for list="{{ x.paras }}" as="p" hint-placeholder-count="2">
+                  <p style="margin: 0 0 16px; max-width: 62ch;">
+                    <sc-for list="{{ p.segs }}" as="seg" hint-placeholder-count="1">
+                      <span>{{ seg.t }}</span>
+                    </sc-for>
+                  </p>
+                </sc-for>
+              </div>
+
+              <sc-if value="{{ x.hasFlow }}" hint-placeholder-val="{{ false }}">
+                <div style="margin: 26px 0 8px; padding: 22px; background: var(--paper-050); border: 1px solid var(--border-hairline); border-radius: 2px;">
+                  <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.MetaLabel" hint-size="auto,16px">The method</x-import>
+                  <div style="margin-top: 14px;">
+                    <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.StepFlow" steps="{{ methodSteps }}" active-index="{{ x.flowActive }}" hint-size="100%,120px"></x-import>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ x.hasStats }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; gap: 40px; margin: 24px 0 4px; padding: 20px 22px; border: 1px solid var(--border-hairline); border-top: 3px solid var(--ink-900); border-radius: 2px;">
+                  <sc-for list="{{ x.stats }}" as="st" hint-placeholder-count="3">
+                    <div>
+                      <div style="font-family: var(--font-display); font-weight: 900; font-size: 34px; letter-spacing: -.03em; line-height: 1;">{{ st.value }}<span style="color: var(--signal-500);">{{ st.unit }}</span></div>
+                      <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted); margin-top: 7px; line-height: 1.6;">{{ st.label }}<br>{{ st.method }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ x.hasOffer }}" hint-placeholder-val="{{ false }}">
+                <div style="margin: 26px 0 4px; border: 1px solid var(--border-default); border-left: 3px solid var(--signal-500); border-radius: 2px; padding: 20px 22px; background: var(--paper-050);">
+                  <p style="font-family: var(--font-body); font-size: 19px; line-height: 1.55; color: var(--text-primary); margin: 0 0 16px; max-width: 54ch;">{{ x.offerLine }}</p>
+                  <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button onClick="{{ x.onAccept }}" style="cursor: pointer; border: none; background: var(--signal-500); color: #fff; border-radius: 2px; padding: 12px 16px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; transition: background 130ms cubic-bezier(.2,0,0,1);" style-hover="background: var(--signal-600);">{{ x.offerAccept }} →</button>
+                    <button onClick="{{ x.onDecline }}" style="cursor: pointer; background: transparent; border: 1px solid var(--border-default); border-radius: 2px; padding: 12px 16px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-secondary); transition: background 130ms cubic-bezier(.2,0,0,1);" style-hover="background: var(--paper-100); color: var(--text-primary);">{{ x.offerDecline }}</button>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ x.hasReply }}" hint-placeholder-val="{{ false }}">
+                <div style="margin: 26px 0 4px; display: grid; grid-template-columns: 74px minmax(0,1fr); gap: 16px; align-items: start;">
+                  <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-signal); padding-top: 6px;">Showing →</span>
+                  <p style="font-family: var(--font-body); font-size: 19px; line-height: 1.6; color: var(--text-primary); margin: 0; max-width: 58ch;">{{ x.replyLine }}</p>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ x.hasFacets }}" hint-placeholder-val="{{ false }}">
+                <div style="margin: 18px 0 4px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                  <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted);">Cut it differently:</span>
+                  <sc-for list="{{ x.facets }}" as="fc" hint-placeholder-count="4">
+                    <button onClick="{{ fc.onClick }}" style="cursor: pointer; background: var(--paper-050); border: 1px solid var(--border-hairline); border-radius: 2px; padding: 7px 10px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-secondary); transition: background 130ms cubic-bezier(.2,0,0,1);" style-hover="background: var(--paper-100); color: var(--text-primary);">{{ fc.q }}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ x.hasMore }}" hint-placeholder-val="{{ false }}">
+                <div style="margin: 16px 0 0; padding: 11px 13px; background: var(--paper-050); border: 1px solid var(--border-hairline); border-left: 3px solid var(--ink-900); border-radius: 2px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary);">{{ x.moreLine }}</div>
+              </sc-if>
+
+              <sc-if value="{{ x.hasRecords }}" hint-placeholder-val="{{ false }}">
+                <div style="margin: 26px 0 4px; border: 1px solid var(--border-hairline); border-radius: 2px; overflow: hidden;">
+                  <div style="display: grid; grid-template-columns: minmax(80px,110px) minmax(0,1fr) minmax(0,150px); gap: 16px; padding: 10px 18px; background: var(--ink-900); color: var(--paper-000); font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase;">
+                    <span>Era</span><span>What I was doing</span><span>Medium</span>
+                  </div>
+                  <sc-for list="{{ x.records }}" as="rec" hint-placeholder-count="4">
+                    <div style="display: grid; grid-template-columns: minmax(80px,110px) minmax(0,1fr) minmax(0,150px); gap: 16px; padding: 13px 18px; border-top: 1px solid var(--border-hairline); align-items: baseline;">
+                      <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; color: var(--text-muted);">{{ rec.era }}</span>
+                      <span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45;">{{ rec.what }}</span>
+                      <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary);">{{ rec.medium }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ x.hasProvenance }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top: 22px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); line-height: 1.7; border-top: 1px solid var(--border-hairline); padding-top: 12px;">Ask Christopher answers from Christopher's own writing and project records. It paraphrases rather than quoting line by line — the portfolio panel shows what the conversation touched on, and every artifact reads in full.</div>
+              </sc-if>
+
+              <sc-if value="{{ x.hasFollowups }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top: 26px; padding-top: 16px; border-top: 1px solid var(--border-hairline);">
+                  <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.MetaLabel" hint-size="auto,16px">Narrow it down</x-import>
+                  <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 11px;">
+                    <sc-for list="{{ x.followups }}" as="f" hint-placeholder-count="3">
+                      <button onClick="{{ f.onClick }}" style="cursor: pointer; background: transparent; border: 1px solid var(--border-default); border-radius: 2px; padding: 7px 11px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em; color: var(--text-secondary); transition: background 130ms cubic-bezier(.2,0,0,1);" style-hover="background: var(--paper-100); color: var(--text-primary);">{{ f.q }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
+            </div>
+          </sc-for>
+
+          <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}">
+            <div class="rise" style="margin-bottom: 40px;">
+              <div style="display: flex; gap: 14px; align-items: baseline; border-left: 3px solid var(--signal-500); padding-left: 16px; margin-bottom: 20px;">
+                <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); padding-top: 5px;">{{ pendingNum }}</span>
+                <span style="font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: clamp(19px,3.5cqi,27px); letter-spacing: -.025em; line-height: 1.08; overflow-wrap: break-word; color: var(--text-muted);">{{ pendingQ }}</span>
+              </div>
+              <div style="font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+                Reading the artifacts
+                <span class="dot">●</span><span class="dot">●</span><span class="dot">●</span>
+              </div>
+              <div style="display: grid; gap: 10px; margin-top: 20px; max-width: 62ch;">
+                <div style="height: 13px; background: var(--paper-100); border-radius: 2px;"></div>
+                <div style="height: 13px; background: var(--paper-100); border-radius: 2px; width: 92%;"></div>
+                <div style="height: 13px; background: var(--paper-100); border-radius: 2px; width: 64%;"></div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}">
+            <div class="rise" style="margin-bottom: 40px; max-width: 640px;">
+              <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.Callout" tone="danger" title="The answer didn't come back." icon="alert-triangle" hint-size="100%,auto">
+                <span style="display: block;">The retrieval service failed — nothing was wrong with your question. It is still in the box below.</span>
+                <span style="display: flex; gap: 10px; margin-top: 14px;">
+                  <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.Button" variant="secondary" size="sm" icon="rotate-ccw" onClick="{{ retry }}" hint-size="auto,32px">Ask again</x-import>
+                  <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.Button" variant="ghost" size="sm" icon-after="arrow-right" onClick="{{ goIndex }}" hint-size="auto,32px">Browse the index instead</x-import>
+                </span>
+              </x-import>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isLimit }}" hint-placeholder-val="{{ false }}">
+            <div class="rise" style="margin-bottom: 40px; max-width: 640px;">
+              <div style="border: 1px solid var(--border-default); border-top: 3px solid var(--signal-500); border-radius: 2px; padding: 24px;">
+                <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.MetaLabel" tone="signal" hint-size="auto,16px">Session limit — 20 of 20</x-import>
+                <h3 style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(21px,3.9cqi,30px); letter-spacing: -.03em; line-height: 1.05; margin: 12px 0 12px;">You've used the demo's twenty questions.</h3>
+                <p style="font-family: var(--font-body); font-size: 17px; line-height: 1.6; color: var(--text-secondary); margin: 0 0 18px; max-width: 52ch;">Answering costs real compute, so the interface caps itself rather than degrading. Everything remains readable — the index and every case study stay open.</p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                  <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.Button" variant="primary" size="sm" icon-after="arrow-right" onClick="{{ goStart }}" hint-size="auto,32px">Start a project</x-import>
+                  <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.Button" variant="outline" size="sm" onClick="{{ goIndex }}" hint-size="auto,32px">Read the index</x-import>
+                  <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.Button" variant="ghost" size="sm" onClick="{{ clearLimit }}" hint-size="auto,32px">Resets tomorrow</x-import>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showArtifact }}" hint-placeholder-val="{{ false }}">
+        <div class="rise">
+          <div style="position: sticky; top: 0; z-index: 3; background: rgba(255,255,255,.88); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-hairline); padding: 14px clamp(24px,4vw,64px); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 24px;">
+            <div style="flex: 1 1 260px; min-width: 0;">
+              <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-signal);">{{ artifact.kind }} · {{ artifact.ref }}</div>
+              <div style="font-family: var(--font-ui); font-size: 13px; line-height: 1.4; color: var(--text-muted); margin-top: 3px; overflow-wrap: break-word;">Opened from: "{{ artifact.openedBy }}"</div>
+            </div>
+            <div style="display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap;">
+              <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.Button" variant="ghost" size="sm" icon="arrow-left" onClick="{{ backToThread }}" hint-size="auto,32px">Back to the conversation</x-import>
+              <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.Button" variant="secondary" size="sm" icon="message-square" onClick="{{ askAboutArtifact }}" hint-size="auto,32px">Ask about this</x-import>
+            </div>
+          </div>
+
+          <div style="padding: 44px clamp(24px,4vw,64px) 8px; max-width: 800px;">
+            <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.MetaLabel" number="{{ artifact.n }}" rule="{{ true }}" hint-size="auto,18px">{{ artifact.eyebrow }}</x-import>
+            <h1 style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(26px,6.8cqi,52px); letter-spacing: -.035em; line-height: .95; overflow-wrap: break-word; margin: 16px 0 0 -3px;">{{ artifact.title }}</h1>
+            <p style="font-family: var(--font-body); font-size: 21px; line-height: 1.55; color: var(--text-secondary); max-width: 56ch; margin: 20px 0 0;">{{ artifact.standfirst }}</p>
+
+            <div style="margin: 28px 0 0; border: 1px solid var(--border-hairline); border-radius: 2px; overflow: hidden; background: var(--paper-100);">
+              <sc-if value="{{ artifact.isSoftware }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; gap: 5px; align-items: center; padding: 9px 12px; border-bottom: 1px solid var(--border-hairline); background: var(--paper-050);">
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--border-default);"></span>
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--border-default);"></span>
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--border-default);"></span>
+                  <span style="font-family: var(--font-mono); font-size: 9px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted); margin-left: 8px;">{{ artifact.chrome }}</span>
+                </div>
+              </sc-if>
+              <div style="position: relative; aspect-ratio: {{ artifact.ratio }};">
+                <image-slot id="{{ artifact.heroSlot }}" shape="rect" placeholder="{{ artifact.heroPlaceholder }}"></image-slot>
+                <sc-if value="{{ artifact.isVideo }}" hint-placeholder-val="{{ false }}">
+                  <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none;">
+                    <span style="width: 62px; height: 62px; border-radius: 50%; background: rgba(20,19,16,.72); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px;">▶</span>
+                  </div>
+                </sc-if>
+              </div>
+              <sc-if value="{{ artifact.isMusic }}" hint-placeholder-val="{{ false }}">
+                <div style="border-top: 1px solid var(--border-hairline); background: var(--paper-000);">
+                  <sc-for list="{{ artifact.tracks }}" as="tr" hint-placeholder-count="4">
+                    <div style="display: grid; grid-template-columns: 38px minmax(0,1fr) 130px 46px; gap: 12px; align-items: center; padding: 11px 14px; border-bottom: 1px solid var(--border-hairline);">
+                      <button onClick="{{ tr.onPlay }}" style="cursor: pointer; width: 32px; height: 32px; border-radius: 50%; border: none; background: {{ tr.btnBg }}; color: {{ tr.btnColor }}; font-size: 10px; display: flex; align-items: center; justify-content: center;">{{ tr.icon }}</button>
+                      <div>
+                        <div style="font-family: var(--font-ui); font-size: 15px; color: var(--text-primary);">{{ tr.t }}</div>
+                        <div style="height: 3px; background: var(--border-hairline); margin-top: 7px;"><div style="height: 3px; width: {{ tr.progress }}; background: var(--signal-500);"></div></div>
+                      </div>
+                      <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">{{ tr.use }}</span>
+                      <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); text-align: right;">{{ tr.d }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="display: flex; gap: 32px; margin: 26px 0 0; padding: 18px 0; border-top: 1px solid var(--border-hairline); border-bottom: 1px solid var(--border-hairline); flex-wrap: wrap;">
+              <sc-for list="{{ artifact.meta }}" as="m" hint-placeholder-count="4">
+                <div>
+                  <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted);">{{ m.k }}</div>
+                  <div style="font-family: var(--font-ui); font-size: 14px; margin-top: 4px;">{{ m.v }}</div>
+                </div>
+              </sc-for>
+            </div>
+
+            <sc-for list="{{ artifact.sections }}" as="sec" hint-placeholder-count="7">
+              <div style="display: grid; grid-template-columns: minmax(110px,150px) minmax(0,1fr); gap: clamp(16px,2vw,28px); padding: 30px 0; border-bottom: 1px solid var(--border-hairline); align-items: start;">
+                <div style="position: sticky; top: 88px;">
+                  <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-signal);">{{ sec.n }}</div>
+                  <div style="font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: 14px; letter-spacing: -.01em; line-height: 1.15; margin-top: 6px;">{{ sec.h }}</div>
+                  <button onClick="{{ sec.onCite }}" style="margin-top: 10px; cursor: pointer; background: transparent; border: 1px solid var(--border-hairline); border-radius: 2px; padding: 4px 7px; font-family: var(--font-mono); font-size: 9px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted);" style-hover="color: var(--text-primary); border-color: var(--border-default);">Ask about this part</button>
+                </div>
+                <div style="font-family: var(--font-body); font-size: 18px; line-height: 1.62; color: var(--text-primary);">
+                  <sc-for list="{{ sec.paras }}" as="pp" hint-placeholder-count="1">
+                    <p style="margin: 0 0 14px; max-width: 60ch;">{{ pp }}</p>
+                  </sc-for>
+                  <sc-if value="{{ sec.frame }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin: 16px 0 4px; border: 1px solid var(--border-hairline); border-radius: 2px; overflow: hidden; background: var(--paper-100);">
+                      <div style="aspect-ratio: 16 / 9;">
+                        <image-slot id="{{ sec.slot }}" shape="rect" placeholder="{{ sec.frame }}"></image-slot>
+                      </div>
+                      <div style="padding: 9px 12px; border-top: 1px solid var(--border-hairline); background: var(--paper-000); font-family: var(--font-mono); font-size: 9px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">{{ sec.frame }}</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+
+            <sc-if value="{{ artifact.hasPlates }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 30px 0 8px;">
+                <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.MetaLabel" rule="{{ true }}" hint-size="auto,18px">{{ artifact.platesLabel }}</x-import>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(228px, 1fr)); gap: 16px; margin-top: 16px;">
+                  <sc-for list="{{ artifact.plates }}" as="pl" hint-placeholder-count="4">
+                    <div style="border: 1px solid var(--border-hairline); border-radius: 2px; overflow: hidden; background: var(--paper-100);">
+                      <div style="aspect-ratio: {{ pl.ratio }};">
+                        <image-slot id="{{ pl.slot }}" shape="rect" placeholder="{{ pl.cap }}"></image-slot>
+                      </div>
+                      <div style="padding: 10px 12px; border-top: 1px solid var(--border-hairline); background: var(--paper-000); font-family: var(--font-mono); font-size: 9px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); line-height: 1.6;">{{ pl.cap }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <div style="margin: 34px 0 0; border: 1px solid var(--border-default); border-left: 3px solid var(--signal-500); border-radius: 2px; padding: 22px; background: var(--paper-050);">
+              <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.MetaLabel" hint-size="auto,16px">Questions while you're here</x-import>
+              <p style="font-family: var(--font-body); font-size: 18px; line-height: 1.55; color: var(--text-primary); margin: 10px 0 16px; max-width: 52ch;">Anything you want to know about this — how it was built, what it cost, whether it would work for you — just ask. I'm still right here.</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <sc-for list="{{ artifact.prompts }}" as="pq" hint-placeholder-count="3">
+                  <button onClick="{{ pq.onClick }}" style="cursor: pointer; background: var(--paper-000); border: 1px solid var(--border-default); border-radius: 2px; padding: 9px 12px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-secondary); transition: background 130ms cubic-bezier(.2,0,0,1);" style-hover="background: var(--paper-100); color: var(--text-primary);">{{ pq.q }}</button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="padding: 30px 0 8px;">
+              <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.Button" variant="primary" icon-after="arrow-right" onClick="{{ goStart }}" hint-size="auto,40px">Start a project</x-import>
+                <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.Button" variant="outline" icon="arrow-left" onClick="{{ backToThread }}" hint-size="auto,40px">Back to the conversation</x-import>
+                <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.Button" variant="ghost" icon-after="arrow-right" onClick="{{ goIndex }}" hint-size="auto,40px">All the work</x-import>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showIndex }}" hint-placeholder-val="{{ false }}">
+        <div class="rise" style="padding: 48px clamp(24px,4vw,64px) 8px;">
+          <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.MetaLabel" number="02" rule="{{ true }}" hint-size="auto,18px">All the work</x-import>
+          <h1 style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(25px,6cqi,46px); letter-spacing: -.035em; line-height: .96; margin: 16px 0 12px; overflow-wrap: break-word;">Everything, if you'd<br>rather just look.</h1>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 28px 40px; align-items: start; margin: 0 0 28px;">
+            <p style="font-family: var(--font-body); font-size: 18px; line-height: 1.6; color: var(--text-secondary); max-width: 54ch; margin: 0;">AI systems, learning work, websites, identity design, art, music, film and experiments. Open anything. If it raises a question — and it should — ask me from there and we'll pick the conversation up together.</p>
+            <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.Annotation" marker="↑ Note" hint-size="100%,auto">The conversation doesn't close while you browse. It's still at the bottom of this column.</x-import>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 7px; align-items: center; padding-bottom: 14px;">
+            <sc-for list="{{ filters }}" as="fl" hint-placeholder-count="9">
+              <button onClick="{{ fl.onClick }}" style="cursor: pointer; background: {{ fl.bg }}; border: 1px solid {{ fl.border }}; border-radius: 2px; padding: 8px 11px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: {{ fl.color }}; display: flex; gap: 7px; align-items: center; transition: background 130ms cubic-bezier(.2,0,0,1);">{{ fl.label }}<span style="opacity: .55;">{{ fl.count }}</span></button>
+            </sc-for>
+          </div>
+
+          <p style="font-family: var(--font-body); font-size: 17px; line-height: 1.55; color: var(--text-primary); margin: 0 0 26px; padding-bottom: 20px; border-bottom: 1px solid var(--border-hairline); max-width: 60ch;">{{ catLine }}</p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(272px, 1fr)); gap: 22px;">
+            <sc-for list="{{ galleryItems }}" as="g" hint-placeholder-count="9">
+              <div style="grid-column: {{ g.span }}; border: 1px solid var(--border-hairline); border-top: 3px solid var(--ink-900); border-radius: 2px; background: var(--paper-000); overflow: hidden; display: flex; flex-direction: column;">
+                <sc-if value="{{ g.isFeature }}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 9px 14px; background: var(--ink-900); color: var(--paper-000);">
+                    <span style="font-family: var(--font-mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase;">{{ g.featureLabel }}</span>
+                    <span style="font-family: var(--font-mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; opacity: .55;">{{ g.cat }}</span>
+                  </div>
+                </sc-if>
+                <div style="position: relative; background: var(--paper-100); border-bottom: 1px solid var(--border-hairline);">
+                  <sc-if value="{{ g.isSoftware }}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; gap: 4px; align-items: center; padding: 8px 11px; border-bottom: 1px solid var(--border-hairline); background: var(--paper-050);">
+                      <span style="width: 7px; height: 7px; border-radius: 50%; background: var(--border-default);"></span>
+                      <span style="width: 7px; height: 7px; border-radius: 50%; background: var(--border-default);"></span>
+                      <span style="width: 7px; height: 7px; border-radius: 50%; background: var(--border-default);"></span>
+                      <span style="font-family: var(--font-mono); font-size: 9px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted); margin-left: 6px;">{{ g.chrome }}</span>
+                    </div>
+                  </sc-if>
+                  <div style="aspect-ratio: {{ g.ratio }};">
+                    <image-slot id="{{ g.slot }}" shape="rect" placeholder="{{ g.placeholder }}"></image-slot>
+                  </div>
+                  <sc-if value="{{ g.isMusic }}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; align-items: center; gap: 9px; padding: 10px 11px; border-top: 1px solid var(--border-hairline); background: var(--paper-050);">
+                      <span style="width: 30px; height: 30px; border-radius: 50%; background: var(--signal-500); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px;">▶</span>
+                      <span style="flex: 1; height: 3px; background: var(--border-default);"></span>
+                      <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; color: var(--text-muted);">4 tracks</span>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ g.isVideo }}" hint-placeholder-val="{{ false }}">
+                    <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none;">
+                      <span style="width: 48px; height: 48px; border-radius: 50%; background: rgba(20,19,16,.72); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px;">▶</span>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ g.isDesign }}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; height: 10px; border-top: 1px solid var(--border-hairline);">
+                      <span style="flex: 1; background: var(--ink-900);"></span>
+                      <span style="flex: 1; background: var(--signal-500);"></span>
+                      <span style="flex: 1; background: var(--paper-200);"></span>
+                      <span style="flex: 1; background: var(--ink-700);"></span>
+                    </div>
+                  </sc-if>
+                </div>
+                <div style="padding: 16px; display: flex; flex-direction: column; gap: 8px; flex: 1;">
+                  <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px;">
+                    <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-signal);">{{ g.cat }}</span>
+                    <span style="font-family: var(--font-mono); font-size: 9px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); text-align: right;">{{ g.ref }}</span>
+                  </div>
+                  <sc-if value="{{ g.opened }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-family: var(--font-mono); font-size: 9px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted);">● Opened this session</span>
+                  </sc-if>
+                  <h3 style="font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: 17px; letter-spacing: -.02em; line-height: 1.15; margin: 0;">{{ g.title }}</h3>
+                  <p style="font-family: var(--font-body); font-size: 15px; line-height: 1.5; color: var(--text-secondary); margin: 0;">{{ g.blurb }}</p>
+                  <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border-hairline);">
+                    <button onClick="{{ g.onOpen }}" style="cursor: pointer; flex: 1; background: transparent; border: 1px solid var(--ink-900); border-radius: 2px; padding: 10px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-primary); transition: background 130ms cubic-bezier(.2,0,0,1), color 130ms cubic-bezier(.2,0,0,1);" style-hover="background: var(--ink-900); color: var(--paper-000);">Open</button>
+                    <button onClick="{{ g.onAsk }}" style="cursor: pointer; flex: 1; background: transparent; border: 1px solid var(--border-default); border-radius: 2px; padding: 10px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-secondary); transition: background 130ms cubic-bezier(.2,0,0,1);" style-hover="background: var(--paper-100); color: var(--text-primary);">Ask about this</button>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ galleryEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="border: 1px solid var(--border-hairline); border-top: 3px solid var(--ink-900); border-radius: 2px; padding: 24px; max-width: 520px;">
+              <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.MetaLabel" hint-size="auto,16px">Nothing in that category yet</x-import>
+              <p style="font-family: var(--font-body); font-size: 17px; line-height: 1.6; color: var(--text-secondary); margin: 12px 0 16px;">Ask me instead — I'll tell you whether it exists and show you the nearest thing.</p>
+              <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.Button" variant="secondary" size="sm" icon-after="arrow-right" onClick="{{ clearFilter }}" hint-size="auto,32px">Show everything</x-import>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showStart }}" hint-placeholder-val="{{ false }}">
+        <div class="rise" style="padding: 48px clamp(24px,4vw,64px) 8px; max-width: 800px;">
+          <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.MetaLabel" number="03" rule="{{ true }}" hint-size="auto,18px">Start a project</x-import>
+          <h1 style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(26px,6.5cqi,50px); letter-spacing: -.035em; line-height: .95; overflow-wrap: break-word; margin: 16px 0 14px;">You've already<br>described the problem.</h1>
+          <p style="font-family: var(--font-body); font-size: 19px; line-height: 1.6; color: var(--text-secondary); max-width: 54ch; margin: 0 0 28px;">Asking <em>is</em> the intake. What you asked and what you opened comes with you — confirm it, add what only you know, and I'll reply with a first read on the problem, not a capability deck.</p>
+
+          <div style="border: 1px solid var(--border-hairline); border-left: 3px solid var(--signal-500); border-radius: 2px; padding: 20px 22px; background: var(--paper-050); margin-bottom: 28px;">
+            <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.MetaLabel" hint-size="auto,16px">Carried from your session</x-import>
+            <sc-if value="{{ hasCarry }}" hint-placeholder-val="{{ true }}">
+              <div style="margin-top: 12px; display: grid; gap: 10px;">
+                <sc-for list="{{ carryQuestions }}" as="cq" hint-placeholder-count="2">
+                  <div style="display: grid; grid-template-columns: 84px minmax(0,1fr); gap: 14px; align-items: baseline;">
+                    <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted);">{{ cq.kind }}</span>
+                    <span style="font-family: var(--font-ui); font-size: 15px;">{{ cq.text }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noCarry }}" hint-placeholder-val="{{ false }}">
+              <div style="font-family: var(--font-body); font-size: 16px; line-height: 1.55; color: var(--text-secondary); margin-top: 10px;">You came straight here without asking anything. That's allowed — write the problem below instead.</div>
+            </sc-if>
+          </div>
+
+          <div style="display: grid; gap: 18px; max-width: 620px;">
+            <div>
+              <label style="display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">What isn't happening that needs to happen?</label>
+              <textarea rows="4" placeholder="The problem, not the deliverable." style="width: 100%; border: 1px solid var(--border-default); border-radius: 2px; padding: 12px 13px; font-family: var(--font-ui); font-size: 15px; line-height: 1.5; background: var(--paper-000); outline: none; resize: vertical;" style-focus="box-shadow: var(--shadow-focus); border-color: var(--ink-900);"></textarea>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 14px;">
+              <div>
+                <label style="display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">Who is affected, and how many</label>
+                <input placeholder="e.g. 240 field technicians" style="width: 100%; border: 1px solid var(--border-default); border-radius: 2px; padding: 11px 13px; font-family: var(--font-ui); font-size: 15px; background: var(--paper-000); outline: none;" style-focus="box-shadow: var(--shadow-focus); border-color: var(--ink-900);">
+              </div>
+              <div>
+                <label style="display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">Constraint that matters most</label>
+                <input placeholder="Time, systems, approval, budget" style="width: 100%; border: 1px solid var(--border-default); border-radius: 2px; padding: 11px 13px; font-family: var(--font-ui); font-size: 15px; background: var(--paper-000); outline: none;" style-focus="box-shadow: var(--shadow-focus); border-color: var(--ink-900);">
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 14px;">
+              <div>
+                <label style="display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">Name</label>
+                <input style="width: 100%; border: 1px solid var(--border-default); border-radius: 2px; padding: 11px 13px; font-family: var(--font-ui); font-size: 15px; background: var(--paper-000); outline: none;" style-focus="box-shadow: var(--shadow-focus); border-color: var(--ink-900);">
+              </div>
+              <div>
+                <label style="display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">Email</label>
+                <input style="width: 100%; border: 1px solid var(--border-default); border-radius: 2px; padding: 11px 13px; font-family: var(--font-ui); font-size: 15px; background: var(--paper-000); outline: none;" style-focus="box-shadow: var(--shadow-focus); border-color: var(--ink-900);">
+              </div>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center; margin-top: 4px;">
+              <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.Button" variant="primary" icon-after="arrow-right" hint-size="auto,40px">Send the problem</x-import>
+              <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted);">Reply within two working days</span>
+            </div>
+          </div>
+
+          <div style="margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--border-hairline);">
+            <a href="#" onClick="{{ backToThread }}" style="font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase;">← Keep asking instead</a>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="border-top: 1px solid var(--border-hairline); padding: 14px clamp(24px,4vw,64px) 20px; background: var(--paper-000);">
+      <sc-if value="{{ askBarLive }}" hint-placeholder-val="{{ true }}">
+        <div style="max-width: 780px;">
+          <form onSubmit="{{ onSubmit }}" style="display: flex; border: 2px solid var(--ink-900); border-radius: 2px; background: var(--paper-000);">
+            <input value="{{ draft }}" onInput="{{ onDraft }}" placeholder="{{ askPlaceholder }}" style="flex: 1; min-width: 0; border: none; outline: none; background: transparent; padding: 15px 16px; font-family: var(--font-ui); font-size: 16px; color: var(--text-primary);">
+            <button type="submit" style="flex-shrink: 0; border: none; background: var(--signal-500); color: #fff; padding: 0 20px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase;">Ask →</button>
+          </form>
+          <div style="margin-top: 9px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">{{ askHint }}</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ askBarLocked }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width: 780px; display: flex; justify-content: space-between; align-items: center; gap: 20px; border: 1px solid var(--border-default); border-left: 3px solid var(--signal-500); border-radius: 2px; padding: 14px 16px; background: var(--paper-050);">
+          <span style="font-family: var(--font-ui); font-size: 14px; color: var(--text-secondary);">Asking is paused for this session. Reading stays open.</span>
+          <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.Button" variant="secondary" size="sm" icon-after="arrow-right" onClick="{{ goStart }}" hint-size="auto,32px">Start a project</x-import>
+        </div>
+      </sc-if>
+    </div>
+  </main>
+
+  <aside class="col" style="border-left: 1px solid var(--border-hairline); background: var(--paper-050); padding: 22px 20px; overflow: auto; display: flex; flex-direction: column; gap: 16px;">
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px;">
+        <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.MetaLabel" rule="{{ true }}" hint-size="auto,18px">Showcase</x-import>
+        <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted);">{{ showcaseCount }}</span>
+      </div>
+      <div style="font-family: var(--font-body); font-size: 14px; line-height: 1.5; color: var(--text-muted); margin-top: 8px;">{{ showcaseSub }}</div>
+    </div>
+
+    <sc-for list="{{ showcaseCards }}" as="w" hint-placeholder-count="2">
+      <button onClick="{{ w.onClick }}" style="text-align: left; cursor: pointer; background: var(--paper-000); border: 1px solid {{ w.border }}; border-top: 3px solid {{ w.border }}; border-radius: 2px; padding: 0; display: block; width: 100%; overflow: hidden; flex-shrink: 0; transition: box-shadow 130ms cubic-bezier(.2,0,0,1), transform 130ms cubic-bezier(.2,0,0,1);" style-hover="box-shadow: var(--shadow-lift); transform: translateY(-2px);">
+        <span style="display: block; position: relative; background: var(--paper-100); border-bottom: 1px solid var(--border-hairline);">
+          <sc-if value="{{ w.isSoftware }}" hint-placeholder-val="{{ false }}">
+            <span style="display: flex; gap: 4px; align-items: center; padding: 7px 10px; border-bottom: 1px solid var(--border-hairline); background: var(--paper-050);">
+              <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--border-default); display: block;"></span>
+              <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--border-default); display: block;"></span>
+              <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--border-default); display: block;"></span>
+              <span style="font-family: var(--font-mono); font-size: 8px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted); margin-left: 6px;">{{ w.chrome }}</span>
+            </span>
+          </sc-if>
+          <span style="display: block; position: relative; aspect-ratio: {{ w.ratio }};">
+            <image-slot id="{{ w.cardSlot }}" shape="rect" placeholder="{{ w.placeholder }}"></image-slot>
+            <span style="position: absolute; left: 10px; bottom: 8px; font-family: var(--font-display); font-weight: 900; font-size: 30px; letter-spacing: -.03em; line-height: .85; color: var(--ink-700); pointer-events: none;">{{ w.n }}</span>
+          </span>
+          <sc-if value="{{ w.isMusic }}" hint-placeholder-val="{{ false }}">
+            <span style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--border-hairline); background: var(--paper-050);">
+              <span style="width: 26px; height: 26px; border-radius: 50%; background: var(--signal-500); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 9px; flex-shrink: 0;">▶</span>
+              <span style="flex: 1; height: 3px; background: var(--border-default); display: block;"></span>
+              <span style="font-family: var(--font-mono); font-size: 9px; letter-spacing: .06em; color: var(--text-muted);">2:14</span>
+            </span>
+          </sc-if>
+          <sc-if value="{{ w.isDesign }}" hint-placeholder-val="{{ false }}">
+            <span style="display: flex; height: 8px; border-top: 1px solid var(--border-hairline);">
+              <span style="flex: 1; background: var(--ink-900); display: block;"></span>
+              <span style="flex: 1; background: var(--signal-500); display: block;"></span>
+              <span style="flex: 1; background: var(--paper-200); display: block;"></span>
+              <span style="flex: 1; background: var(--ink-700); display: block;"></span>
+            </span>
+          </sc-if>
+        </span>
+        <span style="display: block; padding: 13px;">
+          <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;">
+            <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-signal);">{{ w.cat }}</span>
+            <span style="font-family: var(--font-mono); font-size: 9px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">{{ w.ref }}</span>
+          </span>
+          <span style="display: block; font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: 15px; letter-spacing: -.02em; line-height: 1.15; color: var(--text-primary); margin-top: 8px;">{{ w.title }}</span>
+          <span style="display: block; font-family: var(--font-body); font-size: 14px; line-height: 1.5; color: var(--text-secondary); margin-top: 6px;">{{ w.blurb }}</span>
+          <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; border-top: 1px solid var(--border-hairline); margin-top: 10px; padding-top: 8px;">
+            <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-signal);">{{ w.headline }}</span>
+            <span style="font-family: var(--font-mono); font-size: 9px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted);">Open →</span>
+          </span>
+        </span>
+      </button>
+    </sc-for>
+
+    <div style="margin-top: auto; border-top: 1px solid var(--border-hairline); padding-top: 14px;">
+      <div style="font-family: var(--font-body); font-size: 14px; line-height: 1.55; color: var(--text-muted);">AI systems, case studies, instructional work, design, art, music and experiments. Ask for a kind of work and it lands here.</div>
+    </div>
+  </aside>
+</div>
+</sc-if>
+
+<sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+<div style="background: var(--paper-100); min-height: 100vh; padding: 40px 40px 80px;">
+  <div style="max-width: 1400px; margin: 0 auto;">
+    <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.MetaLabel" number="04" rule="{{ true }}" hint-size="auto,18px">Mobile behaviour — 390pt</x-import>
+    <h2 style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: 40px; letter-spacing: -.035em; line-height: .98; margin: 14px 0 10px;">One column. The ask bar owns the bottom.</h2>
+    <p style="font-family: var(--font-body); font-size: 18px; line-height: 1.6; color: var(--text-secondary); max-width: 62ch; margin: 0 0 34px;">Both rails collapse: session history becomes a drawer behind the wordmark, the portfolio panel becomes a counted accordion beneath each answer. The ask bar is fixed above the home indicator and never scrolls away — on mobile the interface is nothing but asking and reading.</p>
+    <div style="display: flex; gap: 28px; flex-wrap: wrap; align-items: start;">
+      <sc-for list="{{ mobileFrames }}" as="f" hint-placeholder-count="4">
+        <div style="width: 390px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px;">
+            <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-signal);">{{ f.n }} — {{ f.name }}</span>
+          </div>
+          <div style="width: 390px; height: 720px; background: var(--paper-000); border: 1px solid var(--ink-900); border-radius: 3px; overflow: hidden; position: relative; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px 8px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; color: var(--text-muted); flex-shrink: 0;"><span>9:41</span><span>christophermathews.com</span></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--border-hairline); flex-shrink: 0;">
+              <span style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: 13px; letter-spacing: -.02em; line-height: 1;">Christopher<br>Mathews</span>
+              <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-secondary); border: 1px solid var(--border-default); border-radius: 2px; padding: 5px 8px;">{{ f.navLabel }}</span>
+            </div>
+            <div style="flex: 1; overflow: hidden; padding: 16px; position: relative;">
+              <sc-if value="{{ f.isArrival }}" hint-placeholder-val="{{ false }}">
+                <div>
+                  <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted);">01 — Knowledge interface</div>
+                  <div style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: 40px; line-height: .9; letter-spacing: -.035em; margin: 10px 0 0 -2px;">Don't read<br>my website.<br><span style="color: var(--signal-500);">Ask it.</span></div>
+                  <div style="font-family: var(--font-body); font-size: 15px; line-height: 1.55; color: var(--text-secondary); margin: 14px 0 16px;">Ask about the work, the thinking, or the problem you arrived with. Relevant projects surface as you go.</div>
+                  <div style="display: grid; gap: 8px;">
+                    <div style="background: var(--paper-050); border: 1px solid var(--border-hairline); border-radius: 2px; padding: 14px; font-family: var(--font-ui); font-size: 14px; display: flex; justify-content: space-between; align-items: center; min-height: 48px; box-sizing: border-box;">What does Christopher build?<span style="color: var(--text-muted);">→</span></div>
+                    <div style="background: var(--paper-050); border: 1px solid var(--border-hairline); border-radius: 2px; padding: 14px; font-family: var(--font-ui); font-size: 14px; display: flex; justify-content: space-between; align-items: center; min-height: 48px; box-sizing: border-box;">Show me the AI projects.<span style="color: var(--text-muted);">→</span></div>
+                    <div style="background: var(--paper-050); border: 1px solid var(--border-hairline); border-radius: 2px; padding: 14px; font-family: var(--font-ui); font-size: 14px; display: flex; justify-content: space-between; align-items: center; min-height: 48px; box-sizing: border-box;">Should this even be a course?<span style="color: var(--text-muted);">→</span></div>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ f.isAnswer }}" hint-placeholder-val="{{ false }}">
+                <div>
+                  <div style="border-left: 3px solid var(--ink-900); padding-left: 12px; margin-bottom: 14px;">
+                    <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted);">01 — Asked</div>
+                    <div style="font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: 20px; letter-spacing: -.025em; line-height: 1.08; margin-top: 5px;">Show me the AI projects.</div>
+                  </div>
+                  <div style="font-family: var(--font-body); font-size: 16px; line-height: 1.6; color: var(--text-primary); margin-bottom: 14px;">Eighteen projects, nine written up. These show the range — retrieval, simulation and governed assistance.</div>
+                  <div style="border: 1px solid var(--border-hairline); border-radius: 2px; padding: 13px; margin-bottom: 8px;">
+                    <div style="font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: 14px; letter-spacing: -.02em; line-height: 1.15;">Field techs stopped calling the help desk</div>
+                    <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-signal); margin-top: 8px;">6M 10S → 0M 40S</div>
+                  </div>
+                  <div style="border: 1px solid var(--border-hairline); border-radius: 2px; padding: 13px; margin-bottom: 12px;">
+                    <div style="font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: 14px; letter-spacing: -.02em; line-height: 1.15;">New underwriters priced in week one</div>
+                    <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-signal); margin-top: 8px;">11 WEEKS → 6 WEEKS</div>
+                  </div>
+                  <div style="border-top: 1px solid var(--border-default); border-bottom: 1px solid var(--border-hairline); padding: 13px 2px; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; min-height: 48px; box-sizing: border-box;">
+                    <span>5 related artifacts</span><span style="color: var(--text-signal);">+ Show</span>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ f.isArtifact }}" hint-placeholder-val="{{ false }}">
+                <div>
+                  <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-signal);">Case study · CS-01 rev 4</div>
+                  <div style="font-family: var(--font-ui); font-size: 12px; color: var(--text-muted); margin-top: 3px;">Opened from: "Show me the AI projects."</div>
+                  <div style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: 28px; letter-spacing: -.035em; line-height: .95; margin: 12px 0 10px;">Field techs stopped calling the help desk</div>
+                  <div style="display: flex; gap: 6px; margin: 12px 0; padding-bottom: 10px; border-bottom: 1px solid var(--border-hairline); overflow: hidden;">
+                    <span style="font-family: var(--font-mono); font-size: 9px; letter-spacing: .06em; text-transform: uppercase; border: 1px solid var(--signal-500); color: var(--text-signal); border-radius: 2px; padding: 5px 7px; white-space: nowrap;">01 Problem</span>
+                    <span style="font-family: var(--font-mono); font-size: 9px; letter-spacing: .06em; text-transform: uppercase; border: 1px solid var(--border-hairline); color: var(--text-muted); border-radius: 2px; padding: 5px 7px; white-space: nowrap;">02 Constraints</span>
+                    <span style="font-family: var(--font-mono); font-size: 9px; letter-spacing: .06em; text-transform: uppercase; border: 1px solid var(--border-hairline); color: var(--text-muted); border-radius: 2px; padding: 5px 7px; white-space: nowrap;">03 Thinking</span>
+                  </div>
+                  <div style="font-family: var(--font-body); font-size: 16px; line-height: 1.6; color: var(--text-primary);">Technicians in the field were calling the help desk to confirm procedures they had already been trained on. The training was not the failure; retrieval was. The current revision lived in a 400-page PDF, and the PDF lived on a laptop in the truck.</div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ f.isDrawer }}" hint-placeholder-val="{{ false }}">
+                <div style="position: absolute; inset: -16px; background: rgba(10,9,6,.55); backdrop-filter: blur(8px);">
+                  <div style="position: absolute; left: 0; right: 0; bottom: 0; background: var(--paper-000); border-top: 3px solid var(--signal-500); padding: 18px 16px 20px;">
+                    <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted);">This session</div>
+                    <div style="display: grid; gap: 0; margin: 10px 0 16px;">
+                      <div style="font-family: var(--font-ui); font-size: 14px; border-left: 2px solid var(--signal-500); padding: 12px 10px; min-height: 48px; box-sizing: border-box;">Show me the AI projects.</div>
+                      <div style="font-family: var(--font-ui); font-size: 14px; color: var(--text-secondary); border-left: 2px solid var(--border-hairline); padding: 12px 10px; min-height: 48px; box-sizing: border-box;">Should this even be a course?</div>
+                    </div>
+                    <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted);">Rather browse</div>
+                    <div style="font-family: var(--font-ui); font-size: 14px; border-bottom: 1px solid var(--border-default); padding: 13px 0; display: flex; justify-content: space-between; min-height: 48px; box-sizing: border-box;">Question index<span style="font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);">24</span></div>
+                    <div style="font-family: var(--font-ui); font-size: 14px; border-bottom: 1px solid var(--border-default); padding: 13px 0; display: flex; justify-content: space-between; min-height: 48px; box-sizing: border-box;">Augmented Education Solutions<span style="font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);">AES</span></div>
+                    <div style="background: var(--signal-500); color: #fff; text-align: center; font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding: 15px; border-radius: 2px; margin-top: 16px;">Start a project →</div>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+            <div style="flex-shrink: 0; border-top: 1px solid var(--border-hairline); padding: 10px 12px 16px; background: var(--paper-000);">
+              <div style="display: flex; border: 2px solid var(--ink-900); border-radius: 2px;">
+                <span style="flex: 1; padding: 12px 12px; font-family: var(--font-ui); font-size: 14px; color: var(--text-muted);">{{ f.askPlaceholder }}</span>
+                <span style="background: var(--signal-500); color: #fff; padding: 0 14px; display: flex; align-items: center; font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em;">ASK</span>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top: 12px; border-left: 3px solid var(--signal-500); padding-left: 12px;">
+            <div style="font-family: var(--font-body); font-size: 15px; line-height: 1.55; color: var(--text-secondary);">{{ f.note }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin-top: 44px; padding-top: 24px; border-top: 1px solid var(--border-hairline); display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 28px;">
+      <sc-for list="{{ mobileRules }}" as="r" hint-placeholder-count="3">
+        <div>
+          <x-import component-from-global-scope="ChristopherMathewsDesignSystem_973316.MetaLabel" hint-size="auto,16px">{{ r.k }}</x-import>
+          <div style="font-family: var(--font-body); font-size: 16px; line-height: 1.55; color: var(--text-secondary); margin-top: 8px;">{{ r.v }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;desktop&quot;,&quot;mobile&quot;],&quot;default&quot;:&quot;desktop&quot;,&quot;tsType&quot;:&quot;\&quot;desktop\&quot; | \&quot;mobile\&quot;&quot;}}">
+const WORKS = {
+  helpdesk: {
+    id: "helpdesk", n: "01", cat: "AI", ref: "2025 · Utilities",
+    media: "software", layout: "doc", ratio: "16 / 10", heroSlot: "hero-helpdesk", plates: [{ slot: "pl-helpdesk-1", cap: "Voice answer — approved text with revision number", ratio: "16 / 10" }, { slot: "pl-helpdesk-2", cap: "Offline cache state, added week three", ratio: "16 / 10" }],
+    title: "Field techs stopped calling the help desk",
+    railTitle: "Field techs · help desk",
+    blurb: "A 400-page manual replaced by voice retrieval at the truck.",
+    headline: "6m 10s → 0m 40s",
+    frameLabel: "Voice answer\nwith revision",
+    eyebrow: "Knowledge system · Utilities",
+    standfirst: "240 technicians could not find the current procedure at the point of work. Nobody needed to learn the manual. They needed the right paragraph, with its revision number, in under a minute.",
+    meta: [
+      { k: "Sector", v: "Regulated utility" },
+      { k: "People", v: "240 field technicians" },
+      { k: "Built in", v: "4 days to prototype · 9 weeks live" },
+      { k: "Measured on", v: "Time to correct procedure" }
+    ],
+    sections: [
+      { n: "01", h: "The problem", paras: ["Technicians in the field were calling the help desk to confirm procedures they had already been trained on. The training was not the failure; retrieval was. The current revision lived in a 400-page PDF, and the PDF lived on a laptop in the truck.", "Help-desk volume ran 128 tickets a week, most of them a single question: which version is right?"] },
+      { n: "02", h: "The constraints", paras: ["Only approved content could be surfaced — a paraphrase is a compliance failure. Connectivity was unreliable at half the sites. No new hardware; the phone in their pocket was the device. And the safety team had veto over anything that could be read aloud incorrectly."] },
+      { n: "03", h: "The thinking", paras: ["Ask what isn't happening that needs to happen. People knew what to do and could not confirm it. Training adds seat time and changes nothing when the gap is access.", "So the intervention was not a course. It was a retrieval system that answers with the approved paragraph, quotes it verbatim, and shows the revision number beside it."] },
+      { n: "04", h: "The system", paras: ["Approved procedures chunked by step, versioned against document control, retrieved by voice, answered verbatim with the revision attached. When confidence is low it says it does not know and offers the section index rather than improvising."], frame: "System map — voice query to approved paragraph" },
+      { n: "05", h: "The build", paras: ["Prototype in four days, tested with six technicians in week one. Offline cache added in week three after the first field session proved the connectivity assumption wrong. Live to all 240 in nine weeks."], frame: "Prototype screen — answer with revision number" },
+      { n: "06", h: "The result", paras: ["Median time to the correct procedure fell from 6m 10s to 0m 40s across six weeks of logged use. Help-desk tickets fell from 128 to 31 per week. No change in training hours — the training was never the problem."] },
+      { n: "07", h: "What I learned", paras: ["Verbatim beats fluent. The first version summarised, and the safety team was right to reject it. Trust came from the revision number, not the answer quality — technicians checked it every time for a month, then stopped checking."] }
+    ]
+  },
+  underwriters: {
+    id: "underwriters", n: "02", cat: "AI", ref: "2024 · Insurance",
+    media: "software", layout: "doc", ratio: "16 / 10", heroSlot: "hero-underwriters", plates: [{ slot: "pl-underwriters-1", cap: "Pricing screen with divergence feedback", ratio: "16 / 10" }, { slot: "pl-underwriters-2", cap: "Cohort dashboard — weeks to first policy", ratio: "16 / 10" }],
+    title: "New underwriters priced their first policy in week one",
+    railTitle: "Underwriters · week one",
+    blurb: "Judgement practice against real historical outcomes.",
+    headline: "11 weeks → 6 weeks",
+    frameLabel: "Pricing decision\nscreen",
+    eyebrow: "Simulation · Insurance",
+    standfirst: "Onboarding took eleven weeks and ended with a supervised first policy. The bottleneck was not knowledge. It was reps — nobody would let a new hire practise on a real account.",
+    meta: [
+      { k: "Sector", v: "Commercial insurance" },
+      { k: "People", v: "34 new underwriters a year" },
+      { k: "Built in", v: "6 days to prototype" },
+      { k: "Measured on", v: "Weeks to first unsupervised policy" }
+    ],
+    sections: [
+      { n: "01", h: "The problem", paras: ["New underwriters finished the curriculum and still could not price. They had the rules and no judgement, because judgement comes from consequence and nobody would risk a live account to supply it."] },
+      { n: "02", h: "The constraints", paras: ["Real submissions could not leave the system. Supervisors had no time to review practice work. Any tool had to sit inside the existing workflow — a separate learning platform would have been abandoned in a fortnight."] },
+      { n: "03", h: "The thinking", paras: ["The gap was practice with feedback, not content. Build the consequence, not the course: let them price de-identified historical submissions where the actual outcome is already known, and let the system compare."] },
+      { n: "04", h: "The system", paras: ["Fifty de-identified real submissions, graded automatically against the decision that was actually made and what happened next. Divergence is the teaching moment; the feedback names the factor they under-weighted."], frame: "Simulation screen — divergence feedback" },
+      { n: "05", h: "The build", paras: ["Prototype in six days using twelve submissions. Rolled to the full fifty once the grading logic stopped disagreeing with the senior underwriters who reviewed it."] },
+      { n: "06", h: "The result", paras: ["Time to first unsupervised policy fell from 11 weeks to 6 across two cohorts. Supervisor review time per hire dropped by roughly nine hours."] },
+      { n: "07", h: "What I learned", paras: ["Grading against a real outcome is more convincing than grading against a rubric — and more uncomfortable. Two senior underwriters disagreed with historical decisions, which turned out to be the most valuable output of the project."] }
+    ]
+  },
+  policy: {
+    id: "policy", n: "03", cat: "AI", ref: "In build · Financial services",
+    media: "software", layout: "doc", ratio: "16 / 10", heroSlot: "hero-policy", plates: [{ slot: "pl-policy-1", cap: "Assistant panel inside the existing tool", ratio: "16 / 10" }],
+    title: "The policy nobody could find, answered in the flow of work",
+    railTitle: "Policy · flow of work",
+    blurb: "Governed answers inside the tool people already have open.",
+    headline: "3 pilot teams live",
+    frameLabel: "Assistant inside\nworkflow tool",
+    eyebrow: "AI assistant · Governance",
+    standfirst: "Policy existed, was current, and was unfindable at the moment of a decision. The ask was a chatbot. The problem was governance.",
+    meta: [
+      { k: "Sector", v: "Financial services" },
+      { k: "People", v: "3 pilot teams · 610 at scale" },
+      { k: "Built in", v: "3 days to prototype" },
+      { k: "Measured on", v: "Policy escalations" }
+    ],
+    sections: [
+      { n: "01", h: "The problem", paras: ["Staff escalated questions that policy already answered, because finding the answer took longer than asking a manager. The manager was often guessing too."] },
+      { n: "02", h: "The constraints", paras: ["Answers must be attributable to a clause. No policy content may be generated. Every answer is logged for audit. The pilot could not add a new tool to anyone's day."] },
+      { n: "03", h: "The thinking", paras: ["Sometimes the answer isn't training, and sometimes it isn't a new interface either. This one belongs inside the tool already open on the screen."] },
+      { n: "04", h: "The system", paras: ["Clause-level answers with the clause shown, refusal when confidence is low, and a log that records the question, what came back and whether the person acted on it."], frame: "Assistant panel in the existing tool" },
+      { n: "05", h: "The build", paras: ["Prototype in three days on one policy domain. Currently in build with three pilot teams; governance review runs in parallel rather than at the end."] },
+      { n: "06", h: "The result", paras: ["Too early to claim. Instrumentation is live and the baseline escalation rate is recorded. I will publish the numbers when there are six weeks of them, not before."] },
+      { n: "07", h: "What I learned", paras: ["Still learning it. So far: refusal is a feature, and the audit log convinced compliance faster than any demo did."] }
+    ]
+  },
+  askchristopher: {
+    id: "askchristopher", n: "04", cat: "EXPERIMENT", ref: "2026 · This website",
+    media: "software", layout: "doc", ratio: "16 / 10", heroSlot: "hero-askchristopher", plates: [{ slot: "pl-ask-1", cap: "Conversation with the showcase filling", ratio: "16 / 10" }],
+    title: "Ask Christopher — the site you're using",
+    railTitle: "Ask Christopher itself",
+    blurb: "A portfolio you talk to instead of scrolling.",
+    headline: "You're inside it",
+    frameLabel: "The interface\nyou're using",
+    eyebrow: "Product · Portfolio piece",
+    standfirst: "This site is itself one of the projects. Rather than a page of thumbnails and a résumé, the portfolio answers questions and shows you the work when showing beats telling.",
+    meta: [
+      { k: "Status", v: "Live · you are in it" },
+      { k: "Built in", v: "Nine days" },
+      { k: "Also sold as", v: "DIY package · done-for-you build" },
+      { k: "Good for", v: "Coaches · local business · real estate" }
+    ],
+    sections: [
+      { n: "01", h: "The problem", paras: ["Portfolios ask strangers to do work: read pages, guess relevance, assemble a picture of whether you can help them. Most visitors leave before that pays off."] },
+      { n: "02", h: "The thinking", paras: ["Nobody arrives wanting to read a website. They arrive with a question. So make the question the interface — answer conversationally, and show the work at the moment it becomes relevant.", "It doubles as the proof: if you want to know whether I can build one of these for you, you are currently using one."] },
+      { n: "03", h: "Want one", paras: ["Two ways. A DIY package that walks you through building your own version with your own material. Or I build it for you — trained on your work, in your voice, on your domain.", "It suits anyone who sells expertise and gets asked the same fifteen questions: coaches, consultants, local businesses, real-estate professionals, independent professionals."], frame: "DIY package and done-for-you service" }
+    ]
+  },
+  brandmarks: {
+    id: "brandmarks", n: "05", cat: "DESIGN", ref: "2018–2026 · Selected",
+    media: "design", layout: "gallery", ratio: "1 / 1", heroSlot: "hero-brandmarks", plates: [{ slot: "pl-marks-1", cap: "Programme identity — mark and lockups", ratio: "1 / 1" }, { slot: "pl-marks-2", cap: "Type system specimen", ratio: "1 / 1" }, { slot: "pl-marks-3", cap: "Editorial layout — conference programme", ratio: "1 / 1" }, { slot: "pl-marks-4", cap: "Product mark at 16px and 400px", ratio: "1 / 1" }],
+    title: "Marks, systems and identities",
+    railTitle: "Marks & identities",
+    blurb: "Logos and design systems for programmes, products and small companies.",
+    headline: "24 identities",
+    frameLabel: "Logo grid\n& type specimens",
+    eyebrow: "Graphic design · Selected",
+    standfirst: "Two decades of doing the design as well as the thinking. Marks, type systems, editorial layout and the unglamorous work of making a system someone else can use without me.",
+    meta: [
+      { k: "Range", v: "Marks · type systems · editorial" },
+      { k: "Count", v: "24 identities, 9 systems" },
+      { k: "Tools", v: "Whatever the job needs" }
+    ],
+    sections: [
+      { n: "01", h: "The work", paras: ["Programme identities, product marks, internal design systems, conference and publication design. Mostly for organisations too small to hire an agency and too particular to accept a template."], frame: "Selected marks — grid of 12" },
+      { n: "02", h: "The approach", paras: ["A mark is a constraint system, not a picture. I design the rules first — how it behaves at 16px, who has to use it, what happens when someone unskilled opens the file — and the drawing follows."], frame: "Type system specimen" },
+      { n: "03", h: "Why it matters here", paras: ["It is the reason the AI work looks like something. Most people building these systems cannot design the surface; most people who can design the surface cannot build the system."] }
+    ]
+  },
+  generative: {
+    id: "generative", n: "06", cat: "ART", ref: "2023–2026 · Ongoing",
+    media: "art", layout: "gallery", ratio: "4 / 5", heroSlot: "hero-generative", plates: [{ slot: "pl-gen-1", cap: "Plate 04 — series I", ratio: "4 / 5" }, { slot: "pl-gen-2", cap: "Plate 11 — series I", ratio: "4 / 5" }, { slot: "pl-gen-3", cap: "Plate 02 — series III", ratio: "4 / 5" }, { slot: "pl-gen-4", cap: "Plate 19 — series III", ratio: "4 / 5" }],
+    title: "Generative and AI-made image work",
+    railTitle: "Generative image work",
+    blurb: "What the tools are actually good at, found by using them badly first.",
+    headline: "Ongoing series",
+    frameLabel: "Image series\n— 9 plates",
+    eyebrow: "Art · Personal practice",
+    standfirst: "A personal practice that pays for itself professionally: to know where a model's judgement fails you have to make several hundred things with it.",
+    meta: [
+      { k: "Medium", v: "Diffusion · compositing · print" },
+      { k: "Status", v: "Ongoing, personal" },
+      { k: "Why", v: "Material knowledge of the tools" }
+    ],
+    sections: [
+      { n: "01", h: "The practice", paras: ["Series work rather than one-offs — a constraint, then a few hundred iterations against it. The interesting output is usually the failure mode, not the hero image."], frame: "Series plates — 9 up" },
+      { n: "02", h: "What it teaches", paras: ["Where models hallucinate confidently, which prompts are actually specifications, how much of the result is retrieval versus invention. That knowledge goes straight into the client work — it is why I refuse to let a system paraphrase a safety procedure."] }
+    ]
+  },
+  scores: {
+    id: "scores", n: "07", cat: "MUSIC", ref: "2016–2026 · Selected",
+    media: "music", layout: "music", ratio: "1 / 1", heroSlot: "hero-scores", tracks: [{ t: "Field Notes (main title)", d: "2:14", use: "Instructional series" }, { t: "Procedure", d: "1:38", use: "Interactive cue" }, { t: "Slow Adoption", d: "4:02", use: "Personal" }, { t: "Revision 4", d: "3:11", use: "Personal" }],
+    title: "Scores, sound design and short-form music",
+    railTitle: "Scores & sound design",
+    blurb: "Music for the media work, and for its own sake.",
+    headline: "40+ pieces",
+    frameLabel: "Waveform\n& score detail",
+    eyebrow: "Music · Sound",
+    standfirst: "Scoring and sound design for the video and interactive work, plus the pieces that exist for no reason other than that I wanted to make them.",
+    meta: [
+      { k: "Medium", v: "Composition · sound design · mix" },
+      { k: "Count", v: "40+ pieces" },
+      { k: "Use", v: "Course media, film, personal" }
+    ],
+    sections: [
+      { n: "01", h: "The work", paras: ["Cues for instructional video and interactive pieces, where music has a job: mark a transition, hold attention through an explanation, get out of the way of a voiceover."], frame: "Waveform and cue sheet" },
+      { n: "02", h: "And the rest", paras: ["Longer pieces with no client and no brief. Useful for the same reason the generative work is useful — it keeps the making muscle attached to the thinking one."] }
+    ]
+  },
+  instructional: {
+    id: "instructional", n: "08", cat: "LEARNING", ref: "2011–2022 · Selected",
+    media: "learning", layout: "gallery", ratio: "16 / 9", heroSlot: "hero-instructional", plates: [{ slot: "pl-inst-1", cap: "Assessment screen — decision-based", ratio: "16 / 9" }, { slot: "pl-inst-2", cap: "Curriculum map", ratio: "16 / 9" }, { slot: "pl-inst-3", cap: "Video segment with cue sheet", ratio: "16 / 9" }],
+    title: "The instructional work, before and beside the AI",
+    railTitle: "Instructional work",
+    blurb: "Courses, curriculum and assessment — when instruction is the right answer.",
+    headline: "20 years",
+    frameLabel: "Course screens\n& curriculum maps",
+    eyebrow: "Learning design · Selected",
+    standfirst: "Sometimes the answer isn't training. Sometimes it is, and then it should be genuinely good — designed around a decision the learner has to make, not a topic someone wanted covered.",
+    meta: [
+      { k: "Range", v: "Curriculum · assessment · media" },
+      { k: "Era", v: "Classroom, then corporate" },
+      { k: "Still doing it", v: "When the diagnosis says so" }
+    ],
+    sections: [
+      { n: "01", h: "The work", paras: ["Classroom teaching first, then curriculum and assessment design, then corporate learning with the video and interactive production attached."], frame: "Course screens — selected" },
+      { n: "02", h: "The standard", paras: ["Built around the judgement someone has to exercise, assessed on whether they can exercise it, and cut ruthlessly. Most courses are twice as long as the problem requires."] },
+      { n: "03", h: "Why it's here", paras: ["Because the provocation only lands if you can do the thing you are declining to do by default. I am not against training. I am against training as the automatic answer."] }
+    ]
+  },
+  clinicsite: {
+    id: "clinicsite", n: "10", cat: "WEB", ref: "2026 · Health clinic",
+    media: "software", layout: "doc", ratio: "16 / 10", heroSlot: "hero-clinicsite",
+    plates: [{ slot: "pl-clinic-1", cap: "Home — the ask field is the navigation", ratio: "16 / 10" }, { slot: "pl-clinic-2", cap: "Answer with booking handoff", ratio: "16 / 10" }],
+    title: "A clinic site that answers its own phones",
+    railTitle: "Clinic site",
+    blurb: "The same ask-first idea, sold to a six-person practice.",
+    headline: "62% fewer calls",
+    frameLabel: "Clinic site —\nask-first home",
+    eyebrow: "Website · Health",
+    standfirst: "A small practice whose front desk spent its day answering the same eleven questions. The site did have the answers. Nobody read the site.",
+    meta: [
+      { k: "Client", v: "Six-person practice" },
+      { k: "Built in", v: "Two weeks" },
+      { k: "Measured on", v: "Inbound call volume" },
+      { k: "Package", v: "Done-for-you build" }
+    ],
+    sections: [
+      { n: "01", h: "The problem", paras: ["Eleven questions accounted for most of the phone traffic: hours, parking, insurance, what to bring, whether a referral was needed. All answered on the website, none findable in under a minute."] },
+      { n: "02", h: "What I built", paras: ["An ask-first site in their own voice, trained on their intake material and policies, with a hard handoff to booking as soon as the visitor's intent turned into an appointment.", "Refusal matters more here than anywhere: anything clinical gets a decline and a phone number, not a guess."], frame: "Answer with booking handoff" },
+      { n: "03", h: "The result", paras: ["Inbound calls down 62% over eight weeks, measured against the same period the previous year. Front desk time went to the patients standing in front of them."] }
+    ]
+  },
+  explainer: {
+    id: "explainer", n: "11", cat: "WEB", ref: "2023 · Regulator",
+    media: "software", layout: "doc", ratio: "16 / 10", heroSlot: "hero-explainer",
+    plates: [{ slot: "pl-explainer-1", cap: "Scrolling explainer — rule change walkthrough", ratio: "16 / 10" }, { slot: "pl-explainer-2", cap: "Decision tool — does this apply to me?", ratio: "16 / 10" }],
+    title: "An interactive explainer for a rule nobody understood",
+    railTitle: "Rule explainer",
+    blurb: "A 40-page regulation turned into a decision you can walk through.",
+    headline: "9 min median read",
+    frameLabel: "Interactive explainer\n— decision path",
+    eyebrow: "Digital experience · Public sector",
+    standfirst: "A regulator published a rule change and then fielded thousands of questions from people trying to work out whether it applied to them.",
+    meta: [
+      { k: "Sector", v: "Regulator" },
+      { k: "Audience", v: "Public + small business" },
+      { k: "Built in", v: "Five weeks" },
+      { k: "Measured on", v: "Completion, then enquiry volume" }
+    ],
+    sections: [
+      { n: "01", h: "The problem", paras: ["The rule was public, plain-English and still unusable, because the reader's real question was never 'what does this say' — it was 'does this apply to me, and what do I do now'."] },
+      { n: "02", h: "The thinking", paras: ["Stop publishing the document and publish the decision. The explainer asks a handful of questions, then shows only the parts that apply, with the source text one click away."] },
+      { n: "03", h: "What it does", paras: ["A scrolling walkthrough for the general case, plus a decision tool for the specific one. Every outcome links to the clause it came from, because a regulator cannot afford a paraphrase."], frame: "Decision tool — does this apply to me?" }
+    ]
+  },
+  films: {
+    id: "films", n: "12", cat: "VIDEO", ref: "2013–2024 · Selected",
+    media: "video", layout: "gallery", ratio: "16 / 9", heroSlot: "hero-films",
+    plates: [{ slot: "pl-films-1", cap: "Explainer film — process sequence", ratio: "16 / 9" }, { slot: "pl-films-2", cap: "Title sequence frames", ratio: "16 / 9" }, { slot: "pl-films-3", cap: "Studio setup — single-operator rig", ratio: "16 / 9" }],
+    title: "Explainer films, title sequences and studio work",
+    railTitle: "Film & video",
+    blurb: "Shot, cut, scored and animated — usually by one person.",
+    headline: "180+ pieces",
+    frameLabel: "Explainer film —\nprocess sequence",
+    eyebrow: "Multimedia · Selected",
+    standfirst: "A decade of production work: explainer films, course media, title sequences and the occasional documentary edit. Most of it made single-handed, which is why I know what a schedule really costs.",
+    meta: [
+      { k: "Medium", v: "Film · animation · motion" },
+      { k: "Count", v: "180+ finished pieces" },
+      { k: "Role", v: "Direct, shoot, edit, score" }
+    ],
+    sections: [
+      { n: "01", h: "The work", paras: ["Explainer and process films for training and communications, title sequences, motion graphics, and studio pieces for organisations that needed a camera in the room next week rather than next quarter."], frame: "Explainer film — process sequence" },
+      { n: "02", h: "Why it still matters", paras: ["Video is the most expensive way to explain something, so the discipline is deciding when it is worth it. That judgement transfers directly to the AI work: the medium is a cost, not a feature."] }
+    ]
+  },
+  assessment: {
+    id: "assessment", n: "13", cat: "LEARNING", ref: "2019 · Manufacturing",
+    media: "learning", layout: "doc", ratio: "16 / 9", heroSlot: "hero-assessment",
+    plates: [{ slot: "pl-assess-1", cap: "Scenario item — one decision, real consequence", ratio: "16 / 9" }],
+    title: "Assessment that predicted who could actually do the job",
+    railTitle: "Predictive assessment",
+    blurb: "Scenarios instead of quizzes, validated against supervisor ratings.",
+    headline: "0.71 correlation",
+    frameLabel: "Scenario item —\none decision",
+    eyebrow: "Learning design · Manufacturing",
+    standfirst: "A certification everyone passed and nobody trusted. The test measured recall; the job required judgement under time pressure.",
+    meta: [
+      { k: "Sector", v: "Manufacturing" },
+      { k: "People", v: "410 certified operators" },
+      { k: "Measured on", v: "Correlation with supervisor rating" }
+    ],
+    sections: [
+      { n: "01", h: "The problem", paras: ["A 96% pass rate and a persistent gap between certified and competent. Supervisors kept their own private list of who they would actually put on a line."] },
+      { n: "02", h: "What I built", paras: ["Scenario items where each choice has a consequence that plays out, scored against what an expert operator would do and why. Fewer items, longer each, harder to guess."], frame: "Scenario item — one decision" },
+      { n: "03", h: "The result", paras: ["Scores correlated 0.71 with supervisor ratings, against 0.19 for the old instrument. Pass rate fell to 78%, which was the point."] }
+    ]
+  },
+  editorial: {
+    id: "editorial", n: "14", cat: "DESIGN", ref: "2020–2024 · Selected",
+    media: "design", layout: "gallery", ratio: "1 / 1", heroSlot: "hero-editorial",
+    plates: [{ slot: "pl-ed-1", cap: "Journal spread — feature opener", ratio: "1 / 1" }, { slot: "pl-ed-2", cap: "Grid and typographic scale", ratio: "1 / 1" }, { slot: "pl-ed-3", cap: "Cover series", ratio: "1 / 1" }],
+    title: "Editorial and publication design",
+    railTitle: "Editorial design",
+    blurb: "Journals, programmes and reports, redesigned end to end.",
+    headline: "11 publications",
+    frameLabel: "Journal spread —\nfeature opener",
+    eyebrow: "Graphic design · Editorial",
+    standfirst: "Long-form design where the constraint is a real production schedule and someone else has to lay out the next issue without me.",
+    meta: [
+      { k: "Range", v: "Journals · reports · programmes" },
+      { k: "Count", v: "11 publications" },
+      { k: "Deliverable", v: "Design plus the system to run it" }
+    ],
+    sections: [
+      { n: "01", h: "The work", paras: ["Full redesigns: grid, type scale, cover system, templates and a short guide the in-house team can follow when the deadline is tomorrow."], frame: "Journal spread — feature opener" },
+      { n: "02", h: "The standard", paras: ["A publication design succeeds when the third issue after you leave still looks right. That means designing the rules, not just the specimen."] }
+    ]
+  },
+  portraits: {
+    id: "portraits", n: "15", cat: "ART", ref: "2025–2026 · Series",
+    media: "art", layout: "gallery", ratio: "4 / 5", heroSlot: "hero-portraits",
+    plates: [{ slot: "pl-port-1", cap: "Plate 01 — editorial portrait", ratio: "4 / 5" }, { slot: "pl-port-2", cap: "Plate 06 — hands and artifact", ratio: "4 / 5" }, { slot: "pl-port-3", cap: "Plate 09 — workspace", ratio: "4 / 5" }],
+    title: "Editorial portraits made with the tools I build with",
+    railTitle: "Portrait series",
+    blurb: "Using AI on myself, honestly labelled, as a test of the medium.",
+    headline: "Series of 12",
+    frameLabel: "Editorial portrait\n— plate 01",
+    eyebrow: "Art · Series",
+    standfirst: "If I am going to build systems on top of these models, I should be willing to point them at myself and show the result unretouched.",
+    meta: [
+      { k: "Medium", v: "Diffusion · compositing" },
+      { k: "Count", v: "Series of 12" },
+      { k: "Disclosure", v: "Labelled as AI-made, always" }
+    ],
+    sections: [
+      { n: "01", h: "The series", paras: ["Editorial portraits, hands with real artifacts, workspaces. The brief was to avoid every cliché of AI imagery — no glow, no chrome, no symmetry."], frame: "Plate 01 — editorial portrait" },
+      { n: "02", h: "The rule", paras: ["Always labelled. The moment this work is presented as photography it stops being interesting and starts being a lie, and the same principle governs every client system I build."] }
+    ]
+  },
+  toys: {
+    id: "toys", n: "16", cat: "EXPERIMENT", ref: "Ongoing · Personal",
+    media: "software", layout: "gallery", ratio: "16 / 10", heroSlot: "hero-toys",
+    plates: [{ slot: "pl-toys-1", cap: "Diagnosis prompt — five-factor walkthrough", ratio: "16 / 10" }, { slot: "pl-toys-2", cap: "Retrieval sandbox — refusal testing", ratio: "16 / 10" }],
+    title: "Small tools I built to think with",
+    railTitle: "Experiments",
+    blurb: "Sandboxes, prompt rigs and half-finished things that taught me something.",
+    headline: "Ongoing",
+    frameLabel: "Retrieval sandbox\n— refusal testing",
+    eyebrow: "Experiments · Personal",
+    standfirst: "Most of what I know about where these systems break came from building small useless things quickly, rather than reading about them.",
+    meta: [
+      { k: "Status", v: "Ongoing, unpolished" },
+      { k: "Purpose", v: "Find the failure modes" },
+      { k: "Shipped", v: "Occasionally, by accident" }
+    ],
+    sections: [
+      { n: "01", h: "The habit", paras: ["A sandbox for testing when retrieval should refuse. A rig for running the five-factor diagnosis as a conversation. A tool that reads a course outline and tells you which parts are not training problems."], frame: "Retrieval sandbox — refusal testing" },
+      { n: "02", h: "Why they're here", paras: ["Because they are the honest version of a capability claim. Anyone can say they understand hallucination; these are the things I made while finding out."] }
+    ]
+  },
+  aes: {
+    id: "aes", n: "09", cat: "AI", ref: "Company · AES LLC",
+    media: "case", layout: "doc", ratio: "16 / 10", heroSlot: "hero-aes", plates: [{ slot: "pl-aes-1", cap: "Engagement model — diagnose to support", ratio: "16 / 10" }],
+    title: "Augmented Education Solutions",
+    railTitle: "AES",
+    blurb: "The company for work that needs a team and a procurement process.",
+    headline: "We solve",
+    frameLabel: "AES — capability\n& engagement model",
+    eyebrow: "Augmented Education Solutions LLC",
+    standfirst: "AES exists for the work that needs a team, a procurement process and a support commitment. Same method, more hands, an invoice a finance department recognises.",
+    meta: [
+      { k: "Entity", v: "Augmented Education Solutions LLC" },
+      { k: "Engagement", v: "Diagnose → build → prove → support" },
+      { k: "Not", v: "eLearning vendor · AI consultancy" }
+    ],
+    sections: [
+      { n: "01", h: "The problem", paras: ["Organisations buy courses because a course is easy to specify and easy to procure. The specification arrives already containing the solution, and the actual performance problem is never examined.", "Don't bring us a course request. Bring us the problem."] },
+      { n: "02", h: "How we work", paras: ["We diagnose across five factors — person, knowledge, workflow, technology, environment — and the diagnosis determines the build. We work inside procurement, security review and your existing systems, and we will decline work where the answer is obviously not something we should build."] },
+      { n: "03", h: "What we build", paras: ["Knowledge systems, simulations, assistants, automated workflows, decision support, and instruction when instruction is what the diagnosis calls for. Prototype in days; every engagement carries a measure agreed before the build starts."], frame: "Engagement model — diagnose to support" }
+    ]
+  }
+};
+
+const METHOD_STEPS = [
+  { name: "Problem", description: "What isn't happening" },
+  { name: "System", description: "What should exist" },
+  { name: "Prototype", description: "Working, in days" },
+  { name: "Prove", description: "Measured, with method" }
+];
+
+class Component extends DCLogic {
+  state = {
+    view: "ask",
+    thread: [this.workAnswer("Show me the AI projects.")],
+    draft: "",
+    pending: null,
+    artifactId: null,
+    openedBy: "",
+    forced: "none",
+    screen: null,
+    indexQuery: "",
+    opened: [],
+    showcase: ["askchristopher", "brandmarks"],
+    filter: "ALL",
+    playing: -1,
+    justAdded: [],
+    accepted: []
+  };
+
+  componentWillUnmount() { clearTimeout(this._t); }
+
+  get screen() { return this.state.screen || (this.props.defaultScreen ?? "desktop"); }
+
+  answerFor(q) {
+    const t = q.toLowerCase();
+    if (/this (site|website)|ask christopher|build me one|my own|diy|package|cost/.test(t)) return this.productAnswer(q);
+    if (/design|logo|art|music|creative|graphic|generative|score/.test(t)) return this.whoAnswer(q);
+    if (/aes|augmented education|company|team|procure|scale|organi/.test(t)) return this.aesAnswer(q);
+    if (/course|training|instead/.test(t)) return this.courseAnswer(q);
+    if (/who|you|year|experience|background|done|career/.test(t)) return this.whoAnswer(q);
+    if (/project|work|case|ai project|show me|built|example/.test(t)) return this.workAnswer(q);
+    if (/approach|method|process|start|how do you|problem/.test(t)) return this.methodAnswer(q);
+    return this.buildAnswer(q);
+  }
+
+  buildAnswer(q) {
+    return {
+      q,
+      paras: [
+        { segs: [{ t: "Short version: I build systems that make people better at their job — usually some mix of knowledge, workflow and AI, occasionally a course when a course is genuinely the answer." }] },
+        { segs: [{ t: "The through-line is that I do the thinking and the building. Diagnosis, system design, the actual prototype, and the design of the surface it lives on. That combination is rarer than it should be." }] }
+      ],
+      hasFlow: true, flowActive: -1,
+      offer: { line: "The fastest way to get it is to look at one. Want me to pull up the AI work?", accept: "Yes — show me", decline: "Tell me the thinking first", ids: ["helpdesk", "underwriters", "policy"], reply: "Here they are. Three AI systems, three different shapes of problem — have a look on the right." },
+      followups: ["Sometimes the answer isn't training?", "Who are you, then?", "Could you build one for us?"]
+    };
+  }
+
+  workAnswer(q) {
+    return {
+      q,
+      paras: [
+        { segs: [{ t: "Happily — this is the work I'm proudest of. Eighteen projects, nine written up properly, and not one of them started life as an AI project. Every single one started as somebody's performance problem where the diagnosis happened to land on something a model does well." }] },
+        { segs: [{ t: "My favourite is still the utility one. Two hundred and forty field technicians were phoning the help desk to confirm procedures they'd already been trained on — 128 calls a week, almost all of them the same question: which version is current? Everyone had decided it was a training problem." }] },
+        { segs: [{ t: "It wasn't. They knew the job. They couldn't find the paragraph. So instead of a course, I built voice retrieval that answers with the approved text verbatim and the revision number beside it — prototype in four days, live in nine weeks. Median time to the right procedure went from six minutes ten to forty seconds, and help-desk calls dropped to 31 a week. Training hours never changed, because training was never the problem." }] }
+      ],
+      stats: [
+        { value: "18", unit: "", label: "AI projects", method: "9 written up in full" },
+        { value: "4", unit: "d", label: "To first prototype", method: "Median, last 6 builds" },
+        { value: "3", unit: "", label: "In build right now", method: "Numbers published at 6 weeks" }
+      ],
+      offer: {
+        line: "I can show you that one properly — the system, the prototype screens and the numbers — along with two others that took completely different shapes.",
+        accept: "Yes — show me the projects",
+        decline: "Just the field-tech one",
+        ids: ["helpdesk", "underwriters", "policy"],
+        reply: "There you go — they're in the showcase on the right. Start with 01 if you want the retrieval story; 02 is a judgement simulation for insurance underwriters, and 03 is the governed one that's still in build, which is why it has no result number yet. Open any of them and ask me anything while you're reading."
+      },
+      facets: ["Show me the design work instead.", "Which one was hardest?", "Do you do the non-AI work too?"],
+      followups: ["Should this problem even be a course?", "Could you build one for us?", "How fast is a prototype, really?"]
+    };
+  }
+
+  courseAnswer(q) {
+    return {
+      q,
+      paras: [
+        { segs: [{ t: "Often, no — and I say that as someone who spent a decade designing courses well. A course is one possible intervention, not the default one." }] },
+        { segs: [{ t: "Ask what isn't happening that needs to happen. If people already know what to do and simply can't confirm the current procedure, training adds seat time and changes nothing. That's an access problem wearing a training request." }] },
+        { segs: [{ t: "And when instruction genuinely is the answer, I'll say so and then build a good one. I'm not against training. I'm against training as the automatic answer." }] }
+      ],
+      offer: { line: "There's a project where exactly that call got made, and the instructional work sits right beside it. Want both?", accept: "Yes — show me both", decline: "Stay on the thinking", ids: ["helpdesk", "instructional"], reply: "Both are up on the right. The field-tech project is where I declined to build the course; the instructional selection is what it looks like when the answer genuinely is teaching." },
+      followups: ["When is it a course, then?", "How do you decide?", "Show me the AI projects."]
+    };
+  }
+
+  methodAnswer(q) {
+    return {
+      q,
+      paras: [
+        { segs: [{ t: "Four stages, and the first one carries most of the value. I diagnose across five factors — person, knowledge, workflow, technology, environment — before proposing anything at all." }] },
+        { segs: [{ t: "Then a prototype, usually inside a week, because arguing about a specification is slower than looking at a working thing. Proof comes last, and it carries its method: what was measured, over what population, for how long. A number without a method is marketing." }] }
+      ],
+      hasFlow: true, flowActive: 1,
+      offer: { line: "Easier to see than to describe. Want me to show you one where the prototype changed the plan?", accept: "Yes — show me", decline: "Keep talking", ids: ["underwriters", "helpdesk"], reply: "Up on the right. In the underwriting one the prototype revealed that two senior underwriters disagreed with historical decisions — which redirected the whole project." },
+      followups: ["What if the diagnosis says do nothing?", "How fast is a prototype, really?", "Start a project"]
+    };
+  }
+
+  whoAnswer(q) {
+    return {
+      q,
+      paras: [
+        { segs: [{ t: "I make complicated things understandable, then build something useful with the understanding. Twenty years of it: classroom teaching, curriculum and assessment, corporate learning, video and interactive production, then systems, and now AI." }] },
+        { segs: [{ t: "AI isn't my identity — it's the newest medium I work in. The older ones still earn their keep: I design the marks and interfaces, I score the media, and I make a lot of image work that no client asked for." }] }
+      ],
+      records: [
+        { era: "2005–2011", what: "Classroom teaching, then curriculum and assessment design", medium: "Instruction" },
+        { era: "2011–2016", what: "Corporate learning design; video, print and web production", medium: "Media" },
+        { era: "2016–2022", what: "Digital learning systems, simulation, performance consulting", medium: "Systems" },
+        { era: "2022–now", what: "AI systems; retrieval, assistants, automation", medium: "AI + software" }
+      ],
+      offer: { line: "The creative side is the part a CV never shows. Want to see some of it?", accept: "Yes — show me", decline: "Show me the AI work instead", ids: ["brandmarks", "generative", "scores"], reply: "On the right: the identity and type work, the generative image practice, and the scoring. None of it was a client brief for AI, and all of it feeds the AI work." },
+      followups: ["Show me the AI projects.", "What are you best at?", "Could you build one for us?"]
+    };
+  }
+
+  aesAnswer(q) {
+    return {
+      q, isAes: true,
+      paras: [
+        { segs: [{ t: "We'd start by refusing to quote what you asked for. Bring us the problem and we'll work out what to build — the diagnosis decides the deliverable, and it's often smaller than expected." }] },
+        { segs: [{ t: "AES is for work that needs a team, a procurement process and a support commitment: knowledge systems, simulations, assistants, automated workflows, decision support. Same method as everything else here, more hands, an invoice your finance department recognises." }] }
+      ],
+      stats: [
+        { value: "5", unit: "", label: "Diagnosis factors", method: "Person · knowledge · workflow · tech · environment" },
+        { value: "1", unit: "wk", label: "To a working prototype", method: "Typical for a scoped pilot" }
+      ],
+      offer: { line: "Want the capability picture and a live build to go with it?", accept: "Yes — show me", decline: "What won't you take on?", ids: ["aes", "policy"], reply: "On the right. The AES entry covers how an engagement runs; the policy assistant is a current build, still without a result number because six weeks of data isn't in yet." },
+      followups: ["What does an engagement cost?", "What won't you take on?", "Start a project"]
+    };
+  }
+
+  productAnswer(q) {
+    return {
+      q,
+      paras: [
+        { segs: [{ t: "You're using it. This site has no pages to read — you ask, I answer, and the work appears when showing beats telling. It's a portfolio piece and a product at the same time." }] },
+        { segs: [{ t: "Two ways to get your own. A DIY package that walks you through building one with your own material, or I build it for you — trained on your work, in your voice, on your domain. It suits anyone who sells expertise and answers the same fifteen questions every week: coaches, consultants, local businesses, real-estate professionals." }] }
+      ],
+      offer: { line: "Want the detail on how this one was built and what the two packages include?", accept: "Yes — show me", decline: "Start a project instead", ids: ["askchristopher"], reply: "It's on the right — the thinking behind it, and what the DIY package and the done-for-you build each cover." },
+      followups: ["What would mine cost?", "Show me the AI projects.", "Start a project"]
+    };
+  }
+
+  acceptOffer = (i) => {
+    const t = this.state.thread[i];
+    if (!t || !t.offer) return;
+    const add = t.offer.ids.filter(id => this.state.showcase.indexOf(id) < 0);
+    this.setState({
+      accepted: this.state.accepted.concat([i]),
+      showcase: this.state.showcase.concat(add),
+      justAdded: t.offer.ids
+    });
+  };
+
+  ask = (q) => {
+    const text = (q || "").trim();
+    if (!text) return;
+    if (this.state.forced === "limit") return;
+    clearTimeout(this._t);
+    this.setState({ view: "ask", pending: text, draft: "", artifactId: null, indexQuery: "", justAdded: [] });
+    if (this.state.forced === "error") return;
+    this._t = setTimeout(() => {
+      this.setState(s => ({ thread: [...s.thread, this.answerFor(text)], pending: null }));
+    }, 950);
+  };
+
+  renderVals() {
+    const s = this.state;
+    const screen = this.screen;
+    const forced = s.forced;
+    const isError = forced === "error" && !!s.pending;
+    const isLimit = forced === "limit";
+    const loading = !!s.pending && !isError && forced !== "limit";
+    const artifact = s.artifactId ? WORKS[s.artifactId] : null;
+
+    const BROWSE_SOURCES = ["All the work", "About Christopher", "AES services"];
+    const openArtifact = (id, by) => () => {
+      const cur = this.state;
+      const prior = Array.isArray(cur.opened) ? cur.opened : [];
+      const from = by || cur.pending || (cur.thread.length ? cur.thread[cur.thread.length - 1].q : "All the work");
+      const turn = BROWSE_SOURCES.indexOf(from) >= 0 ? "browse" : Math.max(0, cur.thread.length - 1);
+      const already = prior.some(o => o.id === id && o.turn === turn);
+      this.setState({
+        view: "artifact", artifactId: id, openedBy: from,
+        opened: already ? prior : prior.concat([{ id: id, turn: turn }]),
+        showcase: cur.showcase.indexOf(id) < 0 ? cur.showcase.concat([id]) : cur.showcase,
+        justAdded: cur.showcase.indexOf(id) < 0 ? [id] : cur.justAdded
+      });
+    };
+
+    const justIds = s.justAdded.filter(id => s.showcase.indexOf(id) >= 0);
+    const restIds = s.showcase.filter(id => justIds.indexOf(id) < 0).slice().reverse();
+    const orderedIds = justIds.concat(restIds);
+    const opened = (Array.isArray(s.opened) ? s.opened : []).map(o => (typeof o === "string" ? { id: o, turn: 0 } : o)).filter(o => WORKS[o.id]);
+    const showcaseCards = orderedIds.map(id => {
+      const w = WORKS[id];
+      return {
+        id, cat: w.cat, ref: w.ref, title: w.title, blurb: w.blurb, headline: w.headline,
+        n: w.n, frameLabel: w.frameLabel,
+        isSoftware: w.media === "software" || w.media === "learning" || w.media === "case",
+        isMusic: w.media === "music", isDesign: w.media === "design",
+        ratio: w.ratio, cardSlot: "card-" + w.id,
+        placeholder: (w.frameLabel || "").replace(/\n/g, " "),
+        chrome: w.media === "learning" ? "Course player" : w.media === "case" ? "Result" : "Prototype",
+        isNew: s.justAdded.indexOf(id) >= 0,
+        isOpen: s.artifactId === id,
+        border: s.artifactId === id ? "var(--signal-500)" : (s.justAdded.indexOf(id) >= 0 ? "var(--signal-500)" : "var(--border-default)"),
+        onClick: openArtifact(id)
+      };
+    });
+
+    const exchanges = s.thread.map((t, i) => ({
+      anchor: "x" + i,
+      num: String(i + 1).padStart(2, "0") + " — asked",
+      q: t.q,
+      isAes: !!t.isAes,
+      paras: t.paras,
+      hasFlow: !!t.hasFlow,
+      flowActive: t.flowActive ?? -1,
+      hasStats: !!t.stats, stats: t.stats || [],
+      hasRecords: !!t.records, records: t.records || [],
+      hasOffer: !!t.offer && s.accepted.indexOf(i) < 0,
+      offerLine: t.offer ? t.offer.line : "",
+      offerAccept: t.offer ? t.offer.accept : "",
+      offerDecline: t.offer ? t.offer.decline : "",
+      onAccept: () => this.acceptOffer(i),
+      onDecline: () => { if (t.offer) this.ask(t.offer.decline); },
+      hasReply: !!t.offer && s.accepted.indexOf(i) >= 0,
+      replyLine: t.offer ? t.offer.reply : "",
+      hasFacets: !!(t.facets && t.facets.length),
+      facets: (t.facets || []).map(fq => ({ q: fq, onClick: () => this.ask(fq) })),
+      hasFollowups: !!(t.followups && t.followups.length),
+      followups: (t.followups || []).map(q => ({ q, onClick: () => (/^start a project$/i.test(q) ? this.setState({ view: "start" }) : /bring you my problem/i.test(q) ? this.setState({ view: "start" }) : this.ask(q)) }))
+    }));
+
+    const CATS = ["ALL", "AI", "LEARNING", "WEB", "DESIGN", "ART", "MUSIC", "VIDEO", "EXPERIMENT"];
+    const CAT_LINES = {
+      ALL: "Twenty years of it, in no particular order of importance. Sixteen pieces here; ask me and I'll tell you about the ones that aren't.",
+      AI: "Systems people actually use at work. None of them started as an AI project.",
+      LEARNING: "When instruction genuinely is the answer, it should be good. This is that work.",
+      WEB: "Sites and digital experiences, including the ask-first ones I now build for other people.",
+      DESIGN: "Marks, type systems and publications. The reason the AI work looks like something.",
+      ART: "Personal practice. It pays for itself by teaching me where the tools fail.",
+      MUSIC: "Scores and sound design for the media work, and pieces nobody commissioned.",
+      VIDEO: "A decade of production, mostly single-handed. Video is the expensive way to explain something.",
+      EXPERIMENT: "Half-finished things that taught me something. Including this website."
+    };
+    const allWorks = Object.keys(WORKS).map(k => WORKS[k]);
+    const filters = CATS.map(c => {
+      const active = s.filter === c;
+      return {
+        label: c === "ALL" ? "Everything" : c,
+        count: c === "ALL" ? allWorks.length : allWorks.filter(w => w.cat === c).length,
+        bg: active ? "var(--ink-900)" : "transparent",
+        border: active ? "var(--ink-900)" : "var(--border-default)",
+        color: active ? "var(--paper-000)" : "var(--text-secondary)",
+        onClick: () => this.setState({ filter: c })
+      };
+    });
+    const filtered = allWorks.filter(w => s.filter === "ALL" || w.cat === s.filter);
+    const galleryItems = filtered.map((w, gi) => ({
+      cat: w.cat, ref: w.ref, title: w.title, blurb: w.blurb, ratio: w.ratio,
+      slot: "gal-" + w.id, placeholder: (w.frameLabel || "").replace(/\n/g, " "),
+      span: gi === 0 && filtered.length > 2 ? "1 / -1" : "auto",
+      isFeature: gi === 0 && filtered.length > 2,
+      featureLabel: s.filter === "ALL" ? "Start here" : "Pick of the " + s.filter.toLowerCase(),
+      isSoftware: w.media === "software" || w.media === "learning" || w.media === "video",
+      isMusic: w.media === "music", isDesign: w.media === "design", isVideo: w.media === "video",
+      chrome: w.media === "learning" ? "Course player" : w.media === "video" ? "Film" : w.media === "software" ? "Prototype" : "Result",
+      opened: opened.some(o => o.id === w.id),
+      onOpen: openArtifact(w.id, "All the work"),
+      onAsk: () => this.ask("Tell me about " + w.title.toLowerCase() + ".")
+    }));
+    const catLine = CAT_LINES[s.filter] || CAT_LINES.ALL;
+
+    const carryQuestions = [
+      ...s.thread.map(t => ({ kind: "Asked", text: t.q })),
+      ...opened.map(o => ({ kind: "Opened", text: WORKS[o.id].title }))
+    ];
+
+    return {
+      isDesktop: screen === "desktop",
+      isMobile: screen === "mobile",
+      methodSteps: METHOD_STEPS,
+      reset: (e) => { if (e) e.preventDefault(); clearTimeout(this._t); this.setState({ view: "ask", thread: [], pending: null, artifactId: null, draft: "", indexQuery: "", opened: [], showcase: ["askchristopher", "brandmarks"], justAdded: [], accepted: [] }); },
+      goIndex: (e) => { if (e) e.preventDefault(); this.setState({ view: "index", artifactId: null }); },
+      goStart: (e) => { if (e) e.preventDefault(); this.setState({ view: "start", artifactId: null }); },
+      goAbout: (e) => { if (e) e.preventDefault(); openArtifact("askchristopher", "About Christopher")(); },
+      goServices: (e) => { if (e) e.preventDefault(); openArtifact("aes", "AES services")(); },
+      askAes: (e) => { if (e) e.preventDefault(); this.ask("What could AES build for my organization?"); },
+      backToThread: (e) => { if (e) e.preventDefault(); this.setState({ view: "ask", artifactId: null }); },
+      askAboutArtifact: () => this.ask("Tell me more about " + (artifact ? artifact.title.toLowerCase() : "this") + "."),
+      retry: () => { this.setState({ forced: "none" }); const q = s.pending; this.setState({ pending: null }, () => this.ask(q)); },
+      clearLimit: () => this.setState({ forced: "none" }),
+      onSubmit: (e) => { e.preventDefault(); this.ask(s.draft); },
+      onDraft: (e) => this.setState({ draft: e.target.value }),
+      onIndexQuery: (e) => this.setState({ indexQuery: e.target.value }),
+      askIndexQuery: () => this.ask(s.indexQuery),
+      draft: s.draft,
+
+      showArrival: s.view === "ask" && !s.thread.length && !s.pending && !isLimit,
+      showThread: s.view === "ask" && (!!s.thread.length || !!s.pending || isLimit),
+      showArtifact: s.view === "artifact" && !!artifact,
+      showIndex: s.view === "index",
+      showStart: s.view === "start",
+      loading, isError, isLimit,
+      pendingQ: s.pending || "",
+      pendingNum: String(s.thread.length + 1).padStart(2, "0") + " — asking",
+
+      suggested: [
+        { q: "What does Christopher build?", kind: "Positioning" },
+        { q: "Show me the AI projects.", kind: "3 case studies" },
+        { q: "Should this problem even be a course?", kind: "Provocation" },
+        { q: "How could AI help our people use our documentation?", kind: "Your problem" },
+        { q: "What could AES build for my organization?", kind: "Company" }
+      ].map(x => ({ ...x, onClick: () => this.ask(x.q) })),
+
+      exchanges,
+      artifact: artifact ? {
+        ...artifact,
+        kind: artifact.cat,
+        openedBy: s.openedBy,
+        heroPlaceholder: (artifact.frameLabel || "").replace(/\n/g, " "),
+        isSoftware: artifact.media === "software" || artifact.media === "learning" || artifact.media === "video",
+        isMusic: artifact.media === "music",
+        isVideo: artifact.media === "video",
+        chrome: artifact.media === "learning" ? "Course player" : artifact.media === "video" ? "Film" : artifact.media === "software" ? "Prototype" : "Result",
+        tracks: (artifact.tracks || []).map((t, ti) => ({
+          t: t.t, d: t.d, use: t.use,
+          icon: s.playing === ti ? "❚❚" : "▶",
+          btnBg: s.playing === ti ? "var(--signal-500)" : "var(--ink-900)",
+          btnColor: "var(--paper-000)",
+          progress: s.playing === ti ? "38%" : "0%",
+          onPlay: () => this.setState({ playing: s.playing === ti ? -1 : ti })
+        })),
+        hasPlates: !!(artifact.plates && artifact.plates.length),
+        platesLabel: artifact.media === "design" ? "Selected pieces" : artifact.media === "art" ? "Plates" : artifact.media === "learning" ? "Screens and media" : artifact.media === "video" ? "Stills and sequences" : "Screens",
+        plates: artifact.plates || [],
+        prompts: [
+          { q: "How was this built?" },
+          { q: "What did it cost?" },
+          { q: "Would this work for us?" }
+        ].map(p => ({ q: p.q, onClick: () => this.ask(p.q + " — " + artifact.title) })),
+        sections: artifact.sections.map(sec => ({ ...sec, frame: sec.frame || "", slot: "sec-" + artifact.id + "-" + sec.n, onCite: () => this.ask(sec.h.toLowerCase() + " — " + artifact.title) }))
+      } : null,
+
+      workCount: allWorks.length,
+      catLine,
+      filters, galleryItems,
+      galleryEmpty: !galleryItems.length,
+      clearFilter: () => this.setState({ filter: "ALL" }),
+
+      carryQuestions, hasCarry: !!carryQuestions.length, noCarry: !carryQuestions.length,
+
+      askBarLive: !isLimit, askBarLocked: isLimit,
+      askPlaceholder: s.view === "artifact" ? "Ask me about what you're looking at…" : s.thread.length ? "Ask a follow-up…" : "What are you trying to solve?",
+      askHint: s.view === "artifact" ? "You are still in the conversation — this opened alongside it, not instead of it." : "Ask me anything — or read About Christopher on the left if you'd rather not",
+
+      history: (() => {
+        const rows = s.thread.reduce((rows, t, i) => {
+        const isLastTurn = i === s.thread.length - 1;
+        const mark = isLastTurn ? "var(--signal-500)" : "var(--border-hairline)";
+        rows.push({
+          label: t.q, mark, indent: "10px",
+          font: "var(--font-ui)", size: "13px", tracking: "normal", casing: "none",
+          color: (s.view === "ask" && isLastTurn) ? "var(--text-primary)" : "var(--text-secondary)",
+          onClick: (e) => { e.preventDefault(); this.setState({ view: "ask", artifactId: null }); }
+        });
+        opened.filter(o => o.turn === i).forEach(o => rows.push({
+          label: "↳ " + (WORKS[o.id].railTitle || WORKS[o.id].title), mark, indent: "22px",
+          font: "var(--font-mono)", size: "10px", tracking: ".05em", casing: "uppercase",
+          color: (s.view === "artifact" && s.artifactId === o.id) ? "var(--text-signal)" : "var(--text-muted)",
+          onClick: (e) => { e.preventDefault(); openArtifact(o.id, t.q)(); }
+        }));
+        return rows;
+        }, []);
+        const browsed = opened.filter(o => o.turn === "browse");
+        if (browsed.length) {
+          rows.push({
+            label: "Browsed from all the work", mark: "var(--border-hairline)", indent: "10px",
+            font: "var(--font-mono)", size: "10px", tracking: ".07em", casing: "uppercase",
+            color: "var(--text-muted)",
+            onClick: (e) => { e.preventDefault(); this.setState({ view: "index", artifactId: null }); }
+          });
+          browsed.forEach(o => rows.push({
+            label: "↳ " + (WORKS[o.id].railTitle || WORKS[o.id].title), mark: "var(--border-hairline)", indent: "22px",
+            font: "var(--font-mono)", size: "10px", tracking: ".05em", casing: "uppercase",
+            color: (s.view === "artifact" && s.artifactId === o.id) ? "var(--text-signal)" : "var(--text-muted)",
+            onClick: (e) => { e.preventDefault(); openArtifact(o.id, "All the work")(); }
+          }));
+        }
+        return rows;
+      })(),
+      noHistory: !s.thread.length,
+
+      showcaseCards,
+      showcaseCount: showcaseCards.length + (showcaseCards.length === 1 ? " piece" : " pieces"),
+      showcaseSub: s.justAdded.length ? "Just added to the showcase." : (s.view === "index" ? "Everything you open while browsing lands here too." : "A few pieces to start with — ask and I'll bring up more."),
+
+      mobileFrames: [
+        { n: "M1", name: "Arrival", navLabel: "INDEX", askPlaceholder: "What are you trying to solve?", isArrival: true, note: "The provocation is set at 40px and still fits above the fold with two suggested questions visible. Chips are 48px tall. No hero image, no scroll required to understand what this is." },
+        { n: "M2", name: "Answer + portfolio", navLabel: "01/03", askPlaceholder: "Ask a follow-up…", isAnswer: true, note: "The portfolio panel becomes a counted accordion directly under the answer — collapsed by default, opening in place. Project results stack full-width; the result line stays visible without a tap." },
+        { n: "M3", name: "Artifact open", navLabel: "BACK", askPlaceholder: "Ask about this case study…", isArtifact: true, note: "Section headings become sticky mono chips instead of a left column. The ask bar stays docked, so a case study never feels like a different site." },
+        { n: "M4", name: "Session drawer", navLabel: "CLOSE", askPlaceholder: "Ask a follow-up…", isDrawer: true, note: "Tapping the wordmark opens history, index and START A PROJECT as one sheet over an 8px-blurred ink scrim. This is the only overlay in the system." }
+      ],
+      mobileRules: [
+        { k: "Hit targets", v: "48px minimum on every chip, artifact row and project card. The ask button is 48 × 48." },
+        { k: "What is cut", v: "Margin annotations and the exposed grid — controlled rebellion needs a margin to break into. Type scale drops one step; the mono label does not." },
+        { k: "What never moves", v: "The ask bar. It is fixed above the home indicator on every screen including artifacts, index and the limit state." }
+      ],
+
+    };
+  }
+}
+</script>
+</body>
+</html>
