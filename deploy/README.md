@@ -106,7 +106,7 @@ Newest first. A batch is listed once verified, with the commit that recorded it.
 | 2026-09-03 | **Turn-2 fix** — role-aware message length | `src/ask_christopher/web.py`, `web/app.js` | Live, verified `e314f35`. First batch to need a Passenger restart |
 | 2026-09-02 | Frontend v3 — answer formatting, showcase, duplicate-submit fix | `web/index.html`, `web/app.css`, `web/app.js` | Live, verified `a7b7543` |
 | 2026-09-01 | Frontend v2 — three-column shell, arrival, thread | `web/index.html`, `web/app.css`, `web/app.js` | Live, verified `45ac256` |
-| 2026-08-30 | Canonical origin — force HTTPS, www to apex | `deploy/htaccess` | **Prepared, awaiting upload** |
+| 2026-08-30 | Canonical origin — force HTTPS, www to apex, HSTS header | `deploy/htaccess` | **Prepared, awaiting upload** |
 | 2026-08-29 | Phase 2 cutover | `web/` (12), `passenger_wsgi.py`, `src/ask_christopher/`, `.htaccess` | Live, verified `fec4bef` and re-verified `4f15d58` |
 
 ### Batch 2026-09-02 (turn-2 fix) — `e314f35`

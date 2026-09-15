@@ -30,6 +30,34 @@ RewriteCond %{HTTP_HOST} ^www\. [NC]
 RewriteRule ^ https://christophermathews.com%{REQUEST_URI} [R=301,L]
 </IfModule>
 
+# HSTS: once a browser has seen this header over a real TLS connection, it
+# stops trying the plaintext origin at all for the given window, closing the
+# second half of the 2026-08-30 finding (no HTTPS redirect, no HSTS header) -
+# the block above opened only the first half.
+#
+# env=HTTPS restricts the header to responses Apache actually served over
+# TLS, so a client that somehow still reaches this rule over plaintext never
+# receives it. That should be unreachable given the redirect above, but the
+# header costs nothing extra to scope correctly and this is defence in depth
+# rather than reliance on one rule alone.
+#
+# max-age=86400 (one day) is a first-rollout value, not the target. This is
+# the header's first time in production on this host: HTTPS itself already
+# works (only the redirect and this header were missing), so the residual
+# risk is narrow, but a day-long window is still short enough to recover
+# from an unforeseen TLS problem without locking visitors out for weeks.
+# Raise it in stages - a week, then months - once it has run clean.
+#
+# No includeSubDomains: no subdomain of christophermathews.com is confirmed
+# to serve HTTPS in this deployment, and this directive cannot be scoped
+# per-subdomain, so turning it on would force TLS on hosts nobody has
+# verified. No preload: the browser preload list is effectively permanent
+# once joined and this header has not run in production at all yet -
+# reconsider both after a stable observation period.
+<IfModule mod_headers.c>
+Header always set Strict-Transport-Security "max-age=86400" env=HTTPS
+</IfModule>
+
 # Block the include-only files.
 <IfModule mod_rewrite.c>
 RewriteEngine On
