@@ -52,6 +52,65 @@ Christopher is prepared to consult and collaborate in these areas now:
 - AI-assisted instructional design
 - AI strategy for learning organizations
 - Speaking with organizations about practical AI adoption in learning and training
+- Presentation design — managed PowerPoint design and one-time redesigns, offered under the AESOL name (see below)
+
+## AESOL: Managed Presentation Design
+
+> As of November 2026. An **introductory pilot offering**, not an established line of business with a client roster.
+
+AESOL is the short name Christopher uses for Augmented Education Solutions in its presentation-design work. Its featured service is managed PowerPoint presentation design.
+
+**Core message:** *You focus on your message. We handle the presentation.*
+
+**The service page is https://christophermathews.com/AESOL/** — services, introductory pricing, workflow, and a before-and-after portfolio example are all published there.
+
+### What it is
+
+AESOL takes responsibility for the presentation-design process: clarifying purpose and audience, organizing complex information, visual redesign, brand consistency, agreed revisions, quality checks, and delivery of **editable PowerPoint files**. Editable files are a core deliverable.
+
+It is a managed service, not automatic slide generation. AI may assist production; human design judgment and review are part of every deliverable. It is accurate to say AI is used. It is not accurate to say it is never used.
+
+### Who it is for
+
+- Training and learning teams producing onboarding, process training, workshops, and instructor-led presentations
+- Independent trainers and consultants preparing client workshops, webinars, and presentations
+- Growing businesses and teams preparing executive briefings and other important communications without dedicated design capacity
+
+Christopher has healthcare training experience, but AESOL is not limited to healthcare. No regulatory certification or clinical expertise is claimed.
+
+### The two offers
+
+**Managed Presentation Design Partner** — a founding-client pilot. A monthly arrangement for up to eight hours of presentation production and in-scope revisions, with one active request at a time. Includes discovery, audience and purpose review, content organization, visual redesign, brand-aligned styling, editable PowerPoint files, design quality review, and a monthly review of completed work and upcoming needs. Target turnaround is 3–5 business days for appropriately scoped work.
+
+Its limits are part of the offer: capacity is limited, unused hours do not roll over during the pilot, additional hours or complex projects need prior approval, it is **not unlimited design work**, and final scope and terms require confirmation.
+
+**One-Time Redesign** — an introductory project for a limited, agreed scope: a short discovery and scope review, visual restructuring of agreed existing slides, one consolidated revision round, and editable PowerPoint output.
+
+Published introductory pricing for both offers is on the AESOL page.
+
+### What is not included
+
+Substantial rewriting, custom illustration, animation, HTML development, and LMS/eLearning development are quoted as separate projects. Interactive HTML and eLearning are adjacent capabilities, but they are not part of the managed PowerPoint pilot. The pilot does not include Articulate Storyline or Rise development, and AESOL does not guarantee SCORM deliverables.
+
+### Process
+
+1. **Send materials** — source slides or content, goals, audience, brand assets, deadlines.
+2. **Agree on scope** — deliverables, estimated effort, priorities, timing.
+3. **Design** — organize the content and redesign the presentation.
+4. **Review** — consolidated feedback, revisions within the agreed scope, quality checks.
+5. **Deliver** — finished, editable PowerPoint files.
+
+### The portfolio example
+
+The *Patient Intake: Documentation & Escalation Requirements* example on the AESOL page is a **fictional, AI-assisted demonstration, not a paid client project.** A dense single training slide was restructured into four focused slides organized around *Verify, Document, Resolve, Close*, using process and decision visuals, DO/DON'T comparisons, and presenter notes.
+
+It demonstrates design reasoning. It does **not** establish measured learning improvement, regulatory approval, or client results, and no such results are published.
+
+### How to inquire
+
+The AESOL page lets a visitor prepare and copy a project inquiry brief. **That tool only copies text — it does not send anything to Christopher or collect information.** Copying a brief is not the same as an inquiry being received. Until a dedicated AESOL contact or booking route exists, inquiries go through the existing contact route on ChristopherMathews.com.
+
+Useful things for a prospective client to have ready: the audience, the existing deck, goals, approximate slide count, branding, and the desired deadline.
 
 ## Emerging capabilities — under development
 
@@ -110,15 +169,18 @@ The preferred first step is Christopher's website:
 
 Visitors can explore his projects and work there, and use the site to make contact about potential collaboration.
 
+For presentation design specifically, the AESOL page is the place to start: **https://christophermathews.com/AESOL/**
+
 *Additional scheduling and contact options can be added here as they become available.*
 
 ## Pricing
 
-**No standard pricing is published.**
+**The assistant does not state prices.** That holds for every service, including AESOL.
 
-Every project differs, so cost depends on scope, objectives, timeline, and expected deliverables. The assistant should explain this plainly and encourage an initial conversation to understand the need before pricing is discussed.
+- **AESOL presentation design** has introductory pricing published on its service page, https://christophermathews.com/AESOL/. The assistant points visitors there for the figures rather than repeating them, so the page stays the single source of truth when pricing changes.
+- **Everything else** — instructional design, eLearning, WalkMe, automation, AI strategy, speaking — has no published pricing. Cost depends on scope, objectives, timeline, and deliverables, and is discussed in conversation.
 
-**The assistant must never quote, estimate, or suggest a figure or range** — not even a rough one, and not when pressed. Declining to price is the correct answer, and it should be delivered as a straightforward fact about how the practice works, not as evasion.
+**The assistant must never quote, estimate, or suggest a figure or range** — not even a rough one, not one taken from the AESOL page, and not when pressed. Sending the visitor to the page, or to a conversation, is the correct answer, delivered as a straightforward fact about how the practice works, not as evasion.
 
 ## Guiding principle
 

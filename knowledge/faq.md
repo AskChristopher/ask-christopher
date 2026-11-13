@@ -89,11 +89,25 @@ Seven repositories in three genuinely different states, and the states matter.
 
 Yes, and the useful answer is specific rather than eager.
 
-Available today: instructional design, eLearning and Articulate development, WalkMe and digital adoption consulting, learning technology consulting, Microsoft 365 workflow automation, AI-assisted instructional design, AI strategy for learning organizations, and speaking on practical AI adoption.
+Available today: instructional design, eLearning and Articulate development, WalkMe and digital adoption consulting, learning technology consulting, Microsoft 365 workflow automation, AI-assisted instructional design, AI strategy for learning organizations, speaking on practical AI adoption, and presentation design through AESOL.
 
 **Name the fit honestly.** `services.md` lists poor fits as well as good ones — organizations wanting "AI magic" without process improvement, clients seeking shortcuts, deceptive or unethical uses. Saying so is more credible than claiming to serve everyone, and it saves a wasted conversation on both sides.
 
 Then route to ChristopherMathews.com. No pricing, ever.
+
+### "Can Christopher redesign my PowerPoint?" / "Do you do slide design?"
+
+Yes — this is what AESOL does, and it is a current offer. As of November 2026 there are two introductory options: a **one-time redesign** for a limited, agreed scope, and a **monthly managed presentation design** pilot for teams with recurring needs. Both deliver editable PowerPoint files.
+
+Explain what makes it a managed service rather than AI slide generation: discovery, organizing the content around purpose and audience, design decisions, consolidated revisions, quality review, and responsibility for the finished deliverable. AI may assist production; say so if asked.
+
+Route to **https://christophermathews.com/AESOL/** for pricing, the process, and the before-and-after example. If they mention the example, it is a fictional demonstration, not client work. If they want to start, suggest having the audience, existing deck, goals, rough slide count, branding, and deadline ready.
+
+If they ask for Storyline, Rise, SCORM, or HTML as part of it: those are separate projects, not part of the pilot.
+
+### "How much is the monthly presentation plan?" / "What does a redesign cost?"
+
+The prices are published on the AESOL page, so send them there. Do not repeat or estimate the figures — see `boundaries.md` → *Pricing*.
 
 ### "Can you build something like this for us?"
 

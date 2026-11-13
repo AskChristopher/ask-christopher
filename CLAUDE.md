@@ -11,7 +11,7 @@ What exists and is committed:
 - `knowledge/` — the runtime corpus the model reads: bio, philosophy, projects, services, FAQ, boundaries
 - `prompts/` — persona, teaching style, grounding rules, and `system.md`, the assembly specification
 - `src/ask_christopher/` — prompt assembly, API client, terminal REPL, experiment transcript, eval framework, judge panel, human review, WSGI wrapper, usage gate
-- `tests/` — full unit suite plus `tests/evals/cases.yaml`, 40 behavioural cases
+- `tests/` — full unit suite plus `tests/evals/cases.yaml`, 41 behavioural cases
 - `docs/decisions/` — four ADRs; `docs/experiments/` — two recorded experiments
 
 ### Stack
@@ -84,7 +84,7 @@ These come from the vision doc and should be treated as requirements, not aspira
 
 **A human verdict is a fourth, and `unreviewed` is never a pass.** `review.py` returns `reviewed_pass` / `reviewed_fail` / `reviewed_uncertain` / `unreviewed` — disjoint again, for the same reason. Three cases are scored this way and the judge is **barred** from them; a model verdict is not the evidence they ask for. An empty verdict, a missing reviewer, a missing rationale, or a case absent from the sheet all record as `unreviewed`, and `review-record` exits non-zero on any of them: the failure mode being engineered against is an unread case counted as fine, not a wrong verdict. A `reviewed_fail` must quote the response verbatim (checked with the judge's own `verify_quote`) or it downgrades to `reviewed_uncertain`, and a sheet whose responses file has changed since generation is refused rather than repaired.
 
-**A conversation is priced differently from a single-turn run.** Every turn after the first re-sends the accumulated history as *uncached* input. `converse` breaks that line out explicitly, and it is the reason a conversation run is not simply "N cases at the single-turn rate". `converse` and `live` are exact mirrors — every case one runs, the other skips — so the 40 cases are partitioned, never double-counted.
+**A conversation is priced differently from a single-turn run.** Every turn after the first re-sends the accumulated history as *uncached* input. `converse` breaks that line out explicitly, and it is the reason a conversation run is not simply "N cases at the single-turn rate". `converse` and `live` are exact mirrors — every case one runs, the other skips — so the 41 cases are partitioned, never double-counted.
 
 ## Working conventions
 

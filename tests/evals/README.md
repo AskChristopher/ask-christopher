@@ -17,7 +17,7 @@ You would not ship a course and call it effective because it felt effective. You
 ```
 evals/
 ├── README.md
-└── cases.yaml     The suite — 40 cases, each traced to the file that requires it
+└── cases.yaml     The suite — 41 cases, each traced to the file that requires it
 ```
 
 The framework lives in `src/ask_christopher/evals.py`; its own tests are in `tests/test_evals.py`. Both run offline with no credentials.
