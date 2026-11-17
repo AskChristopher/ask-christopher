@@ -65,11 +65,13 @@ def _write_tree(base: Path, *, newline: str = "\n", omit: str | None = None) -> 
 # --------------------------------------------------------------------------
 
 
-#: The Phase 1 prefix, as measured at commit ``f0a7840`` and recorded in
-#: ``docs/evals/v1c-persona-grammar-review-sheet.yaml`` -> ``binding.prompt_sha256``.
-#: Every judged and reviewed verdict in ``docs/evals/`` describes *these* bytes.
-PHASE_1_PROMPT_SHA256 = "63f3b4c3d9bdc93616976b3a33b3770fce6f8fda3ef5675ace264db93198e655"
-PHASE_1_PROMPT_BYTES = 134403
+#: The Phase 1 prefix, re-measured after the AESOL corpus update (November 2026).
+#: Verdicts in ``docs/evals/`` were recorded against the earlier prefix measured at
+#: commit ``f0a7840`` (``binding.prompt_sha256`` in
+#: ``docs/evals/v1c-persona-grammar-review-sheet.yaml``) and describe *those* bytes,
+#: not these, until the suite is re-run.
+PHASE_1_PROMPT_SHA256 = "75d7a1440e07b68e2b00ffaee7ba4872999422d587447b65b136338dcca4db5b"
+PHASE_1_PROMPT_BYTES = 142611
 
 
 def test_build_is_byte_stable_within_a_process() -> None:

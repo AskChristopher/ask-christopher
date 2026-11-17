@@ -753,7 +753,7 @@ def test_a_conversation_run_accounts_for_every_case_in_the_file(tmp_path: Path) 
 
     ran = record["selection"]["ran"]
     skipped = len(record["selection"]["skipped"])
-    assert ran + skipped == record["selection"]["total_cases"] == 40
+    assert ran + skipped == record["selection"]["total_cases"] == 41
     assert {s["reason"] for s in record["selection"]["skipped"]} == {"single_turn"}
 
 
