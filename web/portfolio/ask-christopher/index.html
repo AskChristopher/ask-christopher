@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ask Christopher — Case Study · Christopher Mathews</title>
+<meta name="description" content="Case study: the AI assistant that runs ChristopherMathews.com. Grounded in a curated knowledge corpus, tested against 40 behavioral cases, live since August 2026.">
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/portfolio/assets/portfolio.css">
+</head>
+<body data-mode="christopher">
+
+<header class="bar">
+  <div class="wrap">
+    <a href="/portfolio/"><span class="icon i-left" aria-hidden="true" style="width:12px;height:12px;vertical-align:-1px;"></span> Portfolio</a>
+    <nav aria-label="Site">
+      <a href="/">Ask Christopher</a>
+      <a href="/resume/Christopher-Mathews-Resume.pdf" target="_blank" rel="noopener">Resume</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero" aria-labelledby="hero-title">
+    <span class="meta"><b>03</b> Case study · AI performance support</span>
+    <h1 id="hero-title" class="display">Ask <em>Christopher</em></h1>
+    <p class="lede">The assistant on this site's homepage. It answers questions about my work from a knowledge base I wrote, and it's tested to say "I don't know" instead of making something up.</p>
+    <div class="actions">
+      <a class="btn btn--primary" href="/">Try it now <span class="icon i-right" aria-hidden="true"></span></a>
+      <a class="btn btn--outline" href="https://github.com/AskChristopher/ask-christopher" target="_blank" rel="noopener">Read the code <span class="icon i-up" aria-hidden="true"></span></a>
+    </div>
+    <dl class="facts">
+      <div><dt>Role</dt><dd>Designer &amp; developer</dd></div>
+      <div><dt>Format</dt><dd>Conversational assistant</dd></div>
+      <div><dt>Audience</dt><dd>Hiring managers, clients, learners</dd></div>
+      <div><dt>Stack</dt><dd>Claude API · Python · plain HTML/JS</dd></div>
+      <div><dt>Status</dt><dd>● Live since Aug 2026</dd></div>
+    </dl>
+  </section>
+
+  <figure class="figure" style="margin-bottom: clamp(48px, 6vw, 80px);">
+    <img src="/portfolio/ask-christopher/assets/conversation.webp" alt="The Ask Christopher interface: a session rail on the left, an answer about the portfolio in the middle, and a showcase rail of related work on the right." width="1292" height="931">
+    <figcaption>A live conversation · the showcase rail on the right surfaces the work an answer mentions</figcaption>
+  </figure>
+
+  <section class="section" aria-labelledby="problem">
+    <header><span class="meta"><b>01</b> The problem</span><h2 id="problem">Visitors arrive with questions, not time</h2></header>
+    <div class="prose">
+      <p>A portfolio site makes every visitor do the same work: read pages until they find the answer to their own question. A hiring manager wants to know whether I've built scenario-based learning. A small-business owner wants to know whether their problem even needs a course.</p>
+      <p>That's a performance-support problem, so I treated it like one: put the answer where the question happens.</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="constraints">
+    <header><span class="meta"><b>02</b> The constraints</span><h2 id="constraints">It speaks for a real person</h2></header>
+    <div class="prose">
+      <ul>
+        <li><strong>No invented claims.</strong> An assistant that represents me can't fabricate a credential, a project or a client. That was a launch-blocking rule, not a nice-to-have.</li>
+        <li><strong>Honest about evidence.</strong> Some work is public, some is private for a reason, and some isn't written up yet. The assistant has to say which.</li>
+        <li><strong>Small budget, simple hosting.</strong> Shared hosting, Python 3.11, manual deploys, and every live test costs real money.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="thinking">
+    <header><span class="meta"><b>03</b> The thinking</span><h2 id="thinking">Curate the knowledge, then test the behavior</h2></header>
+    <div class="prose">
+      <p><strong>Write the knowledge like content, not data.</strong> Six hand-written files (bio, philosophy, projects, services, FAQ, boundaries), each project entry explaining why it exists and what I learned, not just what it is.</p>
+      <p><strong>Start simple, measure, then decide.</strong> The whole knowledge base, about 24,000 tokens, goes into every request and is served from the prompt cache. I recorded that as a baseline decision with a stated point at which it gets revisited, instead of building retrieval before it was needed.</p>
+      <p><strong>Treat honesty as something you test.</strong> Status and evidence each have their own vocabulary (built, in progress, planned; public, private for a reason, described only), so "is this real?" has a precise answer.</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="system">
+    <header><span class="meta"><b>04</b> The system</span><h2 id="system">Five parts, one prefix</h2></header>
+    <div class="prose">
+      <ol class="flow" aria-label="System components">
+        <li><span>01</span><strong>Knowledge</strong><p>Six curated Markdown files.</p></li>
+        <li><span>02</span><strong>Behavior</strong><p>Persona, teaching style, grounding rules.</p></li>
+        <li><span>03</span><strong>Assembly</strong><p>A byte-identical prefix, so caching holds.</p></li>
+        <li><span>04</span><strong>Model</strong><p>Claude via the Anthropic API.</p></li>
+        <li><span>05</span><strong>Interface</strong><p>Conversation plus a showcase of related work.</p></li>
+      </ol>
+      <p>Behind it is an evaluation harness that scores answers three different ways and never mixes the results: automatic checks that can catch a failure but never confirm a pass, a three-lens model judge that must quote the answer verbatim to fail it, and human review for the cases only a person should grade.</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="result">
+    <header><span class="meta"><b>05</b> The result</span><h2 id="result">Live, measured, and honest about it</h2></header>
+    <div class="prose">
+      <div class="stats" role="list">
+        <div role="listitem"><b>40</b><span>behavioral test cases in the launch baseline</span></div>
+        <div role="listitem"><b>38</b><span>passed at baseline; both failures were fixed and re-tested</span></div>
+        <div role="listitem"><b>373</b><span>offline unit tests</span></div>
+        <div role="listitem"><b>$9.52</b><span>total spent on live evaluation runs</span></div>
+      </div>
+      <p>Ask Christopher has been this site's homepage since August 29, 2026. Live use also exposed a bug the tests didn't cover: after a long answer, the visitor's follow-up question was rejected, because a length limit meant for questions was being applied to the assistant's own previous reply. It was traced, fixed, and confirmed in production on September 3.</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="learned">
+    <header><span class="meta"><b>06</b> What I learned</span><h2 id="learned">Small overclaims are the real risk</h2></header>
+    <div class="prose">
+      <p><strong>The failures weren't hallucinations.</strong> The findings that remain are single sentences that stretch slightly past the evidence, like implying all my projects are documented on GitHub when two of seven were. Those are the claims a visitor is most likely to check.</p>
+      <p><strong>An assistant only knows what you give it.</strong> When I published my first case study, the assistant couldn't mention it, because its knowledge still described only my code repositories. The portfolio pages and the assistant's knowledge now live in the same repository and ship together.</p>
+      <p><strong>Test the path people actually use.</strong> Single questions passed; real conversations broke. The follow-up after a long answer is where the bug lived.</p>
+    </div>
+  </section>
+</main>
+
+<section class="band" aria-labelledby="cta-title">
+  <div class="wrap">
+    <span class="meta" style="color: var(--gray-400);">Try it</span>
+    <h2 id="cta-title" class="display">Ask it something hard</h2>
+    <p class="lede">Ask about my work, my process, or something I haven't done. Then see whether it tells you.</p>
+    <div class="actions">
+      <a class="btn btn--primary" href="/">Ask Christopher <span class="icon i-right" aria-hidden="true"></span></a>
+      <a class="btn btn--outline" href="/resume/Christopher-Mathews-Resume.pdf" target="_blank" rel="noopener">View my resume <span class="icon i-doc" aria-hidden="true"></span></a>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="wrap"><span>Ask Christopher · Christopher Mathews</span><a href="/portfolio/">Back to portfolio</a></div>
+</footer>
+</body>
+</html>

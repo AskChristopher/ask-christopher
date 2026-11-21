@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vacation Rescue — Case Study · Christopher Mathews</title>
+<meta name="description" content="Case study: a facilitated multiplayer team experience built in Articulate Storyline for a remote team event. About 25 players, 4 teams, 30 minutes.">
+<link rel="stylesheet" href="/styles.css">
+<style>
+html{scroll-behavior:smooth}
+    body{margin:0;background:#F4EBD8;color:var(--ink-900)}
+    a{color:var(--signal-600)}
+    a:hover{color:var(--signal-700)}
+    img{display:block;max-width:100%}
+    @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+.cm-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--font-ui);font-weight:var(--weight-semibold);letter-spacing:0.01em;border:var(--border-width-hairline) solid transparent;border-radius:var(--radius-sm);cursor:pointer;text-decoration:none;white-space:nowrap;transition:var(--transition-ui)}
+.cm-btn:disabled,.cm-btn[aria-disabled="true"]{opacity:0.4;cursor:not-allowed}
+.cm-btn:not(:disabled):active{transform:translateY(1px)}
+.cm-btn--sm{height:32px;padding:0 12px;font-size:var(--size-xs)}
+.cm-btn--md{height:40px;padding:0 18px;font-size:var(--size-sm)}
+.cm-btn--lg{height:52px;padding:0 26px;font-size:var(--size-md)}
+.cm-btn--primary{background:var(--signal-500);color:#fff}
+.cm-btn--primary:not(:disabled):hover{background:var(--signal-600)}
+.cm-btn--secondary{background:var(--ink-900);color:var(--paper-050)}
+.cm-btn--secondary:not(:disabled):hover{background:var(--ink-700)}
+.cm-btn--outline{background:transparent;color:var(--text-primary);border-color:var(--border-strong)}
+.cm-btn--outline:not(:disabled):hover{background:var(--ink-900);color:var(--paper-050)}
+.cm-btn--ghost{background:transparent;color:var(--text-primary)}
+.cm-btn--ghost:not(:disabled):hover{background:var(--surface-hover)}
+.cm-btn--link{background:transparent;color:var(--text-signal);height:auto;padding:0;text-decoration:underline;text-underline-offset:4px}
+.cm-btn--link:not(:disabled):hover{color:var(--signal-700)}
+.cm-btn--full{width:100%}
+.cm-icon{display:inline-block;flex:none;background-color:currentColor;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;-webkit-mask-size:contain;mask-size:contain;vertical-align:-0.15em}
+.cm-meta{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:var(--size-2xs);font-weight:var(--weight-medium);letter-spacing:var(--tracking-mono-label);text-transform:uppercase;color:var(--text-muted)}
+.cm-meta--signal{color:var(--text-signal)}
+.cm-meta--primary{color:var(--text-primary)}
+.cm-meta__rule{display:block;width:24px;height:1px;background:currentColor;opacity:0.5}
+.cm-meta__num{color:var(--text-signal)}
+</style>
+</head>
+<body>
+<div id="dc-root"><div class="sc-host"><div data-mode="christopher" style="background: rgb(244, 235, 216); min-height: 100vh; font-family: var(--font-body); overflow-x: hidden;">
+
+  
+  <header style="position: sticky; top: 0px; z-index: 20; background: rgba(244, 235, 216, 0.88); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(20, 19, 16, 0.12);">
+    <nav aria-label="Case study" style="max-width: 1440px; margin: 0px auto; padding: 12px clamp(20px, 4vw, 48px); display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+      <a href="/portfolio/" style="font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-900); text-decoration: none; display: flex; gap: 10px; align-items: center;">
+        <span aria-hidden="true">←</span><span>Christopher Mathews</span>
+      </a>
+      <span style="font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-600);">Case study · Vacation Rescue</span>
+      <div class="sc-host-x" style="display: contents;"><a class="cm-btn cm-btn--secondary cm-btn--sm" href="https://christophermathews.com/demos/Vacation-Rescue/story.html" target="_blank" rel="noopener">Play<span role="presentation" aria-hidden="true" class="cm-icon " style="width: 13px; height: 13px; mask-image: url(&quot;/portfolio/assets/icons/arrow-up-right.svg&quot;);"></span></a></div>
+    </nav>
+  </header>
+
+  <main>
+    
+    <section aria-labelledby="hero-title" style="max-width: 1440px; margin: 0px auto; padding: clamp(40px, 6vw, 88px) clamp(20px, 4vw, 48px) clamp(56px, 7vw, 112px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: clamp(32px, 5vw, 72px); align-items: center;">
+      <div style="display: flex; flex-direction: column; gap: 28px; position: relative; z-index: 2;">
+        <p style="margin: 0px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(31, 58, 56); display: flex; flex-wrap: wrap; gap: 8px 14px;">
+          <span>Interactive Experience Design</span><span aria-hidden="true" style="color: var(--signal-500);">·</span><span>Game Design</span><span aria-hidden="true" style="color: var(--signal-500);">·</span><span>Articulate Storyline</span>
+        </p>
+        <h1 id="hero-title" style="margin: 0px -12vw 0px 0px; font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; line-height: 0.86; font-size: clamp(64px, 10.5vw, 168px); color: rgb(31, 58, 56);">Vacation<br><span style="color: var(--signal-500);">Rescue</span></h1>
+        <p style="margin: 0px; font-size: clamp(20px, 1.9vw, 26px); line-height: 1.4; max-width: 30ch; text-wrap: pretty; color: var(--ink-900);">A multiplayer team experience that turns a virtual team event into a collaborative race home.</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+          <div class="sc-host-x" style="display: contents;"><a class="cm-btn cm-btn--primary cm-btn--lg" href="https://christophermathews.com/demos/Vacation-Rescue/story.html" target="_blank" rel="noopener">Play Vacation Rescue<span role="presentation" aria-hidden="true" class="cm-icon " style="width: 18px; height: 18px; mask-image: url(&quot;/portfolio/assets/icons/arrow-up-right.svg&quot;);"></span></a></div>
+          <div class="sc-host-x" style="display: contents;"><a class="cm-btn cm-btn--outline cm-btn--lg" href="#overview">Read the case study<span role="presentation" aria-hidden="true" class="cm-icon " style="width: 18px; height: 18px; mask-image: url(&quot;/portfolio/assets/icons/arrow-down.svg&quot;);"></span></a></div>
+        </div>
+        <p style="margin: 0px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-600);">Designed &amp; developed by Christopher Mathews</p>
+      </div>
+
+      <figure style="margin: 0px; position: relative;">
+        
+          <img src="assets/trophy.webp" alt="The Vacation Rescue trophy: a gold cup printed with the game's logo, set against a vintage tropical beach poster." style="width: 100%; aspect-ratio: 1367 / 1150; object-fit: cover; border: 10px solid rgb(251, 245, 232); box-shadow: rgba(20, 19, 16, 0.08) 0px 1px 2px, rgba(20, 19, 16, 0.35) 0px 24px 48px -24px; transform: rotate(1.2deg);">
+        
+        
+        
+        <div aria-hidden="true" style="position: absolute; left: -28px; bottom: -32px; width: 132px; height: 132px; border-radius: 50%; border: 3px solid var(--signal-500); display: flex; align-items: center; justify-content: center; transform: rotate(-12deg); background: rgba(244, 235, 216, 0.92);">
+          <div style="width: 112px; height: 112px; border-radius: 50%; border: 1px dashed var(--signal-500); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-family: var(--font-display); text-transform: uppercase; color: var(--signal-600); text-align: center;">
+            <span style="font-size: 10px; letter-spacing: 0.14em; font-family: var(--font-mono);">Status</span>
+            <span style="font-size: 17px; font-weight: 900; line-height: 0.95; letter-spacing: -0.01em;">Deployed<br>&amp; played</span>
+          </div>
+        </div>
+        <figcaption style="margin-top: 20px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-600); text-align: right;">Finish-line artwork · The Vacation Rescue Trophy</figcaption>
+      </figure>
+    </section>
+
+    
+    <section id="overview" aria-labelledby="overview-title" data-reveal="" style="max-width: 1440px; margin: 0px auto; padding: 0px clamp(20px, 4vw, 48px) clamp(72px, 9vw, 128px); scroll-margin-top: 72px;">
+      <h2 id="overview-title" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px);">Project overview</h2>
+      <div style="display: grid; grid-template-columns: minmax(0px, auto) minmax(0px, 1fr); background: rgb(251, 245, 232); border: 1px solid rgba(31, 58, 56, 0.22); box-shadow: rgba(20, 19, 16, 0.4) 0px 18px 40px -28px;">
+        <div style="background: rgb(31, 58, 56); color: rgb(244, 235, 216); padding: 24px clamp(16px, 2.4vw, 32px); display: flex; flex-direction: column; justify-content: space-between; gap: 24px; border-right: 2px dashed rgba(244, 235, 216, 0.35);">
+          <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(227, 194, 122);">Boarding pass</span>
+          <span style="font-family: var(--font-display); font-weight: 900; font-size: clamp(22px, 2.4vw, 34px); line-height: 0.9; text-transform: uppercase; letter-spacing: -0.02em; writing-mode: vertical-rl; transform: rotate(180deg);">VR · 001</span>
+        </div>
+        <dl style="margin: 0px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));">
+          <div style="padding: 24px clamp(16px, 2vw, 28px); border-right: 1px dashed rgba(31, 58, 56, 0.25); border-bottom: 1px dashed rgba(31, 58, 56, 0.25); display: flex; flex-direction: column; gap: 10px;">
+            <dt style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal-600);">Role</dt>
+            <dd style="margin: 0px; font-family: var(--font-display); font-weight: 700; font-size: 19px; line-height: 1.15; color: rgb(31, 58, 56); text-wrap: pretty;">Experience Designer &amp; Developer</dd>
+          </div>
+          <div style="padding: 24px clamp(16px, 2vw, 28px); border-right: 1px dashed rgba(31, 58, 56, 0.25); border-bottom: 1px dashed rgba(31, 58, 56, 0.25); display: flex; flex-direction: column; gap: 10px;">
+            <dt style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal-600);">Platform</dt>
+            <dd style="margin: 0px; font-family: var(--font-display); font-weight: 700; font-size: 19px; line-height: 1.15; color: rgb(31, 58, 56);">Articulate Storyline</dd>
+          </div>
+          <div style="padding: 24px clamp(16px, 2vw, 28px); border-right: 1px dashed rgba(31, 58, 56, 0.25); border-bottom: 1px dashed rgba(31, 58, 56, 0.25); display: flex; flex-direction: column; gap: 10px;">
+            <dt style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal-600);">Format</dt>
+            <dd style="margin: 0px; font-family: var(--font-display); font-weight: 700; font-size: 19px; line-height: 1.15; color: rgb(31, 58, 56); text-wrap: pretty;">Facilitated Multiplayer Experience</dd>
+          </div>
+          <div style="padding: 24px clamp(16px, 2vw, 28px); border-right: 1px dashed rgba(31, 58, 56, 0.25); border-bottom: 1px dashed rgba(31, 58, 56, 0.25); display: flex; flex-direction: column; gap: 10px;">
+            <dt style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal-600);">Setting</dt>
+            <dd style="margin: 0px; font-family: var(--font-display); font-weight: 700; font-size: 19px; line-height: 1.15; color: rgb(31, 58, 56);">Remote Team Event · Microsoft Teams</dd>
+          </div>
+          <div style="padding: 24px clamp(16px, 2vw, 28px); border-bottom: 1px dashed rgba(31, 58, 56, 0.25); display: flex; flex-direction: column; gap: 10px;">
+            <dt style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal-600);">Status</dt>
+            <dd style="margin: 0px; font-family: var(--font-display); font-weight: 700; font-size: 19px; line-height: 1.15; color: rgb(31, 58, 56); display: flex; align-items: center; gap: 8px;"><span aria-hidden="true" style="color: var(--signal-500); font-size: 12px;">●</span>Deployed &amp; Played</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    
+    <section aria-labelledby="challenge-title" data-reveal="" style="max-width: 1440px; margin: 0px auto; padding: 0px clamp(20px, 4vw, 48px) clamp(80px, 10vw, 144px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: clamp(32px, 5vw, 80px); align-items: end;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+      <div style="display: flex; flex-direction: column; gap: 24px;">
+        <div class="sc-host-x" style="display: contents;"><span class="cm-meta cm-meta--primary "><span class="cm-meta__rule"></span><span class="cm-meta__num">01</span>The challenge</span></div>
+        <h2 id="challenge-title" style="margin: 0px; font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.03em; line-height: 0.95; font-size: clamp(36px, 4.6vw, 72px); color: rgb(31, 58, 56); text-wrap: balance;">How do you turn a virtual team event into something people actually have to <span style="color: var(--signal-500);">play together?</span></h2>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 20px; font-size: 19px; line-height: 1.6; max-width: 52ch; padding-bottom: 6px;">
+        <p style="margin: 0px; text-wrap: pretty;">Remote team events drift toward passive participation: cameras off, one person talking, everyone else waiting it out. The brief was an activity that required real conversation and collaboration to succeed.</p>
+        <p style="margin: 0px; text-wrap: pretty;">The answer wasn't a quiz. The digital experience and the live breakout-room structure were designed as <strong style="font-weight: 600;">one system</strong>.</p>
+      </div>
+    </section>
+
+    
+    <section aria-labelledby="exp-title" style="padding-bottom: clamp(80px, 10vw, 144px);">
+      <figure data-reveal="" style="margin: 0px auto; max-width: 1600px; position: relative;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+        <img src="assets/terminal.webp" alt="Illustrated 1960s airport terminal: sweeping concrete arches, travellers with luggage, and a jet on the tarmac beyond the glass." style="width: 100%; height: clamp(320px, 52vw, 760px); object-fit: cover; object-position: 50% 55%;">
+        <div style="position: absolute; left: clamp(20px, 4vw, 48px); bottom: clamp(20px, 4vw, 48px); background: rgb(31, 58, 56); color: rgb(244, 235, 216); padding: 14px 18px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; display: flex; gap: 16px; flex-wrap: wrap;">
+          <span style="color: rgb(227, 194, 122);">Location 01</span><span>International Terminal</span>
+        </div>
+      </figure>
+
+      <div style="max-width: 1440px; margin: 0px auto; padding: clamp(56px, 7vw, 104px) clamp(20px, 4vw, 48px) 0px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: clamp(32px, 5vw, 72px);">
+        <div data-reveal="" style="display: flex; flex-direction: column; gap: 24px; grid-column: span 1;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+          <div class="sc-host-x" style="display: contents;"><span class="cm-meta cm-meta--primary "><span class="cm-meta__rule"></span><span class="cm-meta__num">02</span>The experience</span></div>
+          <h2 id="exp-title" style="margin: 0px; font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.03em; line-height: 0.95; font-size: clamp(34px, 4vw, 60px); color: rgb(31, 58, 56); text-wrap: balance;">Your vacation has gone off the rails.</h2>
+          <p style="margin: 0px; font-family: var(--font-display); font-weight: 700; font-size: clamp(20px, 1.8vw, 26px); line-height: 1.2; color: var(--signal-600); text-transform: uppercase; letter-spacing: -0.01em;">Your team has one job: make it home first.</p>
+          <p style="margin: 0px; font-size: 19px; line-height: 1.6; max-width: 48ch; text-wrap: pretty;">Players are stranded mid-trip and have to work their way home through four locations. AVA, the retro-futurist flight attendant, knows why the flight left without them — and she isn't saying.</p>
+        </div>
+
+        <ol data-reveal="" style="list-style: none; margin: 0px; padding: 0px; display: flex; flex-direction: column; border-top: 2px solid rgb(31, 58, 56); align-self: end;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+          <li style="display: grid; grid-template-columns: 48px 1fr; gap: 16px; padding: 20px 0px; border-bottom: 1px solid rgba(31, 58, 56, 0.2);">
+            <span style="font-family: var(--font-mono); font-size: 13px; color: var(--signal-600); padding-top: 3px;">A</span>
+            <div style="display: flex; flex-direction: column; gap: 4px;"><strong style="font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: 18px; color: rgb(31, 58, 56);">Split into breakout rooms</strong><span style="font-size: 17px; line-height: 1.5; color: var(--gray-600);">Each room becomes one competing team.</span></div>
+          </li>
+          <li style="display: grid; grid-template-columns: 48px 1fr; gap: 16px; padding: 20px 0px; border-bottom: 1px solid rgba(31, 58, 56, 0.2);">
+            <span style="font-family: var(--font-mono); font-size: 13px; color: var(--signal-600); padding-top: 3px;">B</span>
+            <div style="display: flex; flex-direction: column; gap: 4px;"><strong style="font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: 18px; color: rgb(31, 58, 56);">Pick one driver</strong><span style="font-size: 17px; line-height: 1.5; color: var(--gray-600);">One person shares their screen and runs the experience.</span></div>
+          </li>
+          <li style="display: grid; grid-template-columns: 48px 1fr; gap: 16px; padding: 20px 0px; border-bottom: 1px solid rgba(31, 58, 56, 0.2);">
+            <span style="font-family: var(--font-mono); font-size: 13px; color: var(--signal-600); padding-top: 3px;">C</span>
+            <div style="display: flex; flex-direction: column; gap: 4px;"><strong style="font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: 18px; color: rgb(31, 58, 56);">Solve it together</strong><span style="font-size: 17px; line-height: 1.5; color: var(--gray-600);">Everyone else talks it through and decides as a team.</span></div>
+          </li>
+        </ol>
+      </div>
+
+      <div style="max-width: 1440px; margin: 0px auto; padding: clamp(48px, 6vw, 88px) clamp(20px, 4vw, 48px) 0px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: clamp(16px, 2vw, 24px); align-items: start;">
+        <figure data-reveal="" style="margin: 0px; display: flex; flex-direction: column; gap: 12px;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+          <img src="assets/ava.webp" alt="AVA, a retro-futurist flight attendant with a teal pillbox hat, gold epaulettes and a subtly mechanical neck." style="width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 15%;">
+          <figcaption style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-600);">Character · AVA, the guide who won't tell you everything</figcaption>
+        </figure>
+        <figure data-reveal="" style="margin: 0px; display: flex; flex-direction: column; gap: 12px; grid-column: span 2; min-width: 0px;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+          <img src="assets/storyboard.webp" alt="Nine-panel night storyboard: a suitcase on a baggage carousel, AVA boarding a jet, and the plane taking off without the players." style="width: 100%; aspect-ratio: 3 / 2; object-fit: cover;">
+          <figcaption style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-600);">Storyboard · The flight leaves without you</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    
+    <section aria-labelledby="loop-title" data-surface="ink" style="background: rgb(31, 58, 56); color: rgb(244, 235, 216);">
+      <div style="max-width: 1440px; margin: 0px auto; padding: clamp(72px, 9vw, 128px) clamp(20px, 4vw, 48px); display: flex; flex-direction: column; gap: clamp(40px, 5vw, 64px);">
+        <div data-reveal="" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 24px 72px; align-items: end;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+          <div style="display: flex; flex-direction: column; gap: 24px;">
+            <div class="sc-host-x" style="display: contents;"><span class="cm-meta cm-meta--muted "><span class="cm-meta__rule"></span><span class="cm-meta__num">03</span>How the game works</span></div>
+            <h2 id="loop-title" style="margin: 0px; font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.03em; line-height: 0.95; font-size: clamp(34px, 4.4vw, 68px); color: rgb(244, 235, 216);">One loop.<br>Four locations.</h2>
+          </div>
+          <p style="margin: 0px; font-size: 19px; line-height: 1.6; max-width: 46ch; color: rgb(220, 211, 191); text-wrap: pretty;">Every location runs the same seven beats. The repetition lets teams learn the rhythm fast, so their attention goes to the challenges and each other — not the interface.</p>
+        </div>
+
+        <ol data-reveal="" style="list-style: none; margin: 0px; padding: 0px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: 0px;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+          
+            <li style="padding: 20px 16px 24px 0px; border-top: 3px solid rgb(240, 61, 20); display: flex; flex-direction: column; gap: 10px; margin-right: 0px;">
+              <span style="font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; color: rgb(227, 194, 122);"><span class="sc-interp">01</span> <span aria-hidden="true" style="color: rgba(244, 235, 216, 0.4);">→</span></span>
+              <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(19px, 1.6vw, 24px); letter-spacing: -0.02em; line-height: 1; color: rgb(244, 235, 216); overflow-wrap: anywhere;"><span class="sc-interp">Arrive</span></strong>
+              <span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: rgb(201, 192, 172);"><span class="sc-interp">A new location and a new story beat.</span></span>
+            </li>
+          
+            <li style="padding: 20px 16px 24px 0px; border-top: 3px solid rgba(244, 235, 216, 0.28); display: flex; flex-direction: column; gap: 10px; margin-right: 0px;">
+              <span style="font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; color: rgb(227, 194, 122);"><span class="sc-interp">02</span> <span aria-hidden="true" style="color: rgba(244, 235, 216, 0.4);">→</span></span>
+              <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(19px, 1.6vw, 24px); letter-spacing: -0.02em; line-height: 1; color: rgb(244, 235, 216); overflow-wrap: anywhere;"><span class="sc-interp">Collaborate</span></strong>
+              <span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: rgb(201, 192, 172);"><span class="sc-interp">The team talks it through out loud.</span></span>
+            </li>
+          
+            <li style="padding: 20px 16px 24px 0px; border-top: 3px solid rgba(244, 235, 216, 0.28); display: flex; flex-direction: column; gap: 10px; margin-right: 0px;">
+              <span style="font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; color: rgb(227, 194, 122);"><span class="sc-interp">03</span> <span aria-hidden="true" style="color: rgba(244, 235, 216, 0.4);">→</span></span>
+              <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(19px, 1.6vw, 24px); letter-spacing: -0.02em; line-height: 1; color: rgb(244, 235, 216); overflow-wrap: anywhere;"><span class="sc-interp">Solve</span></strong>
+              <span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: rgb(201, 192, 172);"><span class="sc-interp">The driver locks in the team’s answers.</span></span>
+            </li>
+          
+            <li style="padding: 20px 16px 24px 0px; border-top: 3px solid rgba(244, 235, 216, 0.28); display: flex; flex-direction: column; gap: 10px; margin-right: 0px;">
+              <span style="font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; color: rgb(227, 194, 122);"><span class="sc-interp">04</span> <span aria-hidden="true" style="color: rgba(244, 235, 216, 0.4);">→</span></span>
+              <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(19px, 1.6vw, 24px); letter-spacing: -0.02em; line-height: 1; color: rgb(244, 235, 216); overflow-wrap: anywhere;"><span class="sc-interp">Score</span></strong>
+              <span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: rgb(201, 192, 172);"><span class="sc-interp">Points reward getting it right, not just fast.</span></span>
+            </li>
+          
+            <li style="padding: 20px 16px 24px 0px; border-top: 3px solid rgba(244, 235, 216, 0.28); display: flex; flex-direction: column; gap: 10px; margin-right: 0px;">
+              <span style="font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; color: rgb(227, 194, 122);"><span class="sc-interp">05</span> <span aria-hidden="true" style="color: rgba(244, 235, 216, 0.4);">→</span></span>
+              <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(19px, 1.6vw, 24px); letter-spacing: -0.02em; line-height: 1; color: rgb(244, 235, 216); overflow-wrap: anywhere;"><span class="sc-interp">Stamp</span></strong>
+              <span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: rgb(201, 192, 172);"><span class="sc-interp">The boarding pass earns a location stamp.</span></span>
+            </li>
+          
+            <li style="padding: 20px 16px 24px 0px; border-top: 3px solid rgba(244, 235, 216, 0.28); display: flex; flex-direction: column; gap: 10px; margin-right: 0px;">
+              <span style="font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; color: rgb(227, 194, 122);"><span class="sc-interp">06</span> <span aria-hidden="true" style="color: rgba(244, 235, 216, 0.4);">→</span></span>
+              <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(19px, 1.6vw, 24px); letter-spacing: -0.02em; line-height: 1; color: rgb(244, 235, 216); overflow-wrap: anywhere;"><span class="sc-interp">Clue</span></strong>
+              <span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: rgb(201, 192, 172);"><span class="sc-interp">One word toward the final flight.</span></span>
+            </li>
+          
+            <li style="padding: 20px 16px 24px 0px; border-top: 3px solid rgba(244, 235, 216, 0.28); display: flex; flex-direction: column; gap: 10px; margin-right: 0px;">
+              <span style="font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; color: rgb(227, 194, 122);"><span class="sc-interp">07</span> <span aria-hidden="true" style="color: rgba(244, 235, 216, 0.4);">→</span></span>
+              <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(19px, 1.6vw, 24px); letter-spacing: -0.02em; line-height: 1; color: rgb(244, 235, 216); overflow-wrap: anywhere;"><span class="sc-interp">Travel on</span></strong>
+              <span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: rgb(201, 192, 172);"><span class="sc-interp">Next location — or the run home.</span></span>
+            </li>
+          
+        </ol>
+
+        <div data-reveal="" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: clamp(32px, 4vw, 56px); align-items: center; padding-top: clamp(8px, 2vw, 24px);  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <span style="font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(227, 194, 122);">Progress · the boarding pass</span>
+            <div style="display: grid; grid-template-columns: 72px 1fr; background: rgb(251, 245, 232); color: rgb(31, 58, 56); border-radius: 4px; overflow: hidden;">
+              <div style="background: rgb(22, 48, 46); display: flex; align-items: center; justify-content: center; border-right: 2px dashed rgba(251, 245, 232, 0.4);">
+                <span style="font-family: var(--font-display); font-weight: 900; font-size: 14px; letter-spacing: 0.06em; color: rgb(227, 194, 122); writing-mode: vertical-rl; transform: rotate(180deg); text-transform: uppercase;">Boarding</span>
+              </div>
+              <div style="padding: 18px; display: grid; grid-template-columns: repeat(4, minmax(0px, 1fr)); gap: 10px;">
+                
+                  <div style="aspect-ratio: 1 / 1; border: 1.5px dashed rgba(200, 46, 11, 0.55); border-radius: 6px; display: flex; align-items: center; justify-content: center; padding: 6px;">
+                    <div style="width: 100%; aspect-ratio: 1 / 1; border-radius: 50%; border: 2px solid var(--signal-600); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--signal-600); transform: rotate(-8deg); opacity: 1; transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+                      <span style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em;">LOC</span>
+                      <span style="font-family: var(--font-display); font-weight: 900; font-size: clamp(14px, 1.6vw, 20px); line-height: 1;"><span class="sc-interp">01</span></span>
+                    </div>
+                  </div>
+                
+                  <div style="aspect-ratio: 1 / 1; border: 1.5px dashed rgba(200, 46, 11, 0.55); border-radius: 6px; display: flex; align-items: center; justify-content: center; padding: 6px;">
+                    <div style="width: 100%; aspect-ratio: 1 / 1; border-radius: 50%; border: 2px solid var(--signal-600); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--signal-600); transform: rotate(6deg); opacity: 1; transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+                      <span style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em;">LOC</span>
+                      <span style="font-family: var(--font-display); font-weight: 900; font-size: clamp(14px, 1.6vw, 20px); line-height: 1;"><span class="sc-interp">02</span></span>
+                    </div>
+                  </div>
+                
+                  <div style="aspect-ratio: 1 / 1; border: 1.5px dashed rgba(200, 46, 11, 0.55); border-radius: 6px; display: flex; align-items: center; justify-content: center; padding: 6px;">
+                    <div style="width: 100%; aspect-ratio: 1 / 1; border-radius: 50%; border: 2px solid var(--signal-600); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--signal-600); transform: rotate(-4deg); opacity: 1; transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+                      <span style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em;">LOC</span>
+                      <span style="font-family: var(--font-display); font-weight: 900; font-size: clamp(14px, 1.6vw, 20px); line-height: 1;"><span class="sc-interp">03</span></span>
+                    </div>
+                  </div>
+                
+                  <div style="aspect-ratio: 1 / 1; border: 1.5px dashed rgba(200, 46, 11, 0.55); border-radius: 6px; display: flex; align-items: center; justify-content: center; padding: 6px;">
+                    <div style="width: 100%; aspect-ratio: 1 / 1; border-radius: 50%; border: 2px solid var(--signal-600); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--signal-600); transform: rotate(9deg); opacity: 1; transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+                      <span style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em;">LOC</span>
+                      <span style="font-family: var(--font-display); font-weight: 900; font-size: clamp(14px, 1.6vw, 20px); line-height: 1;"><span class="sc-interp">04</span></span>
+                    </div>
+                  </div>
+                
+              </div>
+            </div>
+            <span style="font-family: var(--font-ui); font-size: 14px; color: rgb(201, 192, 172);">Each cleared location adds a stamp. The pass is always on screen, so every team knows exactly how far from home it is.</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <span style="font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(227, 194, 122);">After four locations</span>
+            <ol style="list-style: none; margin: 0px; padding: 0px; display: flex; flex-direction: column; gap: 0px;">
+              <li style="display: flex; align-items: baseline; gap: 16px; padding: 14px 0px; border-bottom: 1px solid rgba(244, 235, 216, 0.18);"><span style="font-family: var(--font-mono); font-size: 12px; color: var(--signal-300);">A</span><span style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(22px, 2.2vw, 32px); letter-spacing: -0.02em; line-height: 1;">Combine the clues</span></li>
+              <li style="display: flex; align-items: baseline; gap: 16px; padding: 14px 0px; border-bottom: 1px solid rgba(244, 235, 216, 0.18);"><span style="font-family: var(--font-mono); font-size: 12px; color: var(--signal-300);">B</span><span style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(22px, 2.2vw, 32px); letter-spacing: -0.02em; line-height: 1;">Identify the flight</span></li>
+              <li style="display: flex; align-items: baseline; gap: 16px; padding: 14px 0px; border-bottom: 3px solid var(--signal-500);"><span style="font-family: var(--font-mono); font-size: 12px; color: var(--signal-300);">C</span><span style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(22px, 2.2vw, 32px); letter-spacing: -0.02em; line-height: 1;">Return to the main room</span></li>
+            </ol>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.08em; color: rgb(220, 211, 191);">
+              <span style="background: rgb(251, 245, 232); color: rgb(31, 58, 56); padding: 6px 10px; font-weight: 600;">GOLDEN</span><span>+</span><span style="border: 1px dashed rgba(244, 235, 216, 0.5); padding: 6px 14px;">????</span><span>+</span><span style="border: 1px dashed rgba(244, 235, 216, 0.5); padding: 6px 14px;">????</span><span>+</span><span style="border: 1px dashed rgba(244, 235, 216, 0.5); padding: 6px 14px;">????</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    
+    <section aria-labelledby="ix-title" style="max-width: 1440px; margin: 0px auto; padding: clamp(80px, 10vw, 144px) clamp(20px, 4vw, 48px);">
+      <div data-reveal="" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 24px 72px; align-items: end; margin-bottom: clamp(40px, 5vw, 64px);  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          <div class="sc-host-x" style="display: contents;"><span class="cm-meta cm-meta--primary "><span class="cm-meta__rule"></span><span class="cm-meta__num">04</span>Interaction design</span></div>
+          <h2 id="ix-title" style="margin: 0px; font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.03em; line-height: 0.95; font-size: clamp(34px, 4.4vw, 68px); color: rgb(31, 58, 56);">One location, start to stamp.</h2>
+        </div>
+        <p style="margin: 0px; font-size: 19px; line-height: 1.6; max-width: 48ch; text-wrap: pretty;">Location 01, the International Terminal, as the team sees it — arrival, a challenge round, and the payoff.</p>
+      </div>
+
+      <figure data-reveal="" style="margin: 0px 0px clamp(24px, 3vw, 40px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 20px 40px; align-items: end;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+        <img src="assets/welcome.webp" alt="Storyline screen: 'Welcome to Terminal Trouble' intro panel with a Begin button, an empty four-slot boarding pass, and AVA in the terminal." style="grid-column: 1 / -1; width: 100%; border: 1px solid rgba(31, 58, 56, 0.25); box-shadow: rgba(20, 19, 16, 0.5) 0px 30px 60px -36px;">
+        <figcaption style="display: flex; gap: 20px; align-items: baseline; flex-wrap: wrap;">
+          <span style="font-family: var(--font-display); font-weight: 900; font-size: 40px; line-height: 1; color: var(--signal-500);">01</span>
+          <span style="display: flex; flex-direction: column; gap: 4px;"><strong style="font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: 18px; color: rgb(31, 58, 56);">Arrive</strong><span style="font-size: 17px; line-height: 1.5; color: var(--gray-600); max-width: 44ch;">Narrative setup, the rules for this stop, and an empty boarding pass waiting to be stamped.</span></span>
+        </figcaption>
+      </figure>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: clamp(24px, 3vw, 40px);">
+        <figure data-reveal="" style="margin: 0px; display: flex; flex-direction: column; gap: 20px;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+          <div style="background: rgb(239, 238, 230); border: 1px solid rgba(31, 58, 56, 0.25); aspect-ratio: 1241 / 697; overflow: hidden;">
+            <img src="assets/airport-code.webp" alt="Challenge question: 'The airport code round — Your bags went to CDG. Which city are they enjoying without you?' with four answer choices." style="width: 100%; height: 100%; object-fit: cover; object-position: 30% 40%; transform: scale(1.3); transform-origin: 30% 45%;">
+          </div>
+          <figcaption style="display: flex; gap: 20px; align-items: baseline;">
+            <span style="font-family: var(--font-display); font-weight: 900; font-size: 40px; line-height: 1; color: var(--signal-500);">02</span>
+            <span style="display: flex; flex-direction: column; gap: 4px;"><strong style="font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: 18px; color: rgb(31, 58, 56);">Collaborate &amp; solve</strong><span style="font-size: 17px; line-height: 1.5; color: var(--gray-600); max-width: 44ch;">Questions written to be argued about. Every answer is plausible enough to need a second opinion.</span></span>
+          </figcaption>
+        </figure>
+        <figure data-reveal="" style="margin: 0px; display: flex; flex-direction: column; gap: 20px;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+          <img src="assets/cleared.webp" alt="'Terminal Cleared' results screen: 80 points, clue word GOLDEN, the Location 01 stamp, and the first boarding-pass slot filled." style="width: 100%; aspect-ratio: 1241 / 697; object-fit: cover; border: 1px solid rgba(31, 58, 56, 0.25);">
+          <figcaption style="display: flex; gap: 20px; align-items: baseline;">
+            <span style="font-family: var(--font-display); font-weight: 900; font-size: 40px; line-height: 1; color: var(--signal-500);">03</span>
+            <span style="display: flex; flex-direction: column; gap: 4px;"><strong style="font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: 18px; color: rgb(31, 58, 56);">Terminal cleared</strong><span style="font-size: 17px; line-height: 1.5; color: var(--gray-600); max-width: 44ch;">Score, stamp, and clue word land together, and the boarding pass updates before the team travels on.</span></span>
+          </figcaption>
+        </figure>
+      </div>
+
+      <div data-reveal="" style="margin-top: clamp(48px, 6vw, 88px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 24px 72px; border-top: 2px solid rgb(31, 58, 56); padding-top: 32px;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+        <p style="margin: 0px; font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: 22px; line-height: 1.1; color: rgb(31, 58, 56); max-width: 18ch;">Every location combines seven parts.</p>
+        <ul style="list-style: none; margin: 0px; padding: 0px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 0px 32px; grid-column: span 2;">
+          
+            <li style="display: flex; gap: 14px; align-items: baseline; padding: 12px 0px; border-bottom: 1px solid rgba(31, 58, 56, 0.18); font-family: var(--font-ui); font-size: 16px; color: var(--ink-900);"><span style="font-family: var(--font-mono); font-size: 11px; color: var(--signal-600);"><span class="sc-interp">01</span></span><span class="sc-interp">Narrative setup</span></li>
+          
+            <li style="display: flex; gap: 14px; align-items: baseline; padding: 12px 0px; border-bottom: 1px solid rgba(31, 58, 56, 0.18); font-family: var(--font-ui); font-size: 16px; color: var(--ink-900);"><span style="font-family: var(--font-mono); font-size: 11px; color: var(--signal-600);"><span class="sc-interp">02</span></span><span class="sc-interp">Collaborative questions</span></li>
+          
+            <li style="display: flex; gap: 14px; align-items: baseline; padding: 12px 0px; border-bottom: 1px solid rgba(31, 58, 56, 0.18); font-family: var(--font-ui); font-size: 16px; color: var(--ink-900);"><span style="font-family: var(--font-mono); font-size: 11px; color: var(--signal-600);"><span class="sc-interp">03</span></span><span class="sc-interp">Scoring</span></li>
+          
+            <li style="display: flex; gap: 14px; align-items: baseline; padding: 12px 0px; border-bottom: 1px solid rgba(31, 58, 56, 0.18); font-family: var(--font-ui); font-size: 16px; color: var(--ink-900);"><span style="font-family: var(--font-mono); font-size: 11px; color: var(--signal-600);"><span class="sc-interp">04</span></span><span class="sc-interp">Immediate feedback</span></li>
+          
+            <li style="display: flex; gap: 14px; align-items: baseline; padding: 12px 0px; border-bottom: 1px solid rgba(31, 58, 56, 0.18); font-family: var(--font-ui); font-size: 16px; color: var(--ink-900);"><span style="font-family: var(--font-mono); font-size: 11px; color: var(--signal-600);"><span class="sc-interp">05</span></span><span class="sc-interp">A location stamp</span></li>
+          
+            <li style="display: flex; gap: 14px; align-items: baseline; padding: 12px 0px; border-bottom: 1px solid rgba(31, 58, 56, 0.18); font-family: var(--font-ui); font-size: 16px; color: var(--ink-900);"><span style="font-family: var(--font-mono); font-size: 11px; color: var(--signal-600);"><span class="sc-interp">06</span></span><span class="sc-interp">A clue word</span></li>
+          
+            <li style="display: flex; gap: 14px; align-items: baseline; padding: 12px 0px; border-bottom: 1px solid rgba(31, 58, 56, 0.18); font-family: var(--font-ui); font-size: 16px; color: var(--ink-900);"><span style="font-family: var(--font-mono); font-size: 11px; color: var(--signal-600);"><span class="sc-interp">07</span></span><span class="sc-interp">Visible progress on the boarding pass</span></li>
+          
+        </ul>
+      </div>
+    </section>
+
+    
+    <section aria-labelledby="collab-title" style="background: rgb(251, 245, 232); border-top: 1px solid rgba(31, 58, 56, 0.15); border-bottom: 1px solid rgba(31, 58, 56, 0.15);">
+      <div style="max-width: 1440px; margin: 0px auto; padding: clamp(80px, 10vw, 144px) clamp(20px, 4vw, 48px); display: flex; flex-direction: column; gap: clamp(40px, 5vw, 64px);">
+        <div data-reveal="" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 24px 72px; align-items: end;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+          <div style="display: flex; flex-direction: column; gap: 24px;">
+            <div class="sc-host-x" style="display: contents;"><span class="cm-meta cm-meta--primary "><span class="cm-meta__rule"></span><span class="cm-meta__num">05</span>Designing for collaboration</span></div>
+            <h2 id="collab-title" style="margin: 0px; font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.03em; line-height: 0.95; font-size: clamp(34px, 4.4vw, 68px); color: rgb(31, 58, 56); text-wrap: balance;">One driver. <span style="color: var(--signal-500);">Everyone plays.</span></h2>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 16px; font-size: 19px; line-height: 1.6; max-width: 50ch;">
+            <p style="margin: 0px; text-wrap: pretty;">Only one participant touches the Storyline interface. That was deliberate: with a single set of controls, the only way to contribute is to talk.</p>
+            <p style="margin: 0px; text-wrap: pretty;">The breakout room isn't a delivery channel — it's part of the interaction design. The game supplies challenges and state; the meeting supplies the multiplayer layer.</p>
+          </div>
+        </div>
+
+        <div data-reveal="" style="display: flex; flex-wrap: wrap; gap: 16px 0px; align-items: stretch;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+          <div style="flex: 1 1 240px; border-width: 3px 1px 1px; border-style: solid; border-color: rgb(31, 58, 56) rgba(31, 58, 56, 0.35) rgba(31, 58, 56, 0.35); border-image: none; padding: 28px; display: flex; flex-direction: column; gap: 14px; background: rgb(244, 235, 216);">
+            <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-600);">The digital layer</span>
+            <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(26px, 2.6vw, 36px); letter-spacing: -0.02em; line-height: 1; color: rgb(31, 58, 56);">Storyline</strong>
+            <span style="font-family: var(--font-ui); font-size: 15px; line-height: 1.5; color: var(--ink-800);">Challenges · scoring · progression</span>
+          </div>
+          <div style="flex: 1 1 300px; display: flex; align-items: stretch;"><div aria-hidden="true" style="flex: 0 0 auto; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 900; font-size: 48px; color: var(--signal-500); padding: 0px 16px;">+</div>
+          <div style="flex: 1 1 auto; border-width: 3px 1px 1px; border-style: solid; border-color: rgb(31, 58, 56) rgba(31, 58, 56, 0.35) rgba(31, 58, 56, 0.35); border-image: none; padding: 28px; display: flex; flex-direction: column; gap: 14px; background: rgb(244, 235, 216);">
+            <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-600);">The human layer</span>
+            <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(26px, 2.6vw, 36px); letter-spacing: -0.02em; line-height: 1; color: rgb(31, 58, 56);">Breakout room</strong>
+            <span style="font-family: var(--font-ui); font-size: 15px; line-height: 1.5; color: var(--ink-800);">Discussion · collaboration · decision making</span>
+          </div>
+          </div><div style="flex: 1 1 300px; display: flex; align-items: stretch;"><div aria-hidden="true" style="flex: 0 0 auto; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 900; font-size: 48px; color: var(--signal-500); padding: 0px 16px;">=</div>
+          <div style="flex: 1 1 auto; background: rgb(31, 58, 56); color: rgb(244, 235, 216); border-top: 3px solid var(--signal-500); padding: 28px; display: flex; flex-direction: column; gap: 14px;">
+            <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(227, 194, 122);">The result</span>
+            <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(26px, 2.6vw, 36px); letter-spacing: -0.02em; line-height: 1;">Multiplayer experience</strong>
+          </div></div>
+        </div>
+      </div>
+    </section>
+
+    
+    <section aria-labelledby="sys-title" style="max-width: 1440px; margin: 0px auto; padding: clamp(80px, 10vw, 144px) clamp(20px, 4vw, 48px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); gap: clamp(40px, 6vw, 96px); align-items: start;">
+      <div data-reveal="" style="display: flex; flex-direction: column; gap: 24px; position: sticky; top: 96px;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+        <div class="sc-host-x" style="display: contents;"><span class="cm-meta cm-meta--primary "><span class="cm-meta__rule"></span><span class="cm-meta__num">06</span>Game system</span></div>
+        <h2 id="sys-title" style="margin: 0px; font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.03em; line-height: 0.95; font-size: clamp(34px, 4.4vw, 68px); color: rgb(31, 58, 56); text-wrap: balance;">Engineered, not decorated.</h2>
+        <p style="margin: 0px; font-size: 19px; line-height: 1.6; max-width: 44ch; text-wrap: pretty;">Under the artwork is a working game state built with Storyline variables and triggers: points per challenge, four-location progression, stamps, clue collection, elapsed time and results — with replay logic so every path could be tested before the event.</p>
+      </div>
+      <div data-reveal="" role="table" aria-label="Game system: inputs and outputs" style="display: flex; flex-direction: column; border-top: 2px solid rgb(31, 58, 56);  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+        
+          <div role="row" style="display: grid; grid-template-columns: minmax(0px, 1fr) 32px minmax(0px, 1fr); gap: 12px; align-items: center; padding: 22px 0px; border-bottom: 1px solid rgba(31, 58, 56, 0.2);">
+            <span role="cell" style="font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: rgb(31, 58, 56);"><span class="sc-interp">Challenges</span></span>
+            <span aria-hidden="true" style="font-family: var(--font-mono); color: var(--signal-500); font-size: 18px; text-align: center;">→</span>
+            <span role="cell" style="display: flex; flex-direction: column; gap: 4px;"><strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(18px, 1.7vw, 22px); letter-spacing: -0.01em; color: rgb(31, 58, 56);"><span class="sc-interp">Score</span></strong><span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: var(--gray-600);"><span class="sc-interp">Answers add points to the team total.</span></span></span>
+          </div>
+        
+          <div role="row" style="display: grid; grid-template-columns: minmax(0px, 1fr) 32px minmax(0px, 1fr); gap: 12px; align-items: center; padding: 22px 0px; border-bottom: 1px solid rgba(31, 58, 56, 0.2);">
+            <span role="cell" style="font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: rgb(31, 58, 56);"><span class="sc-interp">Location complete</span></span>
+            <span aria-hidden="true" style="font-family: var(--font-mono); color: var(--signal-500); font-size: 18px; text-align: center;">→</span>
+            <span role="cell" style="display: flex; flex-direction: column; gap: 4px;"><strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(18px, 1.7vw, 22px); letter-spacing: -0.01em; color: rgb(31, 58, 56);"><span class="sc-interp">Stamp</span></strong><span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: var(--gray-600);"><span class="sc-interp">Progress state drives the boarding pass.</span></span></span>
+          </div>
+        
+          <div role="row" style="display: grid; grid-template-columns: minmax(0px, 1fr) 32px minmax(0px, 1fr); gap: 12px; align-items: center; padding: 22px 0px; border-bottom: 1px solid rgba(31, 58, 56, 0.2);">
+            <span role="cell" style="font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: rgb(31, 58, 56);"><span class="sc-interp">Location complete</span></span>
+            <span aria-hidden="true" style="font-family: var(--font-mono); color: var(--signal-500); font-size: 18px; text-align: center;">→</span>
+            <span role="cell" style="display: flex; flex-direction: column; gap: 4px;"><strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(18px, 1.7vw, 22px); letter-spacing: -0.01em; color: rgb(31, 58, 56);"><span class="sc-interp">Clue word</span></strong><span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: var(--gray-600);"><span class="sc-interp">One word released per location.</span></span></span>
+          </div>
+        
+          <div role="row" style="display: grid; grid-template-columns: minmax(0px, 1fr) 32px minmax(0px, 1fr); gap: 12px; align-items: center; padding: 22px 0px; border-bottom: 1px solid rgba(31, 58, 56, 0.2);">
+            <span role="cell" style="font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: rgb(31, 58, 56);"><span class="sc-interp">4 stamps + 4 clues</span></span>
+            <span aria-hidden="true" style="font-family: var(--font-mono); color: var(--signal-500); font-size: 18px; text-align: center;">→</span>
+            <span role="cell" style="display: flex; flex-direction: column; gap: 4px;"><strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(18px, 1.7vw, 22px); letter-spacing: -0.01em; color: rgb(31, 58, 56);"><span class="sc-interp">Final solution</span></strong><span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: var(--gray-600);"><span class="sc-interp">Unlocks the flight home.</span></span></span>
+          </div>
+        
+          <div role="row" style="display: grid; grid-template-columns: minmax(0px, 1fr) 32px minmax(0px, 1fr); gap: 12px; align-items: center; padding: 22px 0px; border-bottom: 1px solid rgba(31, 58, 56, 0.2);">
+            <span role="cell" style="font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: rgb(31, 58, 56);"><span class="sc-interp">Elapsed time</span></span>
+            <span aria-hidden="true" style="font-family: var(--font-mono); color: var(--signal-500); font-size: 18px; text-align: center;">→</span>
+            <span role="cell" style="display: flex; flex-direction: column; gap: 4px;"><strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(18px, 1.7vw, 22px); letter-spacing: -0.01em; color: rgb(31, 58, 56);"><span class="sc-interp">Performance context</span></strong><span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: var(--gray-600);"><span class="sc-interp">Time sits alongside score in the results.</span></span></span>
+          </div>
+        
+      </div>
+    </section>
+
+    
+    <section aria-labelledby="vis-title" style="max-width: 1440px; margin: 0px auto; padding: 0px clamp(20px, 4vw, 48px) clamp(80px, 10vw, 144px);">
+      <div data-reveal="" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 24px 72px; align-items: end; margin-bottom: clamp(40px, 5vw, 64px);  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          <div class="sc-host-x" style="display: contents;"><span class="cm-meta cm-meta--primary "><span class="cm-meta__rule"></span><span class="cm-meta__num">07</span>Visual design</span></div>
+          <h2 id="vis-title" style="margin: 0px; font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.03em; line-height: 0.95; font-size: clamp(34px, 4.4vw, 68px); color: rgb(31, 58, 56); text-wrap: balance;">One world, many stops.</h2>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px; font-size: 19px; line-height: 1.6; max-width: 50ch;">
+          <p style="margin: 0px; text-wrap: pretty;">A single retro-travel world — mid-century tourism advertising, jet-age illustration, passport stamps, boarding passes — keeps an airport, a highway and a beach feeling like one journey.</p>
+          <p style="margin: 0px; text-wrap: pretty; color: var(--gray-600); font-size: 17px;">Artwork was generated, then art-directed to a shared palette and print texture — part of a wider generative production workflow covered in <a href="#gen-title">section 08</a>.</p>
+        </div>
+      </div>
+
+      <div data-reveal="" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); grid-auto-flow: dense; gap: clamp(12px, 1.6vw, 20px);  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+        <figure style="margin: 0px; grid-column: 1 / -1; display: flex; flex-direction: column; gap: 10px;">
+          <img src="assets/roadtrip.webp" alt="Late-1970s road-trip illustration: a wood-panelled station wagon loaded with luggage heads down a desert highway toward an amusement park." style="width: 100%; aspect-ratio: 21 / 9; object-fit: cover; object-position: 50% 60%;">
+          <figcaption style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-600);">Environment · The road trip</figcaption>
+        </figure>
+        <figure style="margin: 0px; display: flex; flex-direction: column; gap: 10px;">
+          <img src="assets/trophy.webp" alt="The Vacation Rescue trophy artwork." style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; object-position: 50% 30%;">
+          <figcaption style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-600);">Branding · The trophy</figcaption>
+        </figure>
+        <figure style="margin: 0px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="width: 100%; aspect-ratio: 1 / 1; overflow: hidden; background: rgb(247, 234, 211);"><img src="assets/cleared.webp" alt="Detail of the Location 01 International Terminal passport stamp." style="width: 100%; height: 100%; object-fit: cover; object-position: 78% 48%; transform: scale(1.7); transform-origin: 84% 48%;"></div>
+          <figcaption style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-600);">Ephemera · Location stamp</figcaption>
+        </figure>
+        <figure style="margin: 0px; display: flex; flex-direction: column; gap: 10px;">
+          <img src="assets/storyboard.webp" alt="Detail from the night storyboard: a jet climbing past the control tower." style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; object-position: 50% 100%;">
+          <figcaption style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-600);">Motion · Night departure</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    
+    <section aria-labelledby="gen-title" style="background: rgb(251, 245, 232); border-top: 1px solid rgba(31, 58, 56, 0.15);">
+      <div style="max-width: 1440px; margin: 0px auto; padding: clamp(80px, 10vw, 144px) clamp(20px, 4vw, 48px); display: flex; flex-direction: column; gap: clamp(40px, 5vw, 64px);">
+        <div data-reveal="" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 24px 72px; align-items: end;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+          <div style="display: flex; flex-direction: column; gap: 24px;">
+            <div class="sc-host-x" style="display: contents;"><span class="cm-meta cm-meta--primary "><span class="cm-meta__rule"></span><span class="cm-meta__num">08</span>Generative AI + multimedia production</span></div>
+            <h2 id="gen-title" style="margin: 0px; font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.03em; line-height: 0.95; font-size: clamp(34px, 4.4vw, 68px); color: rgb(31, 58, 56); text-wrap: balance;">Generated. <span style="color: var(--signal-500);">Then directed.</span></h2>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 16px; font-size: 19px; line-height: 1.6; max-width: 50ch;">
+            <p style="margin: 0px; text-wrap: pretty;">Generative AI ran through the whole media stack, not just the artwork: still images, cinematic video moments, sound effects and environmental soundscapes.</p>
+            <p style="margin: 0px; text-wrap: pretty;">None of it went in as generated. Every output was art-directed, selected, refined, edited, synchronized and built into Storyline, then tested inside the running game.</p>
+          </div>
+        </div>
+
+        <div data-reveal="" style="display: flex; flex-direction: column;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+          <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal-600); margin-bottom: 16px;">Multimodal inputs</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 16px 0px; align-items: stretch;">
+            <div style="flex: 1 1 180px; border-width: 3px 1px 1px; border-style: solid; border-color: rgb(31, 58, 56) rgba(31, 58, 56, 0.35) rgba(31, 58, 56, 0.35); border-image: none; padding: 24px; display: flex; flex-direction: column; gap: 12px; background: rgb(244, 235, 216);">
+              <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-600);">Visual</span>
+              <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(22px, 2vw, 28px); letter-spacing: -0.02em; line-height: 1; color: rgb(31, 58, 56);">Image</strong>
+              <span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: var(--ink-800);">Visual development, locations, characters, ephemera</span>
+            </div>
+            <div style="flex: 1 1 220px; display: flex; align-items: stretch;"><div aria-hidden="true" style="flex: 0 0 auto; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 900; font-size: 36px; color: var(--signal-500); padding: 0px 12px;">+</div><div style="flex: 1 1 auto; border-width: 3px 1px 1px; border-style: solid; border-color: rgb(31, 58, 56) rgba(31, 58, 56, 0.35) rgba(31, 58, 56, 0.35); border-image: none; padding: 24px; display: flex; flex-direction: column; gap: 12px; background: rgb(244, 235, 216);">
+              <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-600);">Motion</span>
+              <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(22px, 2vw, 28px); letter-spacing: -0.02em; line-height: 1; color: rgb(31, 58, 56);">Video</strong>
+              <span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: var(--ink-800);">Animated and cinematic moments</span>
+            </div></div>
+            <div style="flex: 1 1 220px; display: flex; align-items: stretch;"><div aria-hidden="true" style="flex: 0 0 auto; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 900; font-size: 36px; color: var(--signal-500); padding: 0px 12px;">+</div><div style="flex: 1 1 auto; border-width: 3px 1px 1px; border-style: solid; border-color: rgb(31, 58, 56) rgba(31, 58, 56, 0.35) rgba(31, 58, 56, 0.35); border-image: none; padding: 24px; display: flex; flex-direction: column; gap: 12px; background: rgb(244, 235, 216);">
+              <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-600);">Audio</span>
+              <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(22px, 2vw, 28px); letter-spacing: -0.02em; line-height: 1; color: rgb(31, 58, 56);">Sound effects</strong>
+              <span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: var(--ink-800);">Feedback and interaction cues</span>
+            </div></div>
+            <div style="flex: 1 1 220px; display: flex; align-items: stretch;"><div aria-hidden="true" style="flex: 0 0 auto; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 900; font-size: 36px; color: var(--signal-500); padding: 0px 12px;">+</div><div style="flex: 1 1 auto; border-width: 3px 1px 1px; border-style: solid; border-color: rgb(31, 58, 56) rgba(31, 58, 56, 0.35) rgba(31, 58, 56, 0.35); border-image: none; padding: 24px; display: flex; flex-direction: column; gap: 12px; background: rgb(244, 235, 216);">
+              <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-600);">Audio</span>
+              <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(22px, 2vw, 28px); letter-spacing: -0.02em; line-height: 1; color: rgb(31, 58, 56);">Soundscapes</strong>
+              <span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: var(--ink-800);">Environmental audio for each location</span>
+            </div></div>
+          </div>
+          <div aria-hidden="true" style="font-family: var(--font-display); font-weight: 900; font-size: 28px; line-height: 1; color: var(--signal-500); text-align: center; padding: 12px 0px;">↓</div>
+          <div style="border: 2px solid rgb(31, 58, 56); padding: 20px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 24px;">
+            <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(20px, 2vw, 28px); letter-spacing: -0.02em; line-height: 1; color: rgb(31, 58, 56);">Art direction + editing</strong>
+            <span style="font-family: var(--font-ui); font-size: 14px; color: var(--ink-800);">Selection · refinement · one consistent world</span>
+          </div>
+          <div aria-hidden="true" style="font-family: var(--font-display); font-weight: 900; font-size: 28px; line-height: 1; color: var(--signal-500); text-align: center; padding: 12px 0px;">↓</div>
+          <div style="border: 2px solid rgb(31, 58, 56); padding: 20px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 24px;">
+            <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(20px, 2vw, 28px); letter-spacing: -0.02em; line-height: 1; color: rgb(31, 58, 56);">Storyline development</strong>
+            <span style="font-family: var(--font-ui); font-size: 14px; color: var(--ink-800);">Synchronization · triggers · implementation</span>
+          </div>
+          <div aria-hidden="true" style="font-family: var(--font-display); font-weight: 900; font-size: 28px; line-height: 1; color: var(--signal-500); text-align: center; padding: 12px 0px;">↓</div>
+          <div style="background: rgb(31, 58, 56); color: rgb(244, 235, 216); border-top: 3px solid var(--signal-500); padding: 24px;">
+            <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(24px, 2.6vw, 36px); letter-spacing: -0.02em; line-height: 1;">Interactive experience</strong>
+          </div>
+        </div>
+
+        <div data-reveal="" style="display: flex; flex-direction: column; gap: 16px;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+          <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal-600);">The production pipeline</span>
+          <ol style="list-style: none; margin: 0px; padding: 0px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));">
+            
+              <li style="border-top: 3px solid rgb(240, 61, 20); padding: 16px 16px 0px 0px; display: flex; flex-direction: column; gap: 8px;">
+                <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--gray-600);"><span class="sc-interp">01</span> <span aria-hidden="true" style="color: var(--signal-500);">→</span></span>
+                <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(17px, 1.5vw, 21px); letter-spacing: -0.01em; color: rgb(31, 58, 56); overflow-wrap: anywhere;"><span class="sc-interp">Art direction</span></strong>
+                <span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: var(--gray-600);"><span class="sc-interp">Define the world and the brief.</span></span>
+              </li>
+            
+              <li style="border-top: 3px solid rgb(31, 58, 56); padding: 16px 16px 0px 0px; display: flex; flex-direction: column; gap: 8px;">
+                <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--gray-600);"><span class="sc-interp">02</span> <span aria-hidden="true" style="color: var(--signal-500);">→</span></span>
+                <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(17px, 1.5vw, 21px); letter-spacing: -0.01em; color: rgb(31, 58, 56); overflow-wrap: anywhere;"><span class="sc-interp">Generation</span></strong>
+                <span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: var(--gray-600);"><span class="sc-interp">Produce image, video and audio options.</span></span>
+              </li>
+            
+              <li style="border-top: 3px solid rgb(31, 58, 56); padding: 16px 16px 0px 0px; display: flex; flex-direction: column; gap: 8px;">
+                <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--gray-600);"><span class="sc-interp">03</span> <span aria-hidden="true" style="color: var(--signal-500);">→</span></span>
+                <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(17px, 1.5vw, 21px); letter-spacing: -0.01em; color: rgb(31, 58, 56); overflow-wrap: anywhere;"><span class="sc-interp">Evaluation</span></strong>
+                <span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: var(--gray-600);"><span class="sc-interp">Judge fit, quality and consistency.</span></span>
+              </li>
+            
+              <li style="border-top: 3px solid rgb(31, 58, 56); padding: 16px 16px 0px 0px; display: flex; flex-direction: column; gap: 8px;">
+                <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--gray-600);"><span class="sc-interp">04</span> <span aria-hidden="true" style="color: var(--signal-500);">→</span></span>
+                <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(17px, 1.5vw, 21px); letter-spacing: -0.01em; color: rgb(31, 58, 56); overflow-wrap: anywhere;"><span class="sc-interp">Iteration</span></strong>
+                <span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: var(--gray-600);"><span class="sc-interp">Re-prompt and refine.</span></span>
+              </li>
+            
+              <li style="border-top: 3px solid rgb(31, 58, 56); padding: 16px 16px 0px 0px; display: flex; flex-direction: column; gap: 8px;">
+                <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--gray-600);"><span class="sc-interp">05</span> <span aria-hidden="true" style="color: var(--signal-500);">→</span></span>
+                <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(17px, 1.5vw, 21px); letter-spacing: -0.01em; color: rgb(31, 58, 56); overflow-wrap: anywhere;"><span class="sc-interp">Editing</span></strong>
+                <span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: var(--gray-600);"><span class="sc-interp">Trim, retouch, mix and sync.</span></span>
+              </li>
+            
+              <li style="border-top: 3px solid rgb(31, 58, 56); padding: 16px 16px 0px 0px; display: flex; flex-direction: column; gap: 8px;">
+                <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--gray-600);"><span class="sc-interp">06</span> <span aria-hidden="true" style="color: var(--signal-500);">→</span></span>
+                <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(17px, 1.5vw, 21px); letter-spacing: -0.01em; color: rgb(31, 58, 56); overflow-wrap: anywhere;"><span class="sc-interp">Integration</span></strong>
+                <span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: var(--gray-600);"><span class="sc-interp">Build into Storyline.</span></span>
+              </li>
+            
+              <li style="border-top: 3px solid rgb(31, 58, 56); padding: 16px 16px 0px 0px; display: flex; flex-direction: column; gap: 8px;">
+                <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--gray-600);"><span class="sc-interp">07</span> <span aria-hidden="true" style="color: var(--signal-500);">→</span></span>
+                <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(17px, 1.5vw, 21px); letter-spacing: -0.01em; color: rgb(31, 58, 56); overflow-wrap: anywhere;"><span class="sc-interp">Testing</span></strong>
+                <span style="font-family: var(--font-ui); font-size: 14px; line-height: 1.45; color: var(--gray-600);"><span class="sc-interp">Check it plays right in context.</span></span>
+              </li>
+            
+          </ol>
+          <p style="margin: 24px 0px 0px; font-size: 19px; line-height: 1.6; max-width: 60ch; text-wrap: pretty;">The tools produced options. The experience came from direction: deciding what fit the world, what got cut, and what played at the right moment.</p>
+        </div>
+      </div>
+    </section>
+
+    
+    <section aria-labelledby="finish-title" data-surface="ink" style="background: rgb(31, 58, 56); color: rgb(244, 235, 216); overflow: hidden;">
+      <div style="max-width: 1440px; margin: 0px auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); align-items: stretch;">
+        <img data-reveal="" src="assets/trophy.webp" alt="The Vacation Rescue Trophy: a gold cup with the game logo against a tropical coastline." style="width: 100%; height: 100%; min-height: 420px; object-fit: cover; object-position: 50% 40%;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+        <div data-reveal="" style="padding: clamp(48px, 7vw, 112px) clamp(20px, 4vw, 72px); display: flex; flex-direction: column; justify-content: center; gap: 24px;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+          <div class="sc-host-x" style="display: contents;"><span class="cm-meta cm-meta--muted "><span class="cm-meta__rule"></span><span class="cm-meta__num">09</span>The finish line</span></div>
+          <h2 id="finish-title" style="margin: 0px; font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.03em; line-height: 0.95; font-size: clamp(34px, 4.2vw, 64px); color: rgb(244, 235, 216); text-wrap: balance;">First team back <span style="color: rgb(227, 194, 122);">takes the trophy.</span></h2>
+          <p style="margin: 0px; font-size: 19px; line-height: 1.6; max-width: 46ch; color: rgb(220, 211, 191); text-wrap: pretty;">The live event supplied the last layer of the game. Teams finished the digital experience, decoded their final clue, and raced back to the main meeting room.</p>
+          <p style="margin: 0px; font-size: 19px; line-height: 1.6; max-width: 46ch; color: rgb(220, 211, 191); text-wrap: pretty;">Speed wasn't the only factor — scoring rewarded teams that discussed answers and got them right. The trophy gave everyone one shared objective, which is what turned an activity into an event.</p>
+        </div>
+      </div>
+    </section>
+
+    
+    <section aria-labelledby="out-title" style="max-width: 1440px; margin: 0px auto; padding: clamp(80px, 10vw, 144px) clamp(20px, 4vw, 48px); display: flex; flex-direction: column; gap: clamp(40px, 5vw, 64px);">
+      <div class="sc-host-x" style="display: contents;"><span class="cm-meta cm-meta--primary "><span class="cm-meta__rule"></span><span class="cm-meta__num">10</span>Outcome</span></div>
+      <h2 id="out-title" data-reveal="" style="margin: 0px; font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.03em; line-height: 0.95; font-size: clamp(34px, 5vw, 80px); color: rgb(31, 58, 56); max-width: 18ch; text-wrap: balance;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">Not a portfolio simulation. Built for a real event, <span style="color: var(--signal-500);">deployed, and played.</span></h2>
+      <ol data-reveal="" aria-label="Project path" style="list-style: none; margin: 0px; padding: 0px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+        
+          <li style="border-top: 3px solid rgb(31, 58, 56); padding: 16px 16px 0px 0px; display: flex; flex-direction: column; gap: 8px;">
+            <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--gray-600);"><span class="sc-interp">01</span></span>
+            <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(18px, 1.7vw, 22px); letter-spacing: -0.01em; color: rgb(31, 58, 56);"><span class="sc-interp">Concept</span></strong>
+          </li>
+        
+          <li style="border-top: 3px solid rgb(31, 58, 56); padding: 16px 16px 0px 0px; display: flex; flex-direction: column; gap: 8px;">
+            <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--gray-600);"><span class="sc-interp">02</span></span>
+            <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(18px, 1.7vw, 22px); letter-spacing: -0.01em; color: rgb(31, 58, 56);"><span class="sc-interp">Design</span></strong>
+          </li>
+        
+          <li style="border-top: 3px solid rgb(31, 58, 56); padding: 16px 16px 0px 0px; display: flex; flex-direction: column; gap: 8px;">
+            <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--gray-600);"><span class="sc-interp">03</span></span>
+            <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(18px, 1.7vw, 22px); letter-spacing: -0.01em; color: rgb(31, 58, 56);"><span class="sc-interp">Development</span></strong>
+          </li>
+        
+          <li style="border-top: 3px solid rgb(31, 58, 56); padding: 16px 16px 0px 0px; display: flex; flex-direction: column; gap: 8px;">
+            <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--gray-600);"><span class="sc-interp">04</span></span>
+            <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(18px, 1.7vw, 22px); letter-spacing: -0.01em; color: rgb(31, 58, 56);"><span class="sc-interp">Testing</span></strong>
+          </li>
+        
+          <li style="border-top: 3px solid rgb(31, 58, 56); padding: 16px 16px 0px 0px; display: flex; flex-direction: column; gap: 8px;">
+            <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--gray-600);"><span class="sc-interp">05</span></span>
+            <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(18px, 1.7vw, 22px); letter-spacing: -0.01em; color: rgb(31, 58, 56);"><span class="sc-interp">Deployment</span></strong>
+          </li>
+        
+          <li style="border-top: 3px solid rgb(240, 61, 20); padding: 16px 16px 0px 0px; display: flex; flex-direction: column; gap: 8px;">
+            <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--gray-600);"><span class="sc-interp">06</span></span>
+            <strong style="font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(18px, 1.7vw, 22px); letter-spacing: -0.01em; color: rgb(31, 58, 56);"><span class="sc-interp">Real use</span></strong>
+          </li>
+        
+      </ol>
+      <dl aria-label="Event at a glance" style="margin: 0px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); border: 1px solid rgba(31, 58, 56, 0.35); background: rgba(255,255,255,0.35);"><div style="padding: 20px 24px; border-right: 1px dashed rgba(31, 58, 56, 0.25); display: flex; flex-direction: column; gap: 10px;"><dt style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal-600);">Players</dt><dd style="margin: 0px; font-family: var(--font-display); font-weight: 900; font-size: clamp(28px, 3vw, 44px); line-height: 1; color: rgb(31, 58, 56);">~25</dd></div><div style="padding: 20px 24px; border-right: 1px dashed rgba(31, 58, 56, 0.25); display: flex; flex-direction: column; gap: 10px;"><dt style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal-600);">Competing teams</dt><dd style="margin: 0px; font-family: var(--font-display); font-weight: 900; font-size: clamp(28px, 3vw, 44px); line-height: 1; color: rgb(31, 58, 56);">4</dd></div><div style="padding: 20px 24px; border-right: 1px dashed rgba(31, 58, 56, 0.25); display: flex; flex-direction: column; gap: 10px;"><dt style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal-600);">Event length</dt><dd style="margin: 0px; font-family: var(--font-display); font-weight: 900; font-size: clamp(28px, 3vw, 44px); line-height: 1; color: rgb(31, 58, 56);">~30 min</dd></div><div style="padding: 20px 24px; border-right: 1px dashed rgba(31, 58, 56, 0.25); display: flex; flex-direction: column; gap: 10px;"><dt style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal-600);">Player verdict</dt><dd style="margin: 0px; font-family: var(--font-display); font-weight: 900; font-size: clamp(28px, 3vw, 44px); line-height: 1; color: rgb(31, 58, 56);">“Fun” — all of them</dd></div></dl>
+      <p data-reveal="" style="margin: 0px; font-size: 19px; line-height: 1.6; max-width: 60ch; text-wrap: pretty;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">Vacation Rescue was built for a remote team event at my employer, a healthcare-services organization, and is shown here with permission. About 25 people played in four competing teams over a roughly 30-minute session in Microsoft Teams breakout rooms. One project covered the full path: experience design, game mechanics, visual direction, Storyline development, generative AI multimedia production — image, video, sound effects, and environmental soundscape creation and integration — facilitation design, testing and web deployment.</p>
+      <div style="display: grid; gap: 20px; max-width: 60ch; padding-top: 8px; border-top: 3px solid var(--signal-500);">
+        <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal-600);">What the evidence can and can't say</span>
+        <p style="margin: 0px; font-size: 19px; line-height: 1.6; max-width: 60ch; text-wrap: pretty;">Every player said it was fun. That feedback was informal, not a survey. It tells me the experience landed. It doesn't prove that everyone took part, which was the actual design goal.</p>
+        <span style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal-600); margin-top: 16px;">What I learned</span>
+        <p style="margin: 0px; font-size: 19px; line-height: 1.6; max-width: 60ch; text-wrap: pretty;"><strong>Constraints shape behavior more than instructions do.</strong> Rather than asking people to participate, the design gave one person the controls, so talking was the only way to play.</p>
+        <p style="margin: 0px; font-size: 19px; line-height: 1.6; max-width: 60ch; text-wrap: pretty;"><strong>A repeated loop frees attention.</strong> Every location runs the same seven beats, so a team's effort goes into the challenges and each other instead of learning a new interface at every stop.</p>
+        <p style="margin: 0px; font-size: 19px; line-height: 1.6; max-width: 60ch; text-wrap: pretty;"><strong>Next time, I'd measure participation, not just reactions.</strong> A simple count of who spoke in each room would turn “everyone said it was fun” into evidence that the one-driver design worked.</p>
+      </div>
+    </section>
+
+    
+    <section aria-labelledby="cta-title" style="border-top: 1px solid rgba(31, 58, 56, 0.2);">
+      <div style="max-width: 1440px; margin: 0px auto; padding: clamp(72px, 9vw, 128px) clamp(20px, 4vw, 48px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: clamp(40px, 5vw, 72px); align-items: center;">
+        <div data-reveal="" style="display: flex; flex-direction: column; gap: 32px;  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+          <h2 id="cta-title" style="margin: 0px; font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; line-height: 0.88; font-size: clamp(48px, 7.5vw, 120px); color: rgb(31, 58, 56);">Ready to take <span style="color: var(--signal-500);">the trip?</span></h2>
+          <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
+            <div class="sc-host-x" style="display: contents;"><a class="cm-btn cm-btn--primary cm-btn--lg" href="https://christophermathews.com/demos/Vacation-Rescue/story.html" target="_blank" rel="noopener">Play Vacation Rescue<span role="presentation" aria-hidden="true" class="cm-icon " style="width: 18px; height: 18px; mask-image: url(&quot;/portfolio/assets/icons/arrow-up-right.svg&quot;);"></span></a></div><div class="sc-host-x" style="display: contents;"><a class="cm-btn cm-btn--outline cm-btn--lg" href="/resume/Christopher-Mathews-Resume.pdf" target="_blank" rel="noopener">View my resume<span role="presentation" aria-hidden="true" class="cm-icon " style="width: 18px; height: 18px; mask-image: url(&quot;/portfolio/assets/icons/file-text.svg&quot;);"></span></a></div>
+            <div class="sc-host-x" style="display: contents;"><a class="cm-btn cm-btn--link cm-btn--md" href="/portfolio/"><span role="presentation" aria-hidden="true" class="cm-icon " style="width: 15px; height: 15px; mask-image: url(&quot;/portfolio/assets/icons/arrow-left.svg&quot;);"></span>Back to portfolio</a></div>
+          </div>
+          <p style="margin: 0px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-600);">Opens in a new tab · Best played with a team and one screen-sharing driver</p>
+        </div>
+        <div data-reveal="" style="position: relative; justify-self: center; width: min(100%, 460px);  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);">
+          <img src="assets/trophy.webp" alt="" style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; object-position: 50% 25%; border-radius: 50%; border: 10px solid rgb(251, 245, 232); box-shadow: rgba(20, 19, 16, 0.45) 0px 30px 60px -30px;">
+          <div aria-hidden="true" style="position: absolute; inset: -18px; border-radius: 50%; border: 2px dashed rgba(200, 46, 11, 0.5);"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer style="background: rgb(31, 58, 56); color: rgb(201, 192, 172);">
+    <div style="max-width: 1440px; margin: 0px auto; padding: 24px clamp(20px, 4vw, 48px); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;">
+      <span>Vacation Rescue · Designed &amp; developed by Christopher Mathews</span>
+      <a href="#hero-title" style="color: rgb(244, 235, 216); text-decoration: none;">Back to top ↑</a>
+    </div>
+  </footer></div></div></div>
+</body>
+</html>

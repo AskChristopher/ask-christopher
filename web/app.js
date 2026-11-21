@@ -9,7 +9,8 @@
  *    unordered and ordered lists, and safe links.
  *
  * 2. An empty showcase rail made a working site look unfinished. WORKS now
- *    holds two records, both substantiated by knowledge/projects.md, and the
+ *    holds records substantiated by knowledge/projects.md or by a published
+ *    case study under /portfolio/ (added 2026-11), and the
  *    rail promotes them by deterministic string matching against the question
  *    and the answer. No API change, no structured model output.
  *
@@ -85,8 +86,33 @@
    * `n` is unused while the cards carry no media. It is kept because
    * CONTENT-MODEL.md defines it and the numeral returns with the imagery. */
   var WORKS = {
-    "ask-christopher": {
+    "vacation-rescue": {
       n: "01",
+      cat: "Learning",
+      ref: "Case study",
+      title: "Vacation Rescue",
+      blurb: "A facilitated multiplayer game for a remote team event, built in " +
+             "Articulate Storyline so the only way to play was to talk. About 25 " +
+             "players, four teams, 30 minutes.",
+      headline: "Deployed " + DASH + " played live",
+      href: "https://christophermathews.com/portfolio/vacation-rescue/",
+      open: "Read the case study",
+      match: ["vacation rescue"]
+    },
+    "beauty-in-the-details": {
+      n: "02",
+      cat: "Media",
+      ref: "Case study",
+      title: "Beauty in the Details",
+      blurb: "A 90-second public-awareness explainer about coloboma, built in " +
+             "Remotion in the style of an original T-shirt design.",
+      headline: "Published",
+      href: "https://christophermathews.com/portfolio/beauty-in-the-details/",
+      open: "Watch and read",
+      match: ["beauty in the details", "coloboma"]
+    },
+    "ask-christopher": {
+      n: "03",
       cat: "AI",
       ref: "Public repo",
       title: "Ask Christopher",
@@ -94,11 +120,12 @@
              "portfolio grounded in Christopher's own work, experience, projects, " +
              "and thinking.",
       headline: "Live " + DASH + " you are using it",
-      href: "https://github.com/AskChristopher/ask-christopher",
+      href: "https://christophermathews.com/portfolio/ask-christopher/",
+      open: "Read the case study",
       match: ["ask christopher", "askchristopher"]
     },
     "ai-systems-builder-sprint": {
-      n: "02",
+      n: "04",
       cat: "AI",
       ref: "Public repo",
       title: "AI Systems Builder Sprint",
@@ -113,7 +140,8 @@
 
   /* What the rail holds before anything is asked. Never added to and never
    * removed from - matching reorders and highlights, nothing more. */
-  var FEATURED = ["ask-christopher", "ai-systems-builder-sprint"];
+  var FEATURED = ["vacation-rescue", "beauty-in-the-details", "ask-christopher",
+                  "ai-systems-builder-sprint"];
 
   var els = {
     reset: document.getElementById("reset"),
@@ -471,7 +499,7 @@
 
     var foot = el("span", "showcard__foot");
     foot.appendChild(el("span", "showcard__result", w.headline));
-    foot.appendChild(el("span", "showcard__open", "View on GitHub " + ARROW));
+    foot.appendChild(el("span", "showcard__open", (w.open || "View on GitHub") + " " + ARROW));
     body.appendChild(foot);
 
     card.appendChild(body);

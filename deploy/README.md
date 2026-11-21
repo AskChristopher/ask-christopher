@@ -76,6 +76,8 @@ and `apps/ask-api` under the home directory.
 | `web/app.css` | `/home/USER/public_html/app.css` | |
 | `web/styles.css` | `/home/USER/public_html/styles.css` | |
 | `web/tokens/*.css` | `/home/USER/public_html/tokens/` | All eight. `styles.css` is 274 bytes of `@import`, so a missing token file is a silent style break rather than an error |
+| `web/portfolio/**` | `/home/USER/public_html/portfolio/` | Same folder structure, one-to-one. Static pages; no build step. Each page links `/styles.css`, so the token files above must already be live |
+| `web/resume/*.pdf` | `/home/USER/public_html/resume/` | |
 | `passenger_wsgi.py` | `/home/USER/apps/ask-api/passenger_wsgi.py` | **Restart the Python app after uploading** |
 | `src/ask_christopher/*.py` | `/home/USER/apps/ask-api/src/ask_christopher/` | `passenger_wsgi.py` puts `src/` on `sys.path` itself — there is no build backend and no install step. **Restart the Python app after uploading**, or the old code keeps answering |
 
@@ -103,11 +105,60 @@ Newest first. A batch is listed once verified, with the commit that recorded it.
 
 | Date | Batch | Files | State |
 |---|---|---|---|
+| 2026-11-21 | **Portfolio** — `/portfolio/` index, three case studies, resume, showcase records | `web/portfolio/` (19), `web/resume/` (1), `web/app.js` | **Prepared, awaiting upload** |
 | 2026-09-03 | **Turn-2 fix** — role-aware message length | `src/ask_christopher/web.py`, `web/app.js` | Live, verified `e314f35`. First batch to need a Passenger restart |
 | 2026-09-02 | Frontend v3 — answer formatting, showcase, duplicate-submit fix | `web/index.html`, `web/app.css`, `web/app.js` | Live, verified `a7b7543` |
 | 2026-09-01 | Frontend v2 — three-column shell, arrival, thread | `web/index.html`, `web/app.css`, `web/app.js` | Live, verified `45ac256` |
 | 2026-08-30 | Canonical origin — force HTTPS, www to apex, HSTS header | `deploy/htaccess` | **Prepared, awaiting upload** |
 | 2026-08-29 | Phase 2 cutover | `web/` (12), `passenger_wsgi.py`, `src/ask_christopher/`, `.htaccess` | Live, verified `fec4bef` and re-verified `4f15d58` |
+
+### Batch 2026-11-21 — portfolio
+
+**Frontend only. No `.py` file, no restart, and no change to `prompts/` or
+`knowledge/`, so the prefix fingerprint is untouched.** The matching corpus
+change (portfolio entries in `knowledge/projects.md`) is a separate batch,
+held until its eval run is authorised and recorded.
+
+`/portfolio/vacation-rescue/` already exists on the server as a ~19 MB
+self-unpacking bundle exported from a design tool, never tracked here. It is
+replaced by a static, framework-free conversion of the same page (same copy
+and layout, ~1.3 MB with images) plus new outcome facts and a resume link.
+Uploading `index.html` over the old one switches it; the old bundle's other
+files in that folder (`*.png` under `assets/`, `uploads/`, `_ds/`,
+`support.js`, and any `Vacation Rescue Case Study*.html`) become orphans and
+can be deleted after verification. The playable game at
+`/demos/Vacation-Rescue/` is untouched and still untracked.
+
+| Order | Upload this | To exactly this path | Bytes | sha256 |
+|---|---|---|---|---|
+| 1 | `web/portfolio/ask-christopher/assets/conversation.webp` | `/home/USER/public_html/portfolio/ask-christopher/assets/conversation.webp` | 119738 | `6e7e906ca05626a73a744bcdaeae6f6b66aede7cdbb1f4d35dd4a3311b2c74ce` |
+| 2 | `web/portfolio/ask-christopher/index.html` | `/home/USER/public_html/portfolio/ask-christopher/index.html` | 8980 | `58668e80fd27db8ccd5930b3007b0d7b650a5f60a9ab708631c23099a831d0a7` |
+| 3 | `web/portfolio/assets/icons/arrow-down.svg` | `/home/USER/public_html/portfolio/assets/icons/arrow-down.svg` | 236 | `749a8fed7bae46cc170e38d0cb09196500014c1900cc9dbb6081228054cfa86e` |
+| 4 | `web/portfolio/assets/icons/arrow-left.svg` | `/home/USER/public_html/portfolio/assets/icons/arrow-left.svg` | 236 | `ffc3d345b2cada6937844fa1087197f854ec8240d86229a401a783d627edbbec` |
+| 5 | `web/portfolio/assets/icons/arrow-right.svg` | `/home/USER/public_html/portfolio/assets/icons/arrow-right.svg` | 235 | `ddf6810d77b53ff9e9fe72feed4741d33b3be52a91e466b52b4098fe0e1cc249` |
+| 6 | `web/portfolio/assets/icons/arrow-up-right.svg` | `/home/USER/public_html/portfolio/assets/icons/arrow-up-right.svg` | 234 | `c833436f0c7c61f919b6c073197833409874f842e71f0b80264af9566a8a1ea5` |
+| 7 | `web/portfolio/assets/icons/file-text.svg` | `/home/USER/public_html/portfolio/assets/icons/file-text.svg` | 354 | `a910540d1e029e8d0bd77061030c204bd2baa253eb330bf677f8a23494d21522` |
+| 8 | `web/portfolio/assets/portfolio.css` | `/home/USER/public_html/portfolio/assets/portfolio.css` | 10040 | `9ff7327ca86042c87fb28af52bbace8969e9be1423454457f2271fc40fa6a474` |
+| 9 | `web/portfolio/beauty-in-the-details/index.html` | `/home/USER/public_html/portfolio/beauty-in-the-details/index.html` | 6346 | `c82fcf619743825aab6ebaa9312ffdf5e80ed083bb6480736f536348ac747189` |
+| 10 | `web/portfolio/index.html` | `/home/USER/public_html/portfolio/index.html` | 6086 | `7df01956e10c68e1aa6a2a912f05adf44ef52d6258d78f64e3d04bb798f09e09` |
+| 11 | `web/portfolio/vacation-rescue/assets/airport-code.webp` | `/home/USER/public_html/portfolio/vacation-rescue/assets/airport-code.webp` | 16642 | `7011a8c86cbf32c7dfd389f847985d3e04b2e791566aa9dd165e8e13d582c2fb` |
+| 12 | `web/portfolio/vacation-rescue/assets/ava.webp` | `/home/USER/public_html/portfolio/vacation-rescue/assets/ava.webp` | 90600 | `b3be9629e71e369e3dfd75446c055e98a9ac1966a8919bcd6b139d0dcd658ebf` |
+| 13 | `web/portfolio/vacation-rescue/assets/cleared.webp` | `/home/USER/public_html/portfolio/vacation-rescue/assets/cleared.webp` | 81290 | `6e5a8914a7e84974d01b96af794f288bbb26c730a4313e7754dcb2ea57938ed0` |
+| 14 | `web/portfolio/vacation-rescue/assets/roadtrip.webp` | `/home/USER/public_html/portfolio/vacation-rescue/assets/roadtrip.webp` | 142002 | `f2133cb4d2777cbdcbd052032c0dbbca9b1b8c5f47af84e2bef3e535d3427a77` |
+| 15 | `web/portfolio/vacation-rescue/assets/storyboard.webp` | `/home/USER/public_html/portfolio/vacation-rescue/assets/storyboard.webp` | 220278 | `39912415033b004cffdba341f8d46f26a95064f64abb5edde3d38307519a2aa6` |
+| 16 | `web/portfolio/vacation-rescue/assets/terminal.webp` | `/home/USER/public_html/portfolio/vacation-rescue/assets/terminal.webp` | 121880 | `4e596104c85228428e43fad94311bc4cec0d37b255dfda38350355233341e5fa` |
+| 17 | `web/portfolio/vacation-rescue/assets/trophy.webp` | `/home/USER/public_html/portfolio/vacation-rescue/assets/trophy.webp` | 310006 | `99501062f2c5cd08141bc73e84eb32c3873a1bf0d56c548e678c8d7908491b9d` |
+| 18 | `web/portfolio/vacation-rescue/assets/welcome.webp` | `/home/USER/public_html/portfolio/vacation-rescue/assets/welcome.webp` | 100958 | `52ec9f9a7bad30563684ae647e2f1c3ad1cfd0e6af1cf75343cf37c851def757` |
+| 19 | `web/portfolio/vacation-rescue/index.html` | `/home/USER/public_html/portfolio/vacation-rescue/index.html` | 93370 | `d8dc86dc06069f9f954d5d6010238f993ae125d9b59c1cafe7229888b4afdbc1` |
+| 20 | `web/resume/Christopher-Mathews-Resume.pdf` | `/home/USER/public_html/resume/Christopher-Mathews-Resume.pdf` | 45181 | `e56921f811298b09abf1e23d047ea87e8bc4c799990315a8ae169ca29d60cd23` |
+| 21 | `web/app.js` | `/home/USER/public_html/app.js` | 33677 | `e195b81fe15243f685ff00c81d092f146f2139e34844a357a6c7bf2fb7df1421` |
+
+`web/app.js` goes last: it adds the case-study showcase records, and its
+cards link to the pages above, so the pages must be live first.
+
+Verify each file by `GET` and sha256 against the table. Then load
+`/portfolio/` in a browser: four links out (three case studies, resume), and
+the showcase rail on `/` lists four pieces.
 
 ### Batch 2026-09-02 (turn-2 fix) — `e314f35`
 
