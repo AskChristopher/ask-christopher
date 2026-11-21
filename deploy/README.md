@@ -139,7 +139,7 @@ can be deleted after verification. The playable game at
 | 6 | `web/portfolio/assets/icons/arrow-up-right.svg` | `/home/USER/public_html/portfolio/assets/icons/arrow-up-right.svg` | 234 | `c833436f0c7c61f919b6c073197833409874f842e71f0b80264af9566a8a1ea5` |
 | 7 | `web/portfolio/assets/icons/file-text.svg` | `/home/USER/public_html/portfolio/assets/icons/file-text.svg` | 354 | `a910540d1e029e8d0bd77061030c204bd2baa253eb330bf677f8a23494d21522` |
 | 8 | `web/portfolio/assets/portfolio.css` | `/home/USER/public_html/portfolio/assets/portfolio.css` | 10040 | `9ff7327ca86042c87fb28af52bbace8969e9be1423454457f2271fc40fa6a474` |
-| 9 | `web/portfolio/beauty-in-the-details/index.html` | `/home/USER/public_html/portfolio/beauty-in-the-details/index.html` | 6346 | `c82fcf619743825aab6ebaa9312ffdf5e80ed083bb6480736f536348ac747189` |
+| 9 | `web/portfolio/beauty-in-the-details/index.html` | `/home/USER/public_html/portfolio/beauty-in-the-details/index.html` | 6418 | `c9548a1f6c3ce715fb73247b0bfb5bedf8747fcd050c22fce044abce5fabb127` |
 | 10 | `web/portfolio/index.html` | `/home/USER/public_html/portfolio/index.html` | 6086 | `7df01956e10c68e1aa6a2a912f05adf44ef52d6258d78f64e3d04bb798f09e09` |
 | 11 | `web/portfolio/vacation-rescue/assets/airport-code.webp` | `/home/USER/public_html/portfolio/vacation-rescue/assets/airport-code.webp` | 16642 | `7011a8c86cbf32c7dfd389f847985d3e04b2e791566aa9dd165e8e13d582c2fb` |
 | 12 | `web/portfolio/vacation-rescue/assets/ava.webp` | `/home/USER/public_html/portfolio/vacation-rescue/assets/ava.webp` | 90600 | `b3be9629e71e369e3dfd75446c055e98a9ac1966a8919bcd6b139d0dcd658ebf` |
@@ -149,7 +149,7 @@ can be deleted after verification. The playable game at
 | 16 | `web/portfolio/vacation-rescue/assets/terminal.webp` | `/home/USER/public_html/portfolio/vacation-rescue/assets/terminal.webp` | 121880 | `4e596104c85228428e43fad94311bc4cec0d37b255dfda38350355233341e5fa` |
 | 17 | `web/portfolio/vacation-rescue/assets/trophy.webp` | `/home/USER/public_html/portfolio/vacation-rescue/assets/trophy.webp` | 310006 | `99501062f2c5cd08141bc73e84eb32c3873a1bf0d56c548e678c8d7908491b9d` |
 | 18 | `web/portfolio/vacation-rescue/assets/welcome.webp` | `/home/USER/public_html/portfolio/vacation-rescue/assets/welcome.webp` | 100958 | `52ec9f9a7bad30563684ae647e2f1c3ad1cfd0e6af1cf75343cf37c851def757` |
-| 19 | `web/portfolio/vacation-rescue/index.html` | `/home/USER/public_html/portfolio/vacation-rescue/index.html` | 93370 | `d8dc86dc06069f9f954d5d6010238f993ae125d9b59c1cafe7229888b4afdbc1` |
+| 19 | `web/portfolio/vacation-rescue/index.html` | `/home/USER/public_html/portfolio/vacation-rescue/index.html` | 93353 | `e7bd6b19a2f642e71df5fc819876fd2f7b1141ac40b7b7c8faf37d331701640e` |
 | 20 | `web/resume/Christopher-Mathews-Resume.pdf` | `/home/USER/public_html/resume/Christopher-Mathews-Resume.pdf` | 45181 | `e56921f811298b09abf1e23d047ea87e8bc4c799990315a8ae169ca29d60cd23` |
 | 21 | `web/app.js` | `/home/USER/public_html/app.js` | 33677 | `e195b81fe15243f685ff00c81d092f146f2139e34844a357a6c7bf2fb7df1421` |
 
